@@ -1,24 +1,6 @@
 import Stripe from "stripe";
 import { Resend } from "resend";
 import { NextResponse } from "next/server";
-import crypto from "crypto";
-
-function verifyStripeSignature(payload: string, sigHeader: string, secret: string): boolean {
-  try {
-    const parts = sigHeader.split(",");
-    const timestamp = parts.find((p) => p.startsWith("t="))?.slice(2);
-    const signatures = parts.filter((p) => p.startsWith("v1=")).map((p) => p.slice(3));
-    if (!timestamp || signatures.length === 0) return false;
-    const signedPayload = `${timestamp}.${payload}`;
-    const secretBytes = Buffer.from(secret.replace("whsec_", ""), "base64");
-    const expected = crypto.createHmac("sha256", secretBytes).update(signedPayload).digest("hex");
-    return signatures.some((sig) =>
-      crypto.timingSafeEqual(Buffer.from(sig, "hex"), Buffer.from(expected, "hex"))
-    );
-  } catch {
-    return false;
-  }
-}
 
 const PLAN_NAMES: Record<string, string> = {
   price_1TPYX3RxClGX2uTFzwnMHkP2: "Foundation ($500/mo)",
@@ -31,18 +13,12 @@ const DISCORD_INVITE = "https://discord.gg/kxnfaPNC";
 export async function POST(request: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const body = await request.text();
-  const sig = request.headers.get("stripe-signature");
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
-
-  if (secret && sig) {
-    const valid = verifyStripeSignature(body, sig, secret);
-    if (!valid) {
-      console.error("Webhook signature verification failed");
-      return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
-    }
+  const token = new URL(request.url).searchParams.get("token");
+  if (token !== process.env.WEBHOOK_TOKEN) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const body = await request.text();
   let event: Stripe.Event;
 
   try {
