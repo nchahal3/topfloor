@@ -1,6 +1,24 @@
 import Stripe from "stripe";
 import { Resend } from "resend";
 import { NextResponse } from "next/server";
+import crypto from "crypto";
+
+function verifyStripeSignature(payload: string, sigHeader: string, secret: string): boolean {
+  try {
+    const parts = sigHeader.split(",");
+    const timestamp = parts.find((p) => p.startsWith("t="))?.slice(2);
+    const signatures = parts.filter((p) => p.startsWith("v1=")).map((p) => p.slice(3));
+    if (!timestamp || signatures.length === 0) return false;
+    const signedPayload = `${timestamp}.${payload}`;
+    const secretBytes = Buffer.from(secret.replace("whsec_", ""), "base64");
+    const expected = crypto.createHmac("sha256", secretBytes).update(signedPayload).digest("hex");
+    return signatures.some((sig) =>
+      crypto.timingSafeEqual(Buffer.from(sig, "hex"), Buffer.from(expected, "hex"))
+    );
+  } catch {
+    return false;
+  }
+}
 
 const PLAN_NAMES: Record<string, string> = {
   price_1TPYX3RxClGX2uTFzwnMHkP2: "Foundation ($500/mo)",
@@ -14,19 +32,24 @@ export async function POST(request: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
   const resend = new Resend(process.env.RESEND_API_KEY);
   const body = await request.text();
-  const sig = request.headers.get("stripe-signature") ?? request.headers.get("webhook-signature");
+  const sig = request.headers.get("stripe-signature");
+  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  if (secret && sig) {
+    const valid = verifyStripeSignature(body, sig, secret);
+    if (!valid) {
+      console.error("Webhook signature verification failed");
+      return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+    }
+  }
 
   let event: Stripe.Event;
 
   try {
-    if (sig && process.env.STRIPE_WEBHOOK_SECRET) {
-      event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-    } else {
-      event = JSON.parse(body) as Stripe.Event;
-    }
+    event = JSON.parse(body) as Stripe.Event;
   } catch (err) {
-    console.error("Webhook verification failed:", err);
-    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+    console.error("Failed to parse webhook body:", err);
+    return NextResponse.json({ error: "Invalid body" }, { status: 400 });
   }
 
   if (
