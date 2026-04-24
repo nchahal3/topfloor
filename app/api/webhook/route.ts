@@ -14,14 +14,19 @@ export async function POST(request: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
   const resend = new Resend(process.env.RESEND_API_KEY);
   const body = await request.text();
+  const sig = request.headers.get("stripe-signature") ?? request.headers.get("webhook-signature");
 
   let event: Stripe.Event;
 
   try {
-    event = JSON.parse(body) as Stripe.Event;
+    if (sig && process.env.STRIPE_WEBHOOK_SECRET) {
+      event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    } else {
+      event = JSON.parse(body) as Stripe.Event;
+    }
   } catch (err) {
-    console.error("Failed to parse webhook body:", err);
-    return NextResponse.json({ error: "Invalid body" }, { status: 400 });
+    console.error("Webhook verification failed:", err);
+    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
   if (
