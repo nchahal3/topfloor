@@ -4,39 +4,39 @@ import { motion } from "framer-motion";
 
 const TESTIMONIALS = [
   {
-    name: "Marcus T.",
+    name: "Teeghan W.",
     role: "Futures Trader",
     quote:
-      "Made back my membership cost in the first week. Watching Coach Floor trade live completely changed how I look at setups. Nothing else comes close.",
-    profit: "+$2,100 Week 1",
-    initials: "MT",
+      "Passed my Alpha Futures evaluation after joining 🔝Floor. Coach Floor taught me how to manage risk properly and stick to a system. Could not have done it without this community.",
+    profit: "Passed Alpha Futures",
+    initials: "TW",
     color: "#1a4f3a",
   },
   {
-    name: "Priya K.",
-    role: "Momentum Stocks",
+    name: "Noah",
+    role: "Funded Trader",
     quote:
-      "Coach Floor breaks it down in a way that actually makes sense. Up $3,400 in my first month. The Discord community keeps me sharp every single day.",
-    profit: "+$3,400 Month 1",
-    initials: "PK",
+      "Got my Lucid Trading 50K funded account after applying the 🔝Floor system. The live sessions and coaching calls made all the difference. Worth every penny.",
+    profit: "Lucid 50K Funded",
+    initials: "N",
     color: "#1a2f5a",
   },
   {
-    name: "Jordan W.",
-    role: "Options Trader",
+    name: "Godbless",
+    role: "Futures Trader",
     quote:
-      "The Discord alone is worth it. The community is incredibly supportive and the trade alerts are always on point. Best decision I&apos;ve made this year.",
-    profit: "+$5,800 in 6 Weeks",
-    initials: "JW",
+      "Became a Topstep Express Funded Trader with a 50K account. Coach Floor gave me the structure and discipline I was missing. The trade alerts kept me focused every morning.",
+    profit: "Topstep 50K Funded",
+    initials: "GB",
     color: "#3a1a4f",
   },
   {
-    name: "Dani R.",
+    name: "TopFloor Member",
     role: "Day Trader",
     quote:
-      "I was skeptical, I&apos;d been burned by other courses before. But a month in and I can&apos;t imagine trading without this. Coach Floor is the real deal.",
-    profit: "+$1,900 Month 1",
-    initials: "DR",
+      "Passed my Lucid Trading evaluation and got funded. The 🔝Floor model is the real deal. If you put in the work and follow the system, results will come.",
+    profit: "Lucid 50K Funded",
+    initials: "TF",
     color: "#4f3a1a",
   },
 ];

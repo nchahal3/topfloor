@@ -4,6 +4,7 @@ import StatsTicker from "@/components/StatsTicker";
 import About from "@/components/About";
 import WhatYouGet from "@/components/WhatYouGet";
 import Testimonials from "@/components/Testimonials";
+import FundedWins from "@/components/FundedWins";
 import Pricing from "@/components/Pricing";
 import FAQ from "@/components/FAQ";
 import CommunityCTA from "@/components/CommunityCTA";
@@ -20,6 +21,7 @@ export default function Home() {
         <About />
         <WhatYouGet />
         <Testimonials />
+        <FundedWins />
         <Pricing />
         <FAQ />
         <ContactSection />
