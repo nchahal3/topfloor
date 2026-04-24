@@ -27,6 +27,15 @@ export async function POST(request: Request) {
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${baseUrl}/success?plan=${plan}`,
       cancel_url: `${baseUrl}/#pricing`,
+      phone_number_collection: { enabled: true },
+      custom_fields: [
+        {
+          key: "discord_username",
+          label: { type: "custom", custom: "Discord Username" },
+          type: "text",
+          optional: false,
+        },
+      ],
     });
 
     return NextResponse.json({ url: session.url });

@@ -35,6 +35,8 @@ export async function POST(request: Request) {
     const session = event.data.object as Stripe.Checkout.Session;
     const customerEmail = session.customer_details?.email ?? "Unknown";
     const customerName = session.customer_details?.name ?? "New Member";
+    const customerPhone = session.customer_details?.phone ?? "Not provided";
+    const discordUsername = session.custom_fields?.find((f) => f.key === "discord_username")?.text?.value ?? "Not provided";
 
     // Get plan name from line items
     let planName = "🔝Floor Membership";
@@ -64,6 +66,14 @@ export async function POST(request: Request) {
             <tr>
               <td style="padding:8px 0;color:#999;">Plan</td>
               <td style="padding:8px 0;color:#f0c040;font-weight:bold;">${planName}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;color:#999;">Phone</td>
+              <td style="padding:8px 0;">${customerPhone}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;color:#999;">Discord</td>
+              <td style="padding:8px 0;">${discordUsername}</td>
             </tr>
           </table>
         </div>
