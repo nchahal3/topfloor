@@ -35,7 +35,7 @@ async function getMembers() {
     let nextPayment = "—";
     if (session.subscription) {
       try {
-        const sub = await stripe.subscriptions.retrieve(session.subscription as string);
+        const sub = await stripe.subscriptions.retrieve(session.subscription as string) as any;
         status = sub.status;
         nextPayment = new Date(sub.current_period_end * 1000).toLocaleDateString("en-CA", {
           month: "short",
