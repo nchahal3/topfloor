@@ -2,9 +2,6 @@ import Stripe from "stripe";
 import { Resend } from "resend";
 import { NextResponse } from "next/server";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 const PLAN_NAMES: Record<string, string> = {
   price_1TPYX3RxClGX2uTFzwnMHkP2: "Foundation ($500/mo)",
   price_1TPYXsRxClGX2uTFcMCkSlMo: "Elite Mentorship ($750/mo)",
@@ -14,6 +11,8 @@ const PLAN_NAMES: Record<string, string> = {
 const DISCORD_INVITE = "https://discord.gg/kxnfaPNC";
 
 export async function POST(request: Request) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+  const resend = new Resend(process.env.RESEND_API_KEY);
   const body = await request.text();
   const sig = request.headers.get("stripe-signature");
 

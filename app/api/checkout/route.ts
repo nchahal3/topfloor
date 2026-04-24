@@ -1,8 +1,6 @@
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
 const PRICE_IDS: Record<string, string> = {
   foundation: "price_1TPYX3RxClGX2uTFzwnMHkP2",
   elite_monthly: "price_1TPYXsRxClGX2uTFcMCkSlMo",
@@ -12,6 +10,7 @@ const PRICE_IDS: Record<string, string> = {
 const RECURRING = new Set(["foundation", "elite_monthly"]);
 
 export async function POST(request: Request) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
   try {
     const { plan } = await request.json() as { plan: string };
     const priceId = PRICE_IDS[plan];
