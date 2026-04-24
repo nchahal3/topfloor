@@ -31,7 +31,7 @@ const TESTIMONIALS = [
     color: "#3a1a4f",
   },
   {
-    name: "TopFloor Member",
+    name: "Nav",
     role: "Day Trader",
     quote:
       "Passed my Lucid Trading evaluation and got funded. The 🔝Floor model is the real deal. If you put in the work and follow the system, results will come.",
