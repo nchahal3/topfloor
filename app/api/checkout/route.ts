@@ -1,16 +1,20 @@
 import Stripe from "stripe";
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 const PRICE_IDS: Record<string, string> = {
-  foundation: "price_1TPYX3RxClGX2uTFzwnMHkP2",
-  elite_monthly: "price_1TPYXsRxClGX2uTFcMCkSlMo",
-  elite_lifetime: "price_1TPYYGRxClGX2uTF7o1v901o",
+  bronze: "price_BRONZE_REPLACE_ME",              // $200/mo — create in Stripe then update
+  foundation: "price_1TPYX3RxClGX2uTFzwnMHkP2",  // $500/mo (Silver)
+  elite_monthly: "price_1TPYXsRxClGX2uTFcMCkSlMo", // $750/mo (Gold)
+  elite_lifetime: "price_1TPYYGRxClGX2uTF7o1v901o", // $2,000 Lifetime
 };
 
-const RECURRING = new Set(["foundation", "elite_monthly"]);
+const RECURRING = new Set(["bronze", "foundation", "elite_monthly"]);
 
 export async function POST(request: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+  const { userId } = await auth();
+
   try {
     const { plan } = await request.json() as { plan: string };
     const priceId = PRICE_IDS[plan];
@@ -36,6 +40,8 @@ export async function POST(request: Request) {
           optional: false,
         },
       ],
+      // Pass Clerk userId so webhook can update tier automatically
+      metadata: userId ? { clerkUserId: userId } : {},
     });
 
     return NextResponse.json({ url: session.url });

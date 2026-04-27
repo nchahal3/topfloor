@@ -36,12 +36,20 @@ async function getMembers() {
     if (session.subscription) {
       try {
         const sub = await stripe.subscriptions.retrieve(session.subscription as string) as any;
-        status = sub.status;
-        nextPayment = new Date(sub.current_period_end * 1000).toLocaleDateString("en-CA", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        });
+        status = sub.status ?? "active";
+        const periodEnd =
+          sub.current_period_end ??
+          sub.items?.data?.[0]?.current_period_end;
+        if (periodEnd) {
+          const d = new Date(Number(periodEnd) * 1000);
+          if (!isNaN(d.getTime())) {
+            nextPayment = d.toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            });
+          }
+        }
       } catch {}
     }
 
