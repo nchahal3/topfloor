@@ -2,8 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { useState } from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import PageLayout from "@/components/layout/PageLayout";
 
 type FormData = {
   name: string;
@@ -40,8 +39,7 @@ export default function ContactPage() {
   };
 
   return (
-    <>
-      <Navbar />
+    <PageLayout>
       <main className="min-h-screen flex flex-col items-center justify-center px-4 py-32" style={{ background: "#0a0a0a" }}>
         <div className="w-full max-w-lg">
           <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "#00ff88" }}>
@@ -153,7 +151,6 @@ export default function ContactPage() {
           )}
         </div>
       </main>
-      <Footer />
-    </>
+    </PageLayout>
   );
 }
