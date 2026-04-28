@@ -3,7 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 const PRICE_IDS: Record<string, string> = {
-  bronze: "price_BRONZE_REPLACE_ME",              // $200/mo — create in Stripe then update
+  bronze: "price_1TRIBdRxClGX2uTFE404PcWF",       // $200/mo Bronze
   foundation: "price_1TPYX3RxClGX2uTFzwnMHkP2",  // $500/mo (Silver)
   elite_monthly: "price_1TPYXsRxClGX2uTFcMCkSlMo", // $750/mo (Gold)
   elite_lifetime: "price_1TPYYGRxClGX2uTF7o1v901o", // $2,000 Lifetime

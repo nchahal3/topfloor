@@ -108,3 +108,20 @@ body {
 .faq-answer {
   overflow: hidden;
 }
+
+/* Clerk UserButton dark theme overrides */
+.cl-userButtonPopoverActionButton:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+.cl-userButtonPopoverActionButtonText {
+  color: #f5f5f5 !important;
+}
+.cl-userButtonPopoverActionButtonIcon {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+.cl-userPreviewMainIdentifier {
+  color: #f5f5f5 !important;
+}
+.cl-userPreviewSecondaryIdentifier {
+  color: rgba(255, 255, 255, 0.4) !important;
+}

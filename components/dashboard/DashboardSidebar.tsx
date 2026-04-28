@@ -210,9 +210,9 @@ export default function DashboardSidebar({ tier }: { tier: Tier }) {
 
   return (
     <>
-      {/* Mobile top bar */}
+      {/* Mobile top bar — NOTE: no inline display so lg:hidden can override it */}
       <div
-        className="lg:hidden"
+        className="lg:hidden flex items-center justify-between"
         style={{
           position: "fixed",
           top: 0,
@@ -221,9 +221,6 @@ export default function DashboardSidebar({ tier }: { tier: Tier }) {
           zIndex: 50,
           background: "#0d0d0d",
           borderBottom: "1px solid rgba(255,255,255,0.06)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
           padding: "14px 20px",
         }}
       >
@@ -234,6 +231,7 @@ export default function DashboardSidebar({ tier }: { tier: Tier }) {
           🔝Floor
         </Link>
         <button
+          type="button"
           onClick={() => setMobileOpen(!mobileOpen)}
           style={{ background: "none", border: "none", cursor: "pointer", color: "#f5f5f5" }}
         >

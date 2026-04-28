@@ -4,9 +4,11 @@ import { useState, useEffect, useRef } from "react";
 import { Menu, X, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth, UserButton } from "@clerk/nextjs";
 import { NAV_LINKS, MEMBER_LINKS } from "@/lib/nav";
 
 export default function Navbar() {
+  const { isSignedIn } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
@@ -145,18 +147,43 @@ export default function Navbar() {
 
           {/* Desktop CTAs */}
           <div className="hidden lg:flex items-center gap-3">
-            <Link
-              href="/sign-in"
-              className="text-sm font-medium transition-colors duration-200"
-              style={{ color: "rgba(255,255,255,0.5)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
-            >
-              Member Login
-            </Link>
-            <Link href="/sign-up" className="btn-primary px-6 py-2 text-sm">
-              Get Started
-            </Link>
+            {isSignedIn ? (
+              <UserButton
+                appearance={{
+                  variables: {
+                    colorBackground: "#111",
+                    colorText: "#f5f5f5",
+                    colorPrimary: "#00ff88",
+                  },
+                  elements: {
+                    avatarBox: { width: 34, height: 34 },
+                    userButtonPopoverCard: { background: "#111", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "0 20px 60px rgba(0,0,0,0.8)" },
+                    userButtonPopoverActions: { background: "#111" },
+                    userButtonPopoverActionButton: { color: "#f5f5f5" },
+                    userButtonPopoverActionButtonText: { color: "#f5f5f5" },
+                    userButtonPopoverActionButtonIcon: { color: "rgba(255,255,255,0.5)" },
+                    userButtonPopoverFooter: { background: "#0d0d0d", borderTop: "1px solid rgba(255,255,255,0.06)" },
+                    userPreviewMainIdentifier: { color: "#f5f5f5" },
+                    userPreviewSecondaryIdentifier: { color: "rgba(255,255,255,0.4)" },
+                  },
+                }}
+              />
+            ) : (
+              <>
+                <Link
+                  href="/sign-in"
+                  className="text-sm font-medium transition-colors duration-200"
+                  style={{ color: "rgba(255,255,255,0.5)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
+                >
+                  Member Login
+                </Link>
+                <Link href="/sign-up" className="btn-primary px-6 py-2 text-sm">
+                  Get Started
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile toggle */}

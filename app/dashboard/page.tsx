@@ -21,14 +21,14 @@ export default async function DashboardPage() {
     <div style={{ padding: "40px 32px", maxWidth: 900, margin: "0 auto" }}>
       {/* Header */}
       <div style={{ marginBottom: 40 }}>
-        <h1
-          className="display-font"
-          style={{ color: "#f5f5f5", fontSize: 42, margin: 0, lineHeight: 1 }}
-        >
+        <p style={{ color: "#00ff88", fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 8px" }}>
+          Member Dashboard
+        </p>
+        <h1 style={{ color: "#f5f5f5", fontSize: 30, fontWeight: 700, margin: 0, lineHeight: 1.2 }}>
           Welcome back, {name}.
         </h1>
-        <p style={{ color: "rgba(255,255,255,0.4)", marginTop: 10, fontSize: 15 }}>
-          Your trading dashboard — everything you need in one place.
+        <p style={{ color: "rgba(255,255,255,0.4)", marginTop: 8, fontSize: 14 }}>
+          Everything you need in one place.
         </p>
       </div>
 
@@ -86,17 +86,15 @@ export default async function DashboardPage() {
         )}
       </div>
 
-      {/* Feature grid */}
+      {/* Feature grid — 2-col, last card spans full width if count is odd */}
       <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-          gap: 16,
-        }}
+        className="grid grid-cols-1 sm:grid-cols-2"
+        style={{ gap: 16 }}
       >
-        {FEATURE_CARDS.map((card) => {
+        {FEATURE_CARDS.map((card, i) => {
           const Icon = card.icon;
           const locked = !card.free && !tier;
+          const isLastOdd = i === FEATURE_CARDS.length - 1 && FEATURE_CARDS.length % 2 !== 0;
           return (
             <Link
               key={card.href}
@@ -106,10 +104,11 @@ export default async function DashboardPage() {
                 padding: "20px",
                 borderRadius: 16,
                 background: "#111",
-                border: "1px solid rgba(255,255,255,0.06)",
+                border: `1px solid ${locked ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.07)"}`,
                 textDecoration: "none",
-                opacity: locked ? 0.6 : 1,
+                opacity: locked ? 0.55 : 1,
                 transition: "border-color 0.2s",
+                gridColumn: isLastOdd ? "1 / -1" : undefined,
               }}
             >
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
@@ -118,27 +117,27 @@ export default async function DashboardPage() {
                     width: 38,
                     height: 38,
                     borderRadius: 10,
-                    background: "rgba(0,255,136,0.08)",
+                    background: locked ? "rgba(255,255,255,0.04)" : "rgba(0,255,136,0.08)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <Icon size={18} style={{ color: "#00ff88" }} />
+                  <Icon size={18} style={{ color: locked ? "rgba(255,255,255,0.2)" : "#00ff88" }} />
                 </div>
                 {card.free ? (
                   <span style={{ fontSize: 10, fontWeight: 700, color: "#00ff88", background: "rgba(0,255,136,0.1)", padding: "2px 8px", borderRadius: 4, letterSpacing: "0.06em" }}>
                     FREE
                   </span>
                 ) : locked ? (
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", background: "rgba(255,255,255,0.05)", padding: "2px 8px", borderRadius: 4, letterSpacing: "0.06em" }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.04)", padding: "2px 8px", borderRadius: 4, letterSpacing: "0.06em" }}>
                     LOCKED
                   </span>
                 ) : null}
               </div>
-              <p style={{ color: "#f5f5f5", fontWeight: 600, fontSize: 15, margin: "0 0 6px" }}>{card.label}</p>
-              <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, margin: 0, lineHeight: 1.5 }}>{card.desc}</p>
-              <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 14, color: locked ? "rgba(255,255,255,0.2)" : "#00ff88" }}>
+              <p style={{ color: locked ? "rgba(255,255,255,0.4)" : "#f5f5f5", fontWeight: 600, fontSize: 15, margin: "0 0 6px" }}>{card.label}</p>
+              <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 13, margin: 0, lineHeight: 1.5 }}>{card.desc}</p>
+              <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 14, color: locked ? "rgba(255,255,255,0.18)" : "#00ff88" }}>
                 <span style={{ fontSize: 12, fontWeight: 600 }}>{locked ? "Upgrade to unlock" : "Open"}</span>
                 <ArrowRight size={12} />
               </div>

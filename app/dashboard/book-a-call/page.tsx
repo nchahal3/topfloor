@@ -1,8 +1,7 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { Calendar, Clock, CheckCircle } from "lucide-react";
 import type { Tier } from "@/lib/tier";
-
-const CALENDLY_URL = "https://calendly.com/REPLACE_WITH_COACH_FLOOR_LINK";
+import BookingForm from "@/components/dashboard/BookingForm";
 
 export default async function BookACallPage() {
   const user = await currentUser();
@@ -24,14 +23,7 @@ export default async function BookACallPage() {
 
       {/* Call types */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 14, marginBottom: 36 }}>
-        <div
-          style={{
-            padding: "20px",
-            borderRadius: 14,
-            background: "rgba(0,255,136,0.05)",
-            border: "1px solid rgba(0,255,136,0.15)",
-          }}
-        >
+        <div style={{ padding: "20px", borderRadius: 14, background: "rgba(0,255,136,0.05)", border: "1px solid rgba(0,255,136,0.15)" }}>
           <Calendar size={18} style={{ color: "#00ff88", marginBottom: 10 }} />
           <p style={{ color: "#f5f5f5", fontWeight: 700, fontSize: 15, margin: "0 0 6px" }}>Intro Call</p>
           <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, margin: "0 0 12px", lineHeight: 1.5 }}>
@@ -42,15 +34,7 @@ export default async function BookACallPage() {
           </span>
         </div>
 
-        <div
-          style={{
-            padding: "20px",
-            borderRadius: 14,
-            background: tier ? "rgba(240,192,64,0.05)" : "rgba(255,255,255,0.02)",
-            border: `1px solid ${tier ? "rgba(240,192,64,0.2)" : "rgba(255,255,255,0.06)"}`,
-            opacity: tier ? 1 : 0.5,
-          }}
-        >
+        <div style={{ padding: "20px", borderRadius: 14, background: tier ? "rgba(240,192,64,0.05)" : "rgba(255,255,255,0.02)", border: `1px solid ${tier ? "rgba(240,192,64,0.2)" : "rgba(255,255,255,0.06)"}`, opacity: tier ? 1 : 0.5 }}>
           <Clock size={18} style={{ color: tier ? "#f0c040" : "rgba(255,255,255,0.3)", marginBottom: 10 }} />
           <p style={{ color: tier ? "#f5f5f5" : "rgba(255,255,255,0.4)", fontWeight: 700, fontSize: 15, margin: "0 0 6px" }}>Trade Review</p>
           <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, margin: "0 0 12px", lineHeight: 1.5 }}>
@@ -69,8 +53,8 @@ export default async function BookACallPage() {
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {[
-            "Pick a date and time that works for you",
-            "You'll get a confirmation email with a Zoom link",
+            "Tell us your preferred times and we'll confirm within 24 hours",
+            "You'll get a confirmation with a Zoom link",
             "Come prepared with your questions or trades to review",
             "Coach Floor shows up on time, every time",
           ].map((item) => (
@@ -82,44 +66,8 @@ export default async function BookACallPage() {
         </div>
       </div>
 
-      {/* Calendly embed placeholder */}
-      <div
-        style={{
-          borderRadius: 20,
-          overflow: "hidden",
-          border: "1px solid rgba(255,255,255,0.06)",
-          background: "#111",
-          minHeight: 500,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexDirection: "column",
-          gap: 16,
-          padding: "40px",
-          textAlign: "center",
-        }}
-      >
-        <Calendar size={32} style={{ color: "rgba(255,255,255,0.15)" }} />
-        <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 14, margin: 0 }}>
-          Calendar booking will appear here once Coach Floor&apos;s Calendly is connected.
-        </p>
-        <a
-          href={CALENDLY_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            padding: "12px 28px",
-            borderRadius: 999,
-            background: "#00ff88",
-            color: "#000",
-            fontWeight: 700,
-            fontSize: 14,
-            textDecoration: "none",
-          }}
-        >
-          Open Booking Calendar →
-        </a>
-      </div>
+      {/* Booking form */}
+      <BookingForm />
     </div>
   );
 }
