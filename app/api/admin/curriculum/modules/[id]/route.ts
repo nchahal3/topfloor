@@ -38,7 +38,7 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ id: str
   if (lessons) {
     const paths = lessons.map((l) => l.pdf_path).filter(Boolean) as string[];
     if (paths.length > 0) {
-      await supabaseAdmin.storage.from("curriculum").remove(paths);
+      await supabaseAdmin.storage.from("Curriculum").remove(paths);
     }
   }
 

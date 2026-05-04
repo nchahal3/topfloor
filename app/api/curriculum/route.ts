@@ -41,7 +41,7 @@ export async function GET() {
           let pdf_url: string | null = null;
           if (canAccess && lesson.pdf_path) {
             const { data: signedData } = await supabaseAdmin.storage
-              .from("curriculum")
+              .from("Curriculum")
               .createSignedUrl(lesson.pdf_path, 3600);
             pdf_url = signedData?.signedUrl ?? null;
           }

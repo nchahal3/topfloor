@@ -37,7 +37,7 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ id: str
     .maybeSingle();
 
   if (lesson?.pdf_path) {
-    await supabaseAdmin.storage.from("curriculum").remove([lesson.pdf_path]);
+    await supabaseAdmin.storage.from("Curriculum").remove([lesson.pdf_path]);
   }
 
   const { error } = await supabaseAdmin.from("curriculum_lessons").delete().eq("id", id);

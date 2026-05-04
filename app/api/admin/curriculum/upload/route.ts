@@ -36,11 +36,11 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (lesson?.pdf_path) {
-    await supabaseAdmin.storage.from("curriculum").remove([lesson.pdf_path]);
+    await supabaseAdmin.storage.from("Curriculum").remove([lesson.pdf_path]);
   }
 
   const { error: uploadError } = await supabaseAdmin.storage
-    .from("curriculum")
+    .from("Curriculum")
     .upload(path, buffer, { contentType: "application/pdf", upsert: false });
 
   if (uploadError) return NextResponse.json({ error: uploadError.message }, { status: 500 });
