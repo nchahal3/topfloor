@@ -30,7 +30,7 @@ export async function POST(request: Request) {
       mode: isRecurring ? "subscription" : "payment",
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${baseUrl}/success?plan=${plan}`,
-      cancel_url: `${baseUrl}/#pricing`,
+      cancel_url: `${baseUrl}/pricing`,
       phone_number_collection: { enabled: true },
       custom_fields: [
         {

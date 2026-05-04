@@ -162,7 +162,7 @@ export default function DashboardSidebar({ tier }: { tier: Tier }) {
       {!tier && (
         <div style={{ padding: "12px 12px" }}>
           <Link
-            href="/#pricing"
+            href="/pricing"
             style={{
               display: "block",
               padding: "12px",
@@ -316,7 +316,7 @@ export function LockOverlay({ requiredTier }: { requiredTier: Tier }) {
         </p>
       </div>
       <Link
-        href="/#pricing"
+        href="/pricing"
         style={{
           marginTop: 4,
           padding: "10px 24px",

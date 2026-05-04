@@ -205,7 +205,7 @@ export default async function CurriculumPage() {
             Bronze membership starts at $200/mo. Cancel anytime.
           </p>
           <Link
-            href="/#pricing"
+            href="/pricing"
             style={{
               padding: "12px 32px",
               borderRadius: 999,
@@ -311,7 +311,7 @@ function LessonCard({
             </>
           ) : (
             <Link
-              href="/#pricing"
+              href="/pricing"
               style={{ fontSize: 11, fontWeight: 700, color: "#00ff88", textDecoration: "none", whiteSpace: "nowrap" }}
             >
               {moduleTier ? `${TIER_LABELS[moduleTier]}+` : "Upgrade"} →

@@ -104,7 +104,7 @@ export default async function UpcomingClassesPage() {
                   </a>
                 ) : (
                   <Link
-                    href="/#pricing"
+                    href="/pricing"
                     style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.3)", fontWeight: 700, fontSize: 13, textDecoration: "none" }}
                   >
                     <Lock size={12} />
@@ -127,7 +127,7 @@ export default async function UpcomingClassesPage() {
         <div style={{ marginTop: 32, padding: "24px", borderRadius: 16, background: "linear-gradient(135deg, rgba(0,255,136,0.06), rgba(0,255,136,0.02))", border: "1px solid rgba(0,255,136,0.15)", textAlign: "center" }}>
           <p style={{ color: "#f5f5f5", fontWeight: 700, fontSize: 17, margin: "0 0 8px" }}>Join live every week</p>
           <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 14, margin: "0 0 20px" }}>Bronze membership gets you into most sessions. Starting at $200/mo.</p>
-          <Link href="/#pricing" style={{ padding: "12px 32px", borderRadius: 999, background: "#00ff88", color: "#000", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+          <Link href="/pricing" style={{ padding: "12px 32px", borderRadius: 999, background: "#00ff88", color: "#000", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
             View Plans
           </Link>
         </div>

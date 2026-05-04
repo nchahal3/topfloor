@@ -69,7 +69,7 @@ export default async function DashboardPage() {
         </div>
         {!tier && (
           <Link
-            href="/#pricing"
+            href="/pricing"
             style={{
               padding: "10px 24px",
               borderRadius: 999,
