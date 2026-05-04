@@ -1,8 +1,128 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { ChevronDown, ChevronUp, Plus, Trash2, CalendarPlus } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { ChevronDown, ChevronUp, Plus, Trash2, CalendarPlus, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import type { BookingRow, AvailabilitySlot } from "@/lib/supabase";
+
+const DAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+function CalendarPicker({ value, onChange }: { value: string; onChange: (d: string) => void }) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const [open, setOpen] = useState(false);
+  const [viewYear, setViewYear] = useState(today.getFullYear());
+  const [viewMonth, setViewMonth] = useState(today.getMonth());
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+  const prevMonth = () => {
+    if (viewMonth === 0) { setViewMonth(11); setViewYear((y) => y - 1); }
+    else setViewMonth((m) => m - 1);
+  };
+  const nextMonth = () => {
+    if (viewMonth === 11) { setViewMonth(0); setViewYear((y) => y + 1); }
+    else setViewMonth((m) => m + 1);
+  };
+
+  const select = (day: number) => {
+    const d = new Date(viewYear, viewMonth, day);
+    if (d < today) return;
+    const iso = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    onChange(iso);
+    setOpen(false);
+  };
+
+  const displayValue = value
+    ? new Date(value + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })
+    : "Pick a date";
+
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        style={{
+          width: "100%", padding: "7px 10px", borderRadius: 8, display: "flex", alignItems: "center", gap: 8,
+          background: "#1a1a1a", border: `1px solid ${open ? "rgba(0,255,136,0.4)" : "rgba(255,255,255,0.1)"}`,
+          color: value ? "#f5f5f5" : "rgba(255,255,255,0.3)", fontSize: 13, cursor: "pointer", textAlign: "left", boxSizing: "border-box",
+        }}
+      >
+        <Calendar size={13} style={{ color: value ? "#00ff88" : "rgba(255,255,255,0.3)", flexShrink: 0 }} />
+        {displayValue}
+      </button>
+
+      {open && (
+        <div style={{
+          position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 50,
+          background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 12,
+          padding: 14, width: 240, boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+        }}>
+          {/* Header */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <button type="button" title="Previous month" onClick={prevMonth} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.4)", padding: 4, display: "flex" }}>
+              <ChevronLeft size={15} />
+            </button>
+            <span style={{ color: "#f5f5f5", fontSize: 13, fontWeight: 700 }}>
+              {MONTHS[viewMonth]} {viewYear}
+            </span>
+            <button type="button" title="Next month" onClick={nextMonth} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.4)", padding: 4, display: "flex" }}>
+              <ChevronRight size={15} />
+            </button>
+          </div>
+
+          {/* Day labels */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 4 }}>
+            {DAYS.map((d) => (
+              <div key={d} style={{ textAlign: "center", fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.25)", padding: "2px 0" }}>{d}</div>
+            ))}
+          </div>
+
+          {/* Days grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
+            {Array.from({ length: firstDay }).map((_, i) => <div key={`e-${i}`} />)}
+            {Array.from({ length: daysInMonth }).map((_, i) => {
+              const day = i + 1;
+              const cellDate = new Date(viewYear, viewMonth, day);
+              const isPast = cellDate < today;
+              const iso = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+              const isSelected = iso === value;
+              const isToday = cellDate.getTime() === today.getTime();
+              return (
+                <button
+                  key={day}
+                  type="button"
+                  onClick={() => select(day)}
+                  disabled={isPast}
+                  style={{
+                    padding: "5px 0", borderRadius: 6, fontSize: 12, fontWeight: isSelected ? 700 : 400,
+                    background: isSelected ? "#00ff88" : isToday ? "rgba(0,255,136,0.1)" : "transparent",
+                    color: isSelected ? "#000" : isPast ? "rgba(255,255,255,0.15)" : "#f5f5f5",
+                    border: isToday && !isSelected ? "1px solid rgba(0,255,136,0.3)" : "1px solid transparent",
+                    cursor: isPast ? "not-allowed" : "pointer",
+                    textAlign: "center",
+                  }}
+                >
+                  {day}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const STATUS_OPTIONS = ["pending", "confirmed", "completed", "cancelled"];
 const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
@@ -107,13 +227,7 @@ function AvailabilityPanel() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10 }}>
             <div>
               <label style={{ display: "block", color: "rgba(255,255,255,0.35)", fontSize: 11, fontWeight: 600, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>Date</label>
-              <input
-                type="date"
-                min={today}
-                value={newDate}
-                onChange={(e) => setNewDate(e.target.value)}
-                style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }}
-              />
+              <CalendarPicker value={newDate} onChange={setNewDate} />
             </div>
             <div>
               <label style={{ display: "block", color: "rgba(255,255,255,0.35)", fontSize: 11, fontWeight: 600, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>Time (EST)</label>
