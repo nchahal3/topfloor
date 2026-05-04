@@ -10,13 +10,27 @@ export async function POST(request: Request) {
   const email = user?.emailAddresses[0]?.emailAddress ?? "";
   const name = user?.firstName ? `${user.firstName} ${user.lastName ?? ""}`.trim() : email;
 
-  const { call_type, preferred_time, topic } = await request.json() as {
+  const { call_type, preferred_time, topic, slot_id } = await request.json() as {
     call_type: string;
     preferred_time: string;
     topic: string;
+    slot_id?: string;
   };
 
   if (!preferred_time) return NextResponse.json({ error: "Preferred time is required" }, { status: 400 });
+
+  // If slot provided, verify it's still available
+  if (slot_id) {
+    const { data: slot } = await supabaseAdmin
+      .from("availability_slots")
+      .select("id, is_booked")
+      .eq("id", slot_id)
+      .single();
+
+    if (!slot || slot.is_booked) {
+      return NextResponse.json({ error: "That time slot is no longer available. Please choose another." }, { status: 409 });
+    }
+  }
 
   const { data, error } = await supabaseAdmin
     .from("bookings")
@@ -28,10 +42,20 @@ export async function POST(request: Request) {
       preferred_time,
       topic: topic ?? null,
       status: "pending",
+      slot_id: slot_id ?? null,
     })
     .select()
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Mark slot as booked
+  if (slot_id && data) {
+    await supabaseAdmin
+      .from("availability_slots")
+      .update({ is_booked: true, booking_id: data.id })
+      .eq("id", slot_id);
+  }
+
   return NextResponse.json(data);
 }

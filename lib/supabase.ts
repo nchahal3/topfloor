@@ -33,6 +33,19 @@ export type BookingRow = {
   status: string;
   admin_notes: string | null;
   scheduled_at: string | null;
+  slot_id: string | null;
+  zoom_link: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type AvailabilitySlot = {
+  id: string;
+  date: string;
+  time_est: string;
+  duration_minutes: number;
+  call_type: string;
+  is_booked: boolean;
+  booking_id: string | null;
+  created_at: string;
 };
