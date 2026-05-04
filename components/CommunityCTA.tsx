@@ -71,12 +71,10 @@ export default function CommunityCTA() {
           </p>
 
           <a
-            href="https://discord.gg/kxnfaPNC"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/pricing"
             className="btn-primary inline-block px-10 py-5 text-xl glow-box-green"
           >
-            Join the Community Now →
+            View Plans →
           </a>
 
           <p
