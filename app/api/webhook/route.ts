@@ -6,7 +6,7 @@ import type { Tier } from "@/lib/tier";
 import { PRICE_TIER } from "@/lib/tier";
 
 const PLAN_NAMES: Record<string, string> = {
-  price_BRONZE_REPLACE_ME: "Bronze ($200/mo)",
+  price_1TRIBdRxClGX2uTFE404PcWF: "Bronze ($200/mo)",
   price_1TPYX3RxClGX2uTFzwnMHkP2: "Silver ($500/mo)",
   price_1TPYXsRxClGX2uTFcMCkSlMo: "Gold ($750/mo)",
   price_1TPYYGRxClGX2uTF7o1v901o: "Elite Lifetime ($2,000)",
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
     // 1. Notify coach
     await resend.emails.send({
       from: "onboarding@resend.dev",
-      to: "nabi.chahal@gmail.com",
+      to: process.env.COACH_EMAIL!,
       subject: `💰 New 🔝Floor Member — ${customerName}`,
       html: `
         <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">

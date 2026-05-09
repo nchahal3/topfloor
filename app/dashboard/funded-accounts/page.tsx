@@ -17,7 +17,7 @@ const FIRMS = [
     description: "Lucid's evaluation accounts are built for disciplined day traders. No drawdown tricks.",
     code: "FLOOR10",
     discount: "10% off any plan",
-    url: "#",
+    url: "https://lucidtrading.com/",
   },
   {
     name: "Apex Trader Funding",
@@ -26,7 +26,7 @@ const FIRMS = [
     description: "One of the most popular prop firms. Large account sizes up to $300K.",
     code: "TOPFLOOR",
     discount: "Free trial available",
-    url: "#",
+    url: "https://apextraderfunding.com/",
   },
 ];
 

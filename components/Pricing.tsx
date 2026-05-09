@@ -80,9 +80,11 @@ const LIFETIME = {
 
 function PlanCard({ plan }: { plan: typeof PLANS[0] }) {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleCheckout = async () => {
     setLoading(true);
+    setError("");
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
@@ -91,8 +93,9 @@ function PlanCard({ plan }: { plan: typeof PLANS[0] }) {
       });
       const data = await res.json();
       if (data.url) window.location.href = data.url;
+      else setError("Something went wrong. Please try again.");
     } catch {
-      alert("Something went wrong. Please try again.");
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -168,6 +171,9 @@ function PlanCard({ plan }: { plan: typeof PLANS[0] }) {
         ))}
       </ul>
 
+      {error && (
+        <p className="text-xs text-center mb-3" style={{ color: "#ff4444" }}>{error}</p>
+      )}
       <button
         type="button"
         onClick={handleCheckout}
@@ -184,9 +190,11 @@ function PlanCard({ plan }: { plan: typeof PLANS[0] }) {
 
 function LifetimeCard() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleCheckout = async () => {
     setLoading(true);
+    setError("");
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
@@ -195,8 +203,9 @@ function LifetimeCard() {
       });
       const data = await res.json();
       if (data.url) window.location.href = data.url;
+      else setError("Something went wrong. Please try again.");
     } catch {
-      alert("Something went wrong. Please try again.");
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -252,6 +261,9 @@ function LifetimeCard() {
           {loading ? "Redirecting..." : LIFETIME.cta}
         </button>
       </div>
+      {error && (
+        <p className="text-xs mt-3 text-center" style={{ color: "#ff4444" }}>{error}</p>
+      )}
     </div>
   );
 }
