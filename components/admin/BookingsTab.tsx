@@ -124,6 +124,30 @@ function CalendarPicker({ value, onChange }: { value: string; onChange: (d: stri
   );
 }
 
+const MONTH_MAP: Record<string, number> = {
+  January:0,February:1,March:2,April:3,May:4,June:5,
+  July:6,August:7,September:8,October:9,November:10,December:11,
+};
+
+function preferredTimeToDatetimeLocal(preferred: string): string {
+  // "Sunday, May 10, 2026 at 11:00 AM"
+  const parts = preferred.split(" at ");
+  if (parts.length !== 2) return "";
+  const dateMatch = parts[0].match(/([A-Za-z]+)\s+(\d+),\s+(\d{4})$/);
+  const timeMatch = parts[1].trim().match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (!dateMatch || !timeMatch) return "";
+  const month = MONTH_MAP[dateMatch[1]];
+  const day = parseInt(dateMatch[2]);
+  const year = parseInt(dateMatch[3]);
+  let hours = parseInt(timeMatch[1]);
+  const minutes = parseInt(timeMatch[2]);
+  const period = timeMatch[3].toUpperCase();
+  if (period === "PM" && hours !== 12) hours += 12;
+  if (period === "AM" && hours === 12) hours = 0;
+  if (month === undefined || isNaN(day) || isNaN(year)) return "";
+  return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
 const STATUS_OPTIONS = ["pending", "confirmed", "completed", "cancelled"];
 const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
   pending:   { bg: "rgba(240,192,64,0.15)",  color: "#f0c040" },
@@ -372,23 +396,7 @@ export default function BookingsTab({ filterEmail }: { filterEmail?: string }) {
 
   const initEdit = (b: BookingRow) => {
     if (!editState[b.id]) {
-      // Pre-fill scheduled_at from preferred_time if not already set
-      // preferred_time format: "Sunday, May 10, 2026 at 10:30 AM"
-      let scheduledAt = b.scheduled_at ?? "";
-      if (!scheduledAt && b.preferred_time) {
-        const parts = b.preferred_time.split(" at ");
-        if (parts.length === 2) {
-          const dateObj = new Date(parts[0]);
-          const [time, period] = parts[1].trim().split(" ");
-          const [h, m] = time.split(":").map(Number);
-          let hours = h;
-          if (period === "PM" && h !== 12) hours += 12;
-          if (period === "AM" && h === 12) hours = 0;
-          if (!isNaN(dateObj.getTime())) {
-            scheduledAt = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, "0")}-${String(dateObj.getDate()).padStart(2, "0")}T${String(hours).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-          }
-        }
-      }
+      const scheduledAt = b.scheduled_at ?? preferredTimeToDatetimeLocal(b.preferred_time ?? "");
       setEditState((prev) => ({
         ...prev,
         [b.id]: {
