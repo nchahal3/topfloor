@@ -19,16 +19,27 @@ export async function POST(request: Request) {
 
   if (!preferred_time) return NextResponse.json({ error: "Preferred time is required" }, { status: 400 });
 
-  // If slot provided, verify it's still available
+  // If slot provided, verify it's still available and get datetime
+  let scheduledAt: string | null = null;
   if (slot_id) {
     const { data: slot } = await supabaseAdmin
       .from("availability_slots")
-      .select("id, is_booked")
+      .select("id, is_booked, date, time_est")
       .eq("id", slot_id)
       .single();
 
     if (!slot || slot.is_booked) {
       return NextResponse.json({ error: "That time slot is no longer available. Please choose another." }, { status: 409 });
+    }
+
+    // Convert slot date + time_est to ISO datetime for scheduled_at
+    if (slot.date && slot.time_est) {
+      const [timePart, period] = (slot.time_est as string).split(" ");
+      const [h, m] = timePart.split(":").map(Number);
+      let hours = h;
+      if (period === "PM" && h !== 12) hours += 12;
+      if (period === "AM" && h === 12) hours = 0;
+      scheduledAt = `${slot.date}T${String(hours).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
     }
   }
 
@@ -43,6 +54,7 @@ export async function POST(request: Request) {
       topic: topic ?? null,
       status: "pending",
       slot_id: slot_id ?? null,
+      scheduled_at: scheduledAt,
     })
     .select()
     .single();
