@@ -63,10 +63,10 @@ export default function MembersTab({ members }: { members: Member[] }) {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [filter, setFilter] = useState("all");
   const [planFilter, setPlanFilter] = useState("all");
-  const [cancelConfirm, setCancelConfirm] = useState(false);
+  const [cancelConfirm, setCancelConfirm] = useState(0); // 0=hidden 1=first 2=final
   const [cancelling, setCancelling] = useState(false);
   const [cancelledIds, setCancelledIds] = useState<Set<string>>(new Set());
-  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(0); // 0=hidden 1=first 2=final
   const [deleting, setDeleting] = useState(false);
   const [deletedEmails, setDeletedEmails] = useState<Set<string>>(new Set());
 
@@ -92,7 +92,7 @@ export default function MembersTab({ members }: { members: Member[] }) {
       body: JSON.stringify({ email: member.email }),
     });
     setDeletedEmails((prev) => new Set([...prev, member.email]));
-    setDeleteConfirm(false);
+    setDeleteConfirm(0);
     setDeleting(false);
     setSelectedMember(null);
   };
@@ -106,7 +106,7 @@ export default function MembersTab({ members }: { members: Member[] }) {
       body: JSON.stringify({ action: "cancel", clerkUserId: member.id }),
     });
     setCancelledIds((prev) => new Set([...prev, member.id]));
-    setCancelConfirm(false);
+    setCancelConfirm(0);
     setCancelling(false);
     setSelectedMember((prev) => prev ? { ...prev, status: "canceled" } : null);
   };
@@ -275,19 +275,29 @@ export default function MembersTab({ members }: { members: Member[] }) {
               <div style={{ marginBottom: 20, padding: "14px 16px", borderRadius: 12, background: "rgba(255,68,68,0.04)", border: "1px solid rgba(255,68,68,0.15)" }}>
                 <p style={{ color: "#ff4444", fontWeight: 700, fontSize: 13, margin: "0 0 4px" }}>Cancel Membership</p>
                 <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, margin: "0 0 12px" }}>This immediately cancels their Stripe subscription. Access ends now.</p>
-                {!cancelConfirm ? (
-                  <button type="button" onClick={() => setCancelConfirm(true)} style={{ padding: "7px 16px", borderRadius: 8, background: "transparent", border: "1px solid rgba(255,68,68,0.4)", color: "#ff4444", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                {cancelConfirm === 0 && (
+                  <button type="button" onClick={() => setCancelConfirm(1)} style={{ padding: "7px 16px", borderRadius: 8, background: "transparent", border: "1px solid rgba(255,68,68,0.4)", color: "#ff4444", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
                     Cancel Subscription
                   </button>
-                ) : (
-                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                    <p style={{ color: "#ffa500", fontSize: 12, fontWeight: 600, margin: 0 }}>Are you sure?</p>
-                    <button type="button" onClick={() => handleCancel(selectedMember)} disabled={cancelling} style={{ padding: "6px 14px", borderRadius: 8, background: "#ff4444", border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", opacity: cancelling ? 0.6 : 1 }}>
-                      {cancelling ? "Cancelling..." : "Yes, Cancel"}
-                    </button>
-                    <button type="button" onClick={() => setCancelConfirm(false)} style={{ padding: "6px 12px", borderRadius: 8, background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.4)", fontSize: 12, cursor: "pointer" }}>
-                      Keep
-                    </button>
+                )}
+                {cancelConfirm === 1 && (
+                  <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(255,68,68,0.06)", border: "1px solid rgba(255,68,68,0.2)" }}>
+                    <p style={{ color: "#ffa500", fontSize: 12, fontWeight: 600, margin: "0 0 8px" }}>⚠ Are you sure? This will immediately revoke their access.</p>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button type="button" onClick={() => setCancelConfirm(2)} style={{ padding: "6px 14px", borderRadius: 8, background: "rgba(255,68,68,0.15)", border: "1px solid rgba(255,68,68,0.4)", color: "#ff4444", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Yes, continue</button>
+                      <button type="button" onClick={() => setCancelConfirm(0)} style={{ padding: "6px 12px", borderRadius: 8, background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.4)", fontSize: 12, cursor: "pointer" }}>Go back</button>
+                    </div>
+                  </div>
+                )}
+                {cancelConfirm === 2 && (
+                  <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(255,68,68,0.1)", border: "1px solid rgba(255,68,68,0.35)" }}>
+                    <p style={{ color: "#ff4444", fontSize: 12, fontWeight: 700, margin: "0 0 8px" }}>Final confirmation — this cannot be undone.</p>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button type="button" onClick={() => handleCancel(selectedMember)} disabled={cancelling} style={{ padding: "6px 14px", borderRadius: 8, background: "#ff4444", border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", opacity: cancelling ? 0.6 : 1 }}>
+                        {cancelling ? "Cancelling..." : "Confirm Cancel"}
+                      </button>
+                      <button type="button" onClick={() => setCancelConfirm(0)} style={{ padding: "6px 12px", borderRadius: 8, background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.4)", fontSize: 12, cursor: "pointer" }}>Go back</button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -295,10 +305,12 @@ export default function MembersTab({ members }: { members: Member[] }) {
 
             {/* Delete user */}
             {!deletedEmails.has(selectedMember.email) && (() => {
-              const hasActiveSub = !!selectedMember.subscriptionId
-                && !cancelledIds.has(selectedMember.id)
-                && selectedMember.status !== "canceled"
-                && selectedMember.status !== "free";
+              const hasActiveSub = (
+                !cancelledIds.has(selectedMember.id) &&
+                selectedMember.status !== "canceled" &&
+                selectedMember.status !== "free" &&
+                (!!selectedMember.subscriptionId || selectedMember.status === "lifetime")
+              );
               return (
                 <div style={{ marginBottom: 20, padding: "14px 16px", borderRadius: 12, background: "rgba(255,68,68,0.03)", border: `1px solid ${hasActiveSub ? "rgba(255,165,0,0.2)" : "rgba(255,68,68,0.1)"}` }}>
                   <p style={{ color: "#ff4444", fontWeight: 700, fontSize: 13, margin: "0 0 4px" }}>Delete Account</p>
@@ -308,21 +320,31 @@ export default function MembersTab({ members }: { members: Member[] }) {
                       <button type="button" disabled style={{ padding: "7px 16px", borderRadius: 8, background: "transparent", border: "1px solid rgba(255,68,68,0.15)", color: "rgba(255,68,68,0.3)", fontSize: 12, fontWeight: 700, cursor: "not-allowed" }}>
                         Delete User
                       </button>
-                      <p style={{ color: "#ffa500", fontSize: 12, margin: 0 }}>⚠ Cancel their subscription first</p>
+                      <p style={{ color: "#ffa500", fontSize: 12, margin: 0 }}>
+                        ⚠ {selectedMember.status === "lifetime" ? "Lifetime member — cancel membership first" : "Cancel their subscription first"}
+                      </p>
                     </div>
-                  ) : !deleteConfirm ? (
-                    <button type="button" onClick={() => setDeleteConfirm(true)} style={{ padding: "7px 16px", borderRadius: 8, background: "transparent", border: "1px solid rgba(255,68,68,0.35)", color: "#ff4444", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                  ) : deleteConfirm === 0 ? (
+                    <button type="button" onClick={() => setDeleteConfirm(1)} style={{ padding: "7px 16px", borderRadius: 8, background: "transparent", border: "1px solid rgba(255,68,68,0.35)", color: "#ff4444", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
                       Delete User
                     </button>
+                  ) : deleteConfirm === 1 ? (
+                    <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(255,68,68,0.06)", border: "1px solid rgba(255,68,68,0.2)" }}>
+                      <p style={{ color: "#ffa500", fontSize: 12, fontWeight: 600, margin: "0 0 8px" }}>⚠ Are you sure? This will permanently delete their account.</p>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button type="button" onClick={() => setDeleteConfirm(2)} style={{ padding: "6px 14px", borderRadius: 8, background: "rgba(255,68,68,0.15)", border: "1px solid rgba(255,68,68,0.4)", color: "#ff4444", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Yes, continue</button>
+                        <button type="button" onClick={() => setDeleteConfirm(0)} style={{ padding: "6px 12px", borderRadius: 8, background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.4)", fontSize: 12, cursor: "pointer" }}>Go back</button>
+                      </div>
+                    </div>
                   ) : (
-                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                      <p style={{ color: "#ffa500", fontSize: 12, fontWeight: 600, margin: 0 }}>Permanently delete?</p>
-                      <button type="button" onClick={() => handleDelete(selectedMember)} disabled={deleting} style={{ padding: "6px 14px", borderRadius: 8, background: "#ff4444", border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", opacity: deleting ? 0.6 : 1 }}>
-                        {deleting ? "Deleting..." : "Yes, Delete"}
-                      </button>
-                      <button type="button" onClick={() => setDeleteConfirm(false)} style={{ padding: "6px 12px", borderRadius: 8, background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.4)", fontSize: 12, cursor: "pointer" }}>
-                        Keep
-                      </button>
+                    <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(255,68,68,0.1)", border: "1px solid rgba(255,68,68,0.35)" }}>
+                      <p style={{ color: "#ff4444", fontSize: 12, fontWeight: 700, margin: "0 0 8px" }}>Final confirmation — this is permanent and cannot be undone.</p>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button type="button" onClick={() => handleDelete(selectedMember)} disabled={deleting} style={{ padding: "6px 14px", borderRadius: 8, background: "#ff4444", border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", opacity: deleting ? 0.6 : 1 }}>
+                          {deleting ? "Deleting..." : "Confirm Delete"}
+                        </button>
+                        <button type="button" onClick={() => setDeleteConfirm(0)} style={{ padding: "6px 12px", borderRadius: 8, background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.4)", fontSize: 12, cursor: "pointer" }}>Go back</button>
+                      </div>
                     </div>
                   )}
                 </div>
