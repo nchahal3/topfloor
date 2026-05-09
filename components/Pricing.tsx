@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { useState } from "react";
+import { useUser } from "@clerk/nextjs";
 
 const PLANS = [
   {
@@ -81,8 +82,13 @@ const LIFETIME = {
 function PlanCard({ plan }: { plan: typeof PLANS[0] }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { isSignedIn } = useUser();
 
   const handleCheckout = async () => {
+    if (!isSignedIn) {
+      window.location.href = `/sign-up?redirect_url=/pricing`;
+      return;
+    }
     setLoading(true);
     setError("");
     try {
@@ -191,8 +197,13 @@ function PlanCard({ plan }: { plan: typeof PLANS[0] }) {
 function LifetimeCard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { isSignedIn } = useUser();
 
   const handleCheckout = async () => {
+    if (!isSignedIn) {
+      window.location.href = `/sign-up?redirect_url=/pricing`;
+      return;
+    }
     setLoading(true);
     setError("");
     try {
