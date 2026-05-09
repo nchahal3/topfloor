@@ -1,12 +1,12 @@
 import Stripe from "stripe";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 const PRICE_IDS: Record<string, string> = {
-  bronze: "price_1TRIBdRxClGX2uTFE404PcWF",       // $200/mo Bronze
-  foundation: "price_1TPYX3RxClGX2uTFzwnMHkP2",  // $500/mo (Silver)
-  elite_monthly: "price_1TPYXsRxClGX2uTFcMCkSlMo", // $750/mo (Gold)
-  elite_lifetime: "price_1TPYYGRxClGX2uTF7o1v901o", // $2,000 Lifetime
+  bronze: "price_1TRIBdRxClGX2uTFE404PcWF",
+  foundation: "price_1TPYX3RxClGX2uTFzwnMHkP2",
+  elite_monthly: "price_1TPYXsRxClGX2uTFcMCkSlMo",
+  elite_lifetime: "price_1TPYYGRxClGX2uTF7o1v901o",
 };
 
 const RECURRING = new Set(["bronze", "foundation", "elite_monthly"]);
@@ -26,9 +26,23 @@ export async function POST(request: Request) {
     const baseUrl = process.env.NEXT_PUBLIC_URL ?? "http://localhost:3000";
     const isRecurring = RECURRING.has(plan);
 
+    // Look up existing Stripe customer by email to avoid duplicates
+    let customerId: string | undefined;
+    if (userId) {
+      const user = await currentUser();
+      const email = user?.emailAddresses[0]?.emailAddress;
+      if (email) {
+        const existing = await stripe.customers.list({ email, limit: 1 });
+        if (existing.data.length > 0) {
+          customerId = existing.data[0].id;
+        }
+      }
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: isRecurring ? "subscription" : "payment",
       line_items: [{ price: priceId, quantity: 1 }],
+      ...(customerId ? { customer: customerId } : {}),
       success_url: `${baseUrl}/success?plan=${plan}`,
       cancel_url: `${baseUrl}/pricing`,
       phone_number_collection: { enabled: true },
@@ -40,7 +54,6 @@ export async function POST(request: Request) {
           optional: false,
         },
       ],
-      // Pass Clerk userId so webhook can update tier automatically
       metadata: userId ? { clerkUserId: userId } : {},
     });
 

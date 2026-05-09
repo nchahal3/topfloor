@@ -103,7 +103,7 @@ export default function MembersTab({ members }: { members: Member[] }) {
     await fetch(`/api/admin/members/${member.subscriptionId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "cancel" }),
+      body: JSON.stringify({ action: "cancel", clerkUserId: member.id }),
     });
     setCancelledIds((prev) => new Set([...prev, member.id]));
     setCancelConfirm(false);
