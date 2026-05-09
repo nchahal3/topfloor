@@ -224,7 +224,7 @@ export default function MembersTab({ members }: { members: Member[] }) {
       {/* Slide-out panel */}
       {selectedMember && (
         <div
-          onClick={() => { setSelectedMember(null); setCancelConfirm(false); }}
+          onClick={() => { setSelectedMember(null); setCancelConfirm(0); setDeleteConfirm(0); }}
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 100, display: "flex", alignItems: "flex-start", justifyContent: "flex-end" }}
         >
           <div
@@ -239,7 +239,7 @@ export default function MembersTab({ members }: { members: Member[] }) {
                 <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, margin: "0 0 2px" }}>{selectedMember.email}</p>
                 <p style={{ color: "#f0c040", fontSize: 12, fontWeight: 600, margin: 0 }}>{selectedMember.plan}</p>
               </div>
-              <button type="button" onClick={() => { setSelectedMember(null); setCancelConfirm(false); }} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.4)" }}>
+              <button type="button" onClick={() => { setSelectedMember(null); setCancelConfirm(0); setDeleteConfirm(0); }} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.4)" }}>
                 <X size={20} />
               </button>
             </div>
