@@ -2,6 +2,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { Calendar, Clock, CheckCircle } from "lucide-react";
 import type { Tier } from "@/lib/tier";
 import BookingForm from "@/components/dashboard/BookingForm";
+import MyBookings from "@/components/dashboard/MyBookings";
 
 export default async function BookACallPage() {
   const user = await currentUser();
@@ -68,6 +69,9 @@ export default async function BookACallPage() {
 
       {/* Booking form */}
       <BookingForm />
+
+      {/* Member's booking history */}
+      <MyBookings />
     </div>
   );
 }

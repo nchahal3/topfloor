@@ -372,12 +372,29 @@ export default function BookingsTab({ filterEmail }: { filterEmail?: string }) {
 
   const initEdit = (b: BookingRow) => {
     if (!editState[b.id]) {
+      // Pre-fill scheduled_at from preferred_time if not already set
+      // preferred_time format: "Sunday, May 10, 2026 at 10:30 AM"
+      let scheduledAt = b.scheduled_at ?? "";
+      if (!scheduledAt && b.preferred_time) {
+        const parts = b.preferred_time.split(" at ");
+        if (parts.length === 2) {
+          const dateObj = new Date(parts[0]);
+          const [time, period] = parts[1].trim().split(" ");
+          const [h, m] = time.split(":").map(Number);
+          let hours = h;
+          if (period === "PM" && h !== 12) hours += 12;
+          if (period === "AM" && h === 12) hours = 0;
+          if (!isNaN(dateObj.getTime())) {
+            scheduledAt = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, "0")}-${String(dateObj.getDate()).padStart(2, "0")}T${String(hours).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+          }
+        }
+      }
       setEditState((prev) => ({
         ...prev,
         [b.id]: {
           status: b.status,
           admin_notes: b.admin_notes ?? "",
-          scheduled_at: b.scheduled_at ?? "",
+          scheduled_at: scheduledAt,
           zoom_link: b.zoom_link ?? "",
         },
       }));
@@ -505,7 +522,11 @@ export default function BookingsTab({ filterEmail }: { filterEmail?: string }) {
 
                     {isExpanded && (
                       <div style={{ padding: "0 16px 16px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 14 }}>
+                        <div style={{ marginTop: 12, marginBottom: 10, padding: "8px 12px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                          <span style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Requested Time: </span>
+                          <span style={{ color: "#f0c040", fontSize: 12, fontWeight: 600 }}>{b.preferred_time}</span>
+                        </div>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                           <div>
                             <label style={{ display: "block", color: "rgba(255,255,255,0.4)", fontSize: 11, fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 5 }}>Status</label>
                             <select
