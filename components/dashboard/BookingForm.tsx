@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { CheckCircle, Calendar, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import type { AvailabilitySlot } from "@/lib/supabase";
 
+type ActiveBooking = { id: string; status: string; preferred_time: string; call_type: string };
+
 type SlotsByDate = Record<string, AvailabilitySlot[]>;
 
 function formatDate(dateStr: string) {
@@ -24,6 +26,7 @@ export default function BookingForm() {
   const [error, setError] = useState("");
 
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
+  const [activeBooking, setActiveBooking] = useState<ActiveBooking | null>(null);
   const [slotsLoading, setSlotsLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<AvailabilitySlot | null>(null);
@@ -32,8 +35,9 @@ export default function BookingForm() {
   useEffect(() => {
     fetch("/api/availability")
       .then((r) => r.json())
-      .then((data: AvailabilitySlot[]) => {
-        setSlots(Array.isArray(data) ? data : []);
+      .then((data) => {
+        setSlots(Array.isArray(data.slots) ? data.slots : []);
+        setActiveBooking(data.activeBooking ?? null);
         setSlotsLoading(false);
       })
       .catch(() => setSlotsLoading(false));
@@ -70,11 +74,11 @@ export default function BookingForm() {
         const d = await res.json();
         setError(d.error ?? "Something went wrong.");
         if (res.status === 409) {
-          // Slot taken — refresh
           setSelectedSlot(null);
           setSelectedDate(null);
           const fresh = await fetch("/api/availability").then((r) => r.json());
-          setSlots(Array.isArray(fresh) ? fresh : []);
+          setSlots(Array.isArray(fresh.slots) ? fresh.slots : []);
+          setActiveBooking(fresh.activeBooking ?? null);
         }
         return;
       }
@@ -85,6 +89,35 @@ export default function BookingForm() {
       setLoading(false);
     }
   };
+
+  if (activeBooking) {
+    const STATUS_COLOR: Record<string, string> = { pending: "#f0c040", confirmed: "#00ff88" };
+    const color = STATUS_COLOR[activeBooking.status] ?? "#f0c040";
+    return (
+      <div style={{ padding: "28px", borderRadius: 20, background: "#111", border: `1px solid ${color}30` }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+          <Clock size={18} style={{ color }} />
+          <p style={{ color: "#f5f5f5", fontWeight: 700, fontSize: 16, margin: 0 }}>You Have an Active Booking</p>
+        </div>
+        <div style={{ padding: "14px 16px", borderRadius: 12, background: `${color}0d`, border: `1px solid ${color}25`, marginBottom: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.06em", color, background: `${color}18`, padding: "2px 8px", borderRadius: 5 }}>
+              {activeBooking.status}
+            </span>
+            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontWeight: 600, textTransform: "uppercase" as const }}>
+              {activeBooking.call_type === "intro" ? "Intro Call" : "Trade Review"}
+            </span>
+          </div>
+          <p style={{ color: "#f5f5f5", fontSize: 14, margin: 0 }}>{activeBooking.preferred_time}</p>
+        </div>
+        <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, margin: 0, lineHeight: 1.6 }}>
+          {activeBooking.status === "pending"
+            ? "Your request is pending — Coach Floor will confirm within 24 hours. You can book a new slot once this is completed or cancelled."
+            : "You have a confirmed call coming up. Once it's completed you'll be able to book again."}
+        </p>
+      </div>
+    );
+  }
 
   if (submitted) {
     return (
