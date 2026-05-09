@@ -141,19 +141,6 @@ export default async function CurriculumPage() {
                         <span style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, fontWeight: 600, letterSpacing: "0.08em" }}>
                           MODULE {String(modIndex + 1).padStart(2, "0")}
                         </span>
-                        {mod.tier && (
-                          <span style={{
-                            fontSize: 9, fontWeight: 700,
-                            color: tierColor,
-                            background: `${tierColor}18`,
-                            border: `1px solid ${tierColor}40`,
-                            padding: "2px 7px", borderRadius: 4,
-                            textTransform: "uppercase" as const,
-                            letterSpacing: "0.07em",
-                          }}>
-                            {TIER_LABELS[mod.tier]}+
-                          </span>
-                        )}
                         {!mod.canAccess && (
                           <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "rgba(255,255,255,0.25)" }}>
                             <Lock size={10} /> Locked
