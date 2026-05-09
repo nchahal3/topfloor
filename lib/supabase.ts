@@ -18,6 +18,7 @@ export type SessionRow = {
   is_recurring: boolean;
   scheduled_for: string | null;
   discord_link: string;
+  duration_minutes: number;
   created_at: string;
   updated_at: string;
 };

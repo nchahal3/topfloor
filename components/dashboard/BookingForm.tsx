@@ -188,7 +188,7 @@ export default function BookingForm() {
 
         {/* Date picker */}
         <div>
-          <label style={labelStyle}>Pick a Date</label>
+          <label style={labelStyle}>Pick a Date <span style={{ color: "rgba(255,255,255,0.25)", fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>— all times EST</span></label>
           {slotsLoading ? (
             <div style={{ padding: "20px", textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: 13 }}>
               Loading available dates...

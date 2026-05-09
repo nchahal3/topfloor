@@ -62,16 +62,18 @@ export async function POST(request: Request) {
   // Fetch sessions that could conflict on this date
   const { data: sessions } = await supabaseAdmin
     .from("sessions")
-    .select("time_est, is_recurring, day, scheduled_for");
+    .select("time_est, duration_minutes, is_recurring, day, scheduled_for");
 
-  const conflictTimes = new Set(
-    (sessions ?? [])
-      .filter((s) =>
-        (s.is_recurring && s.day === dayName) ||
-        (!s.is_recurring && s.scheduled_for === body.date)
-      )
-      .map((s: { time_est: string }) => s.time_est)
-  );
+  // Build blocked minute ranges from sessions
+  const blockedRanges = (sessions ?? [])
+    .filter((s) =>
+      (s.is_recurring && s.day === dayName) ||
+      (!s.is_recurring && s.scheduled_for === body.date)
+    )
+    .map((s: { time_est: string; duration_minutes: number }) => ({
+      start: timeToMinutes(s.time_est),
+      end: timeToMinutes(s.time_est) + (s.duration_minutes ?? 60),
+    }));
 
   // Generate slot times from start to end
   const startMin = timeToMinutes(body.start_time);
@@ -82,7 +84,8 @@ export async function POST(request: Request) {
 
   for (let t = startMin; t + duration <= endMin; t += duration) {
     const timeStr = minutesToTime(t);
-    if (conflictTimes.has(timeStr)) {
+    const overlaps = blockedRanges.some((r) => t < r.end && t + duration > r.start);
+    if (overlaps) {
       skipped.push({ time_est: timeStr, reason: "session_conflict" });
     } else {
       toCreate.push({ date: body.date, time_est: timeStr, duration_minutes: duration, call_type: callType, is_booked: false });

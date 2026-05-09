@@ -87,7 +87,7 @@ export default async function UpcomingClassesPage() {
                 )}
                 <div style={{ display: "flex", alignItems: "center", gap: 4, color: "rgba(255,255,255,0.3)" }}>
                   <Clock size={12} />
-                  <span style={{ fontSize: 12 }}>{cls.time_est}</span>
+                  <span style={{ fontSize: 12 }}>{cls.time_est} <span style={{ color: "rgba(255,255,255,0.25)", fontSize: 11 }}>EST</span></span>
                 </div>
               </div>
 
