@@ -149,12 +149,14 @@ function AvailabilityPanel() {
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [newDate, setNewDate] = useState("");
-  const [newTime, setNewTime] = useState("9:00 AM");
+  const [newStartTime, setNewStartTime] = useState("9:00 AM");
+  const [newEndTime, setNewEndTime] = useState("1:00 PM");
   const [newDuration, setNewDuration] = useState(30);
   const [newCallType, setNewCallType] = useState("any");
   const [adding, setAdding] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [addResult, setAddResult] = useState<{ created: number; skipped: number } | null>(null);
 
   const fetch$ = async () => {
     setLoading(true);
@@ -167,14 +169,17 @@ function AvailabilityPanel() {
   useEffect(() => { fetch$(); }, []);
 
   const handleAdd = async () => {
-    if (!newDate || !newTime) return;
+    if (!newDate || !newStartTime || !newEndTime) return;
     setAdding(true);
-    await fetch("/api/admin/availability", {
+    setAddResult(null);
+    const res = await fetch("/api/admin/availability", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ date: newDate, time_est: newTime, duration_minutes: newDuration, call_type: newCallType }),
+      body: JSON.stringify({ date: newDate, start_time: newStartTime, end_time: newEndTime, duration_minutes: newDuration, call_type: newCallType }),
     });
+    const data = await res.json();
     await fetch$();
+    setAddResult({ created: data.created?.length ?? 0, skipped: data.skipped?.length ?? 0 });
     setNewDate("");
     setShowForm(false);
     setAdding(false);
@@ -209,34 +214,49 @@ function AvailabilityPanel() {
         <div>
           <h3 style={{ color: "#f5f5f5", fontSize: 15, fontWeight: 700, margin: 0 }}>Available Time Slots</h3>
           <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, margin: "3px 0 0" }}>
-            Members pick from these slots when booking a call
+            Set your availability window — slots are auto-generated and session conflicts are skipped
           </p>
         </div>
         <button
           type="button"
-          onClick={() => setShowForm((v) => !v)}
+          onClick={() => { setShowForm((v) => !v); setAddResult(null); }}
           style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 8, background: "rgba(0,255,136,0.08)", border: "1px solid rgba(0,255,136,0.25)", color: "#00ff88", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
         >
-          <CalendarPlus size={14} /> Add Slot
+          <CalendarPlus size={14} /> Add Availability
         </button>
       </div>
 
+      {addResult && (
+        <div style={{ marginBottom: 14, padding: "10px 14px", borderRadius: 10, background: addResult.created > 0 ? "rgba(0,255,136,0.07)" : "rgba(255,68,68,0.07)", border: `1px solid ${addResult.created > 0 ? "rgba(0,255,136,0.2)" : "rgba(255,68,68,0.2)"}` }}>
+          <p style={{ margin: 0, fontSize: 13, color: addResult.created > 0 ? "#00ff88" : "#ff6666" }}>
+            {addResult.created > 0 ? `✓ ${addResult.created} slot${addResult.created !== 1 ? "s" : ""} added` : "No slots added"}
+            {addResult.skipped > 0 && <span style={{ color: "rgba(255,255,255,0.4)", marginLeft: 8 }}>· {addResult.skipped} skipped (session conflict)</span>}
+          </p>
+        </div>
+      )}
+
       {showForm && (
         <div style={{ marginBottom: 16, padding: "16px", borderRadius: 12, background: "#0f0f0f", border: "1px solid rgba(255,255,255,0.08)" }}>
-          <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 12px" }}>New Slot</p>
+          <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 12px" }}>New Availability Block</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10 }}>
             <div>
               <label style={{ display: "block", color: "rgba(255,255,255,0.35)", fontSize: 11, fontWeight: 600, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>Date</label>
               <CalendarPicker value={newDate} onChange={setNewDate} />
             </div>
             <div>
-              <label style={{ display: "block", color: "rgba(255,255,255,0.35)", fontSize: 11, fontWeight: 600, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>Time (EST)</label>
-              <select value={newTime} onChange={(e) => setNewTime(e.target.value)} style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }}>
+              <label style={{ display: "block", color: "rgba(255,255,255,0.35)", fontSize: 11, fontWeight: 600, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>From (EST)</label>
+              <select value={newStartTime} onChange={(e) => setNewStartTime(e.target.value)} style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }}>
                 {TIMES.map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
             <div>
-              <label style={{ display: "block", color: "rgba(255,255,255,0.35)", fontSize: 11, fontWeight: 600, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>Duration</label>
+              <label style={{ display: "block", color: "rgba(255,255,255,0.35)", fontSize: 11, fontWeight: 600, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>To (EST)</label>
+              <select value={newEndTime} onChange={(e) => setNewEndTime(e.target.value)} style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }}>
+                {TIMES.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={{ display: "block", color: "rgba(255,255,255,0.35)", fontSize: 11, fontWeight: 600, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>Slot Length</label>
               <select value={newDuration} onChange={(e) => setNewDuration(Number(e.target.value))} style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }}>
                 <option value={15}>15 min</option>
                 <option value={30}>30 min</option>
@@ -253,6 +273,9 @@ function AvailabilityPanel() {
               </select>
             </div>
           </div>
+          <p style={{ color: "rgba(255,255,255,0.25)", fontSize: 11, margin: "10px 0 0" }}>
+            Slots are generated every {newDuration} min between {newStartTime} – {newEndTime}. Times that overlap with scheduled sessions are automatically skipped.
+          </p>
           <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
             <button
               type="button"
@@ -260,7 +283,7 @@ function AvailabilityPanel() {
               disabled={adding || !newDate}
               style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 8, background: "#00ff88", color: "#000", fontWeight: 700, fontSize: 13, border: "none", cursor: adding || !newDate ? "not-allowed" : "pointer", opacity: adding || !newDate ? 0.5 : 1 }}
             >
-              <Plus size={13} /> {adding ? "Adding..." : "Add Slot"}
+              <Plus size={13} /> {adding ? "Generating..." : "Generate Slots"}
             </button>
             <button type="button" onClick={() => setShowForm(false)} style={{ padding: "8px 14px", borderRadius: 8, background: "transparent", color: "rgba(255,255,255,0.35)", fontSize: 13, border: "1px solid rgba(255,255,255,0.08)", cursor: "pointer" }}>Cancel</button>
           </div>
