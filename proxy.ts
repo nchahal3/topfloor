@@ -1,20 +1,21 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-
-const isWebhookRoute = (pathname: string) =>
-  pathname.startsWith("/api/webhook") || pathname.startsWith("/api/clerk-webhook");
+import type { NextRequest, NextFetchEvent } from "next/server";
 
 const isProtectedRoute = createRouteMatcher(["/dashboard(.*)", "/admin(.*)"]);
 
-export default function middleware(req: NextRequest) {
-  // Bypass Clerk entirely for webhook routes — they use their own signature verification
-  if (isWebhookRoute(req.nextUrl.pathname)) {
+const clerkHandler = clerkMiddleware(async (auth, request) => {
+  if (isProtectedRoute(request)) await auth.protect();
+});
+
+export default function middleware(req: NextRequest, event: NextFetchEvent) {
+  if (
+    req.nextUrl.pathname.startsWith("/api/webhook") ||
+    req.nextUrl.pathname.startsWith("/api/clerk-webhook")
+  ) {
     return NextResponse.next();
   }
-  return clerkMiddleware(async (auth, request) => {
-    if (isProtectedRoute(request)) await auth.protect();
-  })(req as never, new Response() as never);
+  return clerkHandler(req, event);
 }
 
 export const config = {
