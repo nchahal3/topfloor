@@ -13,10 +13,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   const { id } = await params;
   const body = await request.json() as { status?: string; zoom_link?: string; scheduled_at?: string; admin_notes?: string };
 
-  // Fetch current booking to detect status change
+  // Fetch current booking to detect status change and get slot reference
   const { data: existing } = await supabaseAdmin
     .from("bookings")
-    .select("status, member_email, member_name, preferred_time, call_type, zoom_link")
+    .select("status, member_email, member_name, preferred_time, call_type, zoom_link, slot_id")
     .eq("id", id)
     .single();
 
@@ -28,6 +28,14 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Free the slot when admin cancels
+  if (existing && body.status === "cancelled" && existing.status !== "cancelled" && existing.slot_id) {
+    await supabaseAdmin
+      .from("availability_slots")
+      .update({ is_booked: false, booking_id: null })
+      .eq("id", existing.slot_id);
+  }
 
   // Send email if status changed
   if (existing && body.status && body.status !== existing.status) {

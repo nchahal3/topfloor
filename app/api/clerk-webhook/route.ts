@@ -49,7 +49,7 @@ export async function POST(request: Request) {
   const baseUrl = process.env.NEXT_PUBLIC_URL ?? "http://localhost:3000";
 
   await resend.emails.send({
-    from: "onboarding@resend.dev",
+    from: "noreply@topfloortradesofficial.com",
     to: email,
     subject: "Welcome to 🔝Floor — Your account is ready",
     html: `

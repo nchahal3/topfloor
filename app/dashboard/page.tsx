@@ -5,11 +5,11 @@ import type { Tier } from "@/lib/tier";
 import { TIER_LABELS, TIER_COLORS } from "@/lib/tier";
 
 const FEATURE_CARDS = [
-  { label: "Funded Accounts", desc: "Promo codes for Alpha Futures, Lucid & more", href: "/dashboard/funded-accounts", icon: TrendingUp, free: true },
-  { label: "Curriculum", desc: "Coach Floor's full trading breakdown sessions", href: "/dashboard/curriculum", icon: BookOpen, free: false },
-  { label: "Achievements", desc: "Upload your certificates & payout requests", href: "/dashboard/achievements", icon: Trophy, free: true },
-  { label: "Book a Call", desc: "Schedule a 1-on-1 coaching or trade review", href: "/dashboard/book-a-call", icon: Calendar, free: true },
-  { label: "Upcoming Classes", desc: "Live trading sessions & class schedule", href: "/dashboard/upcoming-classes", icon: Video, free: false },
+  { label: "Funded Accounts", desc: "Promo codes for Alpha Futures, Lucid & more", href: "/dashboard/funded-accounts", icon: TrendingUp, free: true, comingSoon: false },
+  { label: "Curriculum", desc: "Coach Floor's full trading breakdown sessions", href: "/dashboard/curriculum", icon: BookOpen, free: false, comingSoon: false },
+  { label: "Achievements", desc: "Upload your certificates & payout requests", href: "/dashboard/achievements", icon: Trophy, free: true, comingSoon: true },
+  { label: "Book a Call", desc: "Schedule a 1-on-1 coaching or trade review", href: "/dashboard/book-a-call", icon: Calendar, free: true, comingSoon: false },
+  { label: "Upcoming Classes", desc: "Live trading sessions & class schedule", href: "/dashboard/upcoming-classes", icon: Video, free: false, comingSoon: false },
 ];
 
 export default async function DashboardPage() {
@@ -98,7 +98,7 @@ export default async function DashboardPage() {
           return (
             <Link
               key={card.href}
-              href={card.href}
+              href={card.comingSoon ? "#" : card.href}
               style={{
                 display: "block",
                 padding: "20px",
@@ -106,9 +106,10 @@ export default async function DashboardPage() {
                 background: "#111",
                 border: `1px solid ${locked ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.07)"}`,
                 textDecoration: "none",
-                opacity: locked ? 0.55 : 1,
+                opacity: locked || card.comingSoon ? 0.55 : 1,
                 transition: "border-color 0.2s",
                 gridColumn: isLastOdd ? "1 / -1" : undefined,
+                pointerEvents: card.comingSoon ? "none" : "auto",
               }}
             >
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
@@ -125,7 +126,11 @@ export default async function DashboardPage() {
                 >
                   <Icon size={18} style={{ color: locked ? "rgba(255,255,255,0.2)" : "#00ff88" }} />
                 </div>
-                {card.free ? (
+                {card.comingSoon ? (
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", background: "rgba(255,255,255,0.06)", padding: "2px 8px", borderRadius: 4, letterSpacing: "0.06em" }}>
+                    SOON
+                  </span>
+                ) : card.free ? (
                   <span style={{ fontSize: 10, fontWeight: 700, color: "#00ff88", background: "rgba(0,255,136,0.1)", padding: "2px 8px", borderRadius: 4, letterSpacing: "0.06em" }}>
                     FREE
                   </span>
@@ -137,8 +142,8 @@ export default async function DashboardPage() {
               </div>
               <p style={{ color: locked ? "rgba(255,255,255,0.4)" : "#f5f5f5", fontWeight: 600, fontSize: 15, margin: "0 0 6px" }}>{card.label}</p>
               <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 13, margin: 0, lineHeight: 1.5 }}>{card.desc}</p>
-              <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 14, color: locked ? "rgba(255,255,255,0.18)" : "#00ff88" }}>
-                <span style={{ fontSize: 12, fontWeight: 600 }}>{locked ? "Upgrade to unlock" : "Open"}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 14, color: card.comingSoon ? "rgba(255,255,255,0.2)" : locked ? "rgba(255,255,255,0.18)" : "#00ff88" }}>
+                <span style={{ fontSize: 12, fontWeight: 600 }}>{card.comingSoon ? "Coming soon" : locked ? "Upgrade to unlock" : "Open"}</span>
                 <ArrowRight size={12} />
               </div>
             </Link>

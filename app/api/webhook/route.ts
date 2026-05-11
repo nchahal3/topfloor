@@ -5,6 +5,9 @@ import { NextResponse } from "next/server";
 import type { Tier } from "@/lib/tier";
 import { PRICE_TIER } from "@/lib/tier";
 
+const FROM_EMAIL = "noreply@topfloortradesofficial.com";
+const DISCORD_INVITE = "https://discord.gg/kxnfaPNC";
+
 const PLAN_NAMES: Record<string, string> = {
   price_1TRIBdRxClGX2uTFE404PcWF: "Bronze ($200/mo)",
   price_1TPYX3RxClGX2uTFzwnMHkP2: "Silver ($500/mo)",
@@ -12,24 +15,27 @@ const PLAN_NAMES: Record<string, string> = {
   price_1TPYYGRxClGX2uTF7o1v901o: "Elite Lifetime ($2,000)",
 };
 
-const DISCORD_INVITE = "https://discord.gg/kxnfaPNC";
-
 export async function POST(request: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const token = new URL(request.url).searchParams.get("token");
-  if (token !== process.env.WEBHOOK_TOKEN) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   const body = await request.text();
-  let event: Stripe.Event;
+  const signature = request.headers.get("stripe-signature");
 
+  if (!signature) {
+    return NextResponse.json({ error: "Missing stripe-signature header" }, { status: 400 });
+  }
+
+  let event: Stripe.Event;
   try {
-    event = JSON.parse(body) as Stripe.Event;
+    event = stripe.webhooks.constructEvent(
+      body,
+      signature,
+      process.env.STRIPE_WEBHOOK_ENDPOINT_SECRET!,
+    );
   } catch (err) {
-    console.error("Failed to parse webhook body:", err);
-    return NextResponse.json({ error: "Invalid body" }, { status: 400 });
+    console.error("Webhook signature verification failed:", err);
+    return NextResponse.json({ error: "Invalid webhook signature" }, { status: 400 });
   }
 
   if (
@@ -40,9 +46,9 @@ export async function POST(request: Request) {
     const customerEmail = session.customer_details?.email ?? "Unknown";
     const customerName = session.customer_details?.name ?? "New Member";
     const customerPhone = session.customer_details?.phone ?? "Not provided";
-    const discordUsername = session.custom_fields?.find((f) => f.key === "discord_username")?.text?.value ?? "Not provided";
+    const discordUsername =
+      session.custom_fields?.find((f) => f.key === "discord_username")?.text?.value ?? "Not provided";
 
-    // Get plan name and tier from line items
     let planName = "🔝Floor Membership";
     let tier: Tier = null;
     try {
@@ -52,7 +58,6 @@ export async function POST(request: Request) {
       tier = PRICE_TIER[priceId] ?? null;
     } catch {}
 
-    // Update Clerk user tier if we have their userId
     const clerkUserId = session.metadata?.clerkUserId;
     if (clerkUserId && tier) {
       try {
@@ -65,9 +70,8 @@ export async function POST(request: Request) {
       }
     }
 
-    // 1. Notify coach
     await resend.emails.send({
-      from: "onboarding@resend.dev",
+      from: FROM_EMAIL,
       to: process.env.COACH_EMAIL!,
       subject: `💰 New 🔝Floor Member — ${customerName}`,
       html: `
@@ -84,9 +88,8 @@ export async function POST(request: Request) {
       `,
     });
 
-    // 2. Welcome email to customer
     await resend.emails.send({
-      from: "onboarding@resend.dev",
+      from: FROM_EMAIL,
       to: customerEmail,
       subject: `Welcome to 🔝Floor — You're in.`,
       html: `

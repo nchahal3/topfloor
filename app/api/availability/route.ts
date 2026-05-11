@@ -1,12 +1,12 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { sortByTimeEst } from "@/lib/time";
 
 export async function GET() {
   const today = new Date().toISOString().split("T")[0];
   const { userId } = await auth();
 
-  // If member already has a pending or confirmed booking, return no slots
   if (userId) {
     const { data: activeBookings } = await supabaseAdmin
       .from("bookings")
@@ -25,9 +25,20 @@ export async function GET() {
     .select("*")
     .eq("is_booked", false)
     .gte("date", today)
-    .order("date", { ascending: true })
-    .order("time_est", { ascending: true });
+    .order("date", { ascending: true });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ slots: data ?? [], activeBooking: null });
+
+  // Sort by date then by time (chronological, not alphabetical)
+  const slots = (data ?? []).reduce<Record<string, typeof data>>((acc, slot) => {
+    if (!acc[slot.date]) acc[slot.date] = [];
+    acc[slot.date]!.push(slot);
+    return acc;
+  }, {});
+
+  const sorted = Object.keys(slots)
+    .sort()
+    .flatMap((date) => sortByTimeEst(slots[date]!));
+
+  return NextResponse.json({ slots: sorted, activeBooking: null });
 }

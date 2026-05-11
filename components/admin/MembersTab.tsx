@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { X, CalendarDays, AlertTriangle, TrendingUp, Users, DollarSign } from "lucide-react";
+import { X, CalendarDays, AlertTriangle, TrendingUp, Users, DollarSign, ChevronLeft, ChevronRight } from "lucide-react";
 import BookingsTab from "./BookingsTab";
+import { useToast } from "@/lib/toast-context";
+
+const ITEMS_PER_PAGE = 25;
 
 export type Member = {
   id: string;
@@ -63,12 +66,14 @@ export default function MembersTab({ members }: { members: Member[] }) {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [filter, setFilter] = useState("all");
   const [planFilter, setPlanFilter] = useState("all");
-  const [cancelConfirm, setCancelConfirm] = useState(0); // 0=hidden 1=first 2=final
+  const [page, setPage] = useState(0);
+  const [cancelConfirm, setCancelConfirm] = useState(0);
   const [cancelling, setCancelling] = useState(false);
   const [cancelledIds, setCancelledIds] = useState<Set<string>>(new Set());
-  const [deleteConfirm, setDeleteConfirm] = useState(0); // 0=hidden 1=first 2=final
+  const [deleteConfirm, setDeleteConfirm] = useState(0);
   const [deleting, setDeleting] = useState(false);
   const [deletedEmails, setDeletedEmails] = useState<Set<string>>(new Set());
+  const { toast } = useToast();
 
   const planOptions = ["all", ...Array.from(new Set(members.map((m) => m.plan))).sort()];
 
@@ -79,6 +84,12 @@ export default function MembersTab({ members }: { members: Member[] }) {
     return statusMatch && planMatch;
   });
 
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated = filtered.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
+
+  const changeFilter = (next: string) => { setFilter(next); setPage(0); };
+  const changePlanFilter = (next: string) => { setPlanFilter(next); setPage(0); };
+
   const activeSubs = members.filter((m) => m.status === "active" || m.status === "paid");
   const freeCount = members.filter((m) => m.status === "free").length;
   const mrr = activeSubs.reduce((sum, m) => sum + parseMRR(m.plan), 0);
@@ -86,29 +97,49 @@ export default function MembersTab({ members }: { members: Member[] }) {
 
   const handleDelete = async (member: Member) => {
     setDeleting(true);
-    await fetch("/api/admin/users", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: member.email }),
-    });
-    setDeletedEmails((prev) => new Set([...prev, member.email]));
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: member.email }),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        toast(d.error ?? "Failed to delete user.", "error");
+      } else {
+        setDeletedEmails((prev) => new Set([...prev, member.email]));
+        setSelectedMember(null);
+        toast(`${member.name} has been deleted.`);
+      }
+    } catch {
+      toast("Something went wrong. Please try again.", "error");
+    }
     setDeleteConfirm(0);
     setDeleting(false);
-    setSelectedMember(null);
   };
 
   const handleCancel = async (member: Member) => {
     if (!member.subscriptionId) return;
     setCancelling(true);
-    await fetch(`/api/admin/members/${member.subscriptionId}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "cancel", clerkUserId: member.id }),
-    });
-    setCancelledIds((prev) => new Set([...prev, member.id]));
+    try {
+      const res = await fetch(`/api/admin/members/${member.subscriptionId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "cancel", clerkUserId: member.id }),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        toast(d.error ?? "Failed to cancel subscription.", "error");
+      } else {
+        setCancelledIds((prev) => new Set([...prev, member.id]));
+        setSelectedMember((prev) => prev ? { ...prev, status: "canceled" } : null);
+        toast(`${member.name}'s subscription cancelled.`);
+      }
+    } catch {
+      toast("Something went wrong. Please try again.", "error");
+    }
     setCancelConfirm(0);
     setCancelling(false);
-    setSelectedMember((prev) => prev ? { ...prev, status: "canceled" } : null);
   };
 
   const statCard = (icon: React.ReactNode, label: string, value: string | number, color: string) => (
@@ -136,7 +167,7 @@ export default function MembersTab({ members }: { members: Member[] }) {
           <select
             aria-label="Filter by plan"
             value={planFilter}
-            onChange={(e) => setPlanFilter(e.target.value)}
+            onChange={(e) => changePlanFilter(e.target.value)}
             style={{ padding: "6px 10px", borderRadius: 8, background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.1)", color: planFilter === "all" ? "rgba(255,255,255,0.4)" : "#f0c040", fontSize: 12, fontWeight: 600, outline: "none", cursor: "pointer" }}
           >
             {planOptions.map((p) => (
@@ -155,7 +186,7 @@ export default function MembersTab({ members }: { members: Member[] }) {
             <button
               key={tab}
               type="button"
-              onClick={() => setFilter(tab)}
+              onClick={() => changeFilter(tab)}
               style={{
                 padding: "5px 12px", borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: "pointer",
                 textTransform: "capitalize",
@@ -182,7 +213,7 @@ export default function MembersTab({ members }: { members: Member[] }) {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((m, i) => {
+            {paginated.map((m, i) => {
               const isCancelled = cancelledIds.has(m.id);
               const displayStatus = isCancelled ? "canceled" : m.status;
               const ss = STATUS_STYLE[displayStatus] ?? STATUS_STYLE.active;
@@ -220,6 +251,37 @@ export default function MembersTab({ members }: { members: Member[] }) {
           <p style={{ textAlign: "center", color: "rgba(255,255,255,0.25)", padding: "60px 0" }}>No members in this category.</p>
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 14, padding: "0 4px" }}>
+          <span style={{ color: "rgba(255,255,255,0.3)", fontSize: 12 }}>
+            {page * ITEMS_PER_PAGE + 1}–{Math.min((page + 1) * ITEMS_PER_PAGE, filtered.length)} of {filtered.length}
+          </span>
+          <div style={{ display: "flex", gap: 6 }}>
+            <button
+              type="button"
+              aria-label="Previous page"
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0}
+              style={{ display: "flex", alignItems: "center", padding: "5px 10px", borderRadius: 7, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)", cursor: page === 0 ? "not-allowed" : "pointer", opacity: page === 0 ? 0.4 : 1 }}
+            >
+              <ChevronLeft size={14} />
+            </button>
+            <span style={{ display: "flex", alignItems: "center", padding: "5px 12px", color: "rgba(255,255,255,0.5)", fontSize: 12, fontWeight: 600 }}>
+              {page + 1} / {totalPages}
+            </span>
+            <button
+              type="button"
+              aria-label="Next page"
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={page >= totalPages - 1}
+              style={{ display: "flex", alignItems: "center", padding: "5px 10px", borderRadius: 7, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)", cursor: page >= totalPages - 1 ? "not-allowed" : "pointer", opacity: page >= totalPages - 1 ? 0.4 : 1 }}
+            >
+              <ChevronRight size={14} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Slide-out panel */}
       {selectedMember && (

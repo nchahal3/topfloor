@@ -32,8 +32,9 @@ export default function BookingForm() {
   const [selectedSlot, setSelectedSlot] = useState<AvailabilitySlot | null>(null);
   const [dateOffset, setDateOffset] = useState(0);
 
-  useEffect(() => {
-    fetch("/api/availability")
+  const fetchAvailability = () => {
+    setSlotsLoading(true);
+    return fetch("/api/availability")
       .then((r) => r.json())
       .then((data) => {
         setSlots(Array.isArray(data.slots) ? data.slots : []);
@@ -41,7 +42,9 @@ export default function BookingForm() {
         setSlotsLoading(false);
       })
       .catch(() => setSlotsLoading(false));
-  }, []);
+  };
+
+  useEffect(() => { fetchAvailability(); }, []);
 
   const slotsByDate: SlotsByDate = slots.reduce((acc, slot) => {
     if (!acc[slot.date]) acc[slot.date] = [];
@@ -76,13 +79,13 @@ export default function BookingForm() {
         if (res.status === 409) {
           setSelectedSlot(null);
           setSelectedDate(null);
-          const fresh = await fetch("/api/availability").then((r) => r.json());
-          setSlots(Array.isArray(fresh.slots) ? fresh.slots : []);
-          setActiveBooking(fresh.activeBooking ?? null);
+          await fetchAvailability();
         }
         return;
       }
       setSubmitted(true);
+      // Notify MyBookings to refresh
+      window.dispatchEvent(new CustomEvent("topfloor:booking-created"));
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -131,7 +134,13 @@ export default function BookingForm() {
         </p>
         <button
           type="button"
-          onClick={() => { setSubmitted(false); setSelectedSlot(null); setSelectedDate(null); setTopic(""); }}
+          onClick={() => {
+            setSubmitted(false);
+            setSelectedSlot(null);
+            setSelectedDate(null);
+            setTopic("");
+            fetchAvailability();
+          }}
           style={{ marginTop: 20, background: "none", border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.5)", padding: "8px 20px", borderRadius: 999, fontSize: 13, cursor: "pointer" }}
         >
           Book Another

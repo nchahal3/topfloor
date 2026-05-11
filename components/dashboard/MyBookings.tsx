@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ExternalLink, Clock, X, AlertTriangle } from "lucide-react";
 import type { BookingRow } from "@/lib/supabase";
+import { useToast } from "@/lib/toast-context";
 
 const STATUS_STYLES: Record<string, { bg: string; color: string; label: string }> = {
   pending:   { bg: "rgba(240,192,64,0.12)",  color: "#f0c040",  label: "Pending" },
@@ -17,6 +18,7 @@ export default function MyBookings() {
   const [cancelling, setCancelling] = useState<string | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
+  const { toast } = useToast();
 
   const load = () =>
     fetch("/api/bookings")
@@ -24,12 +26,27 @@ export default function MyBookings() {
       .then((d) => { setBookings(Array.isArray(d) ? d : []); setLoading(false); })
       .catch(() => setLoading(false));
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    const onBookingCreated = () => load();
+    window.addEventListener("topfloor:booking-created", onBookingCreated);
+    return () => window.removeEventListener("topfloor:booking-created", onBookingCreated);
+  }, []);
 
   const handleCancelConfirm = async (id: string) => {
     setCancelling(id);
     setConfirmId(null);
-    await fetch(`/api/bookings/${id}`, { method: "PATCH" });
+    try {
+      const res = await fetch(`/api/bookings/${id}`, { method: "PATCH" });
+      if (!res.ok) {
+        const d = await res.json();
+        toast(d.error ?? "Failed to cancel booking.", "error");
+      } else {
+        toast("Booking cancelled.");
+      }
+    } catch {
+      toast("Something went wrong. Please try again.", "error");
+    }
     await load();
     setCancelling(null);
   };

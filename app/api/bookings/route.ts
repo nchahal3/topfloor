@@ -31,30 +31,50 @@ export async function POST(request: Request) {
     slot_id?: string;
   };
 
-  if (!preferred_time) return NextResponse.json({ error: "Preferred time is required" }, { status: 400 });
+  if (!preferred_time) {
+    return NextResponse.json({ error: "Preferred time is required" }, { status: 400 });
+  }
 
-  // If slot provided, verify it's still available and get datetime
+  if (!["intro", "trade_review"].includes(call_type)) {
+    return NextResponse.json({ error: "Invalid call type" }, { status: 400 });
+  }
+
+  // Server-side tier check: Trade Review requires an active subscription
+  if (call_type === "trade_review") {
+    const tier = user?.publicMetadata?.tier;
+    if (!tier) {
+      return NextResponse.json(
+        { error: "Trade Review sessions require an active subscription." },
+        { status: 403 },
+      );
+    }
+  }
+
   let scheduledAt: string | null = null;
+
   if (slot_id) {
-    const { data: slot } = await supabaseAdmin
+    // Atomically claim the slot — only succeeds if still available (race-condition safe)
+    const { data: claimed, error: claimError } = await supabaseAdmin
       .from("availability_slots")
-      .select("id, is_booked, date, time_est")
+      .update({ is_booked: true })
       .eq("id", slot_id)
+      .eq("is_booked", false)
+      .select("id, date, time_est")
       .single();
 
-    if (!slot || slot.is_booked) {
-      return NextResponse.json({ error: "That time slot is no longer available. Please choose another." }, { status: 409 });
+    if (claimError || !claimed) {
+      return NextResponse.json(
+        { error: "That time slot is no longer available. Please choose another." },
+        { status: 409 },
+      );
     }
 
-    // Convert slot date + time_est to ISO datetime for scheduled_at
-    if (slot.date && slot.time_est) {
-      const [timePart, period] = (slot.time_est as string).split(" ");
-      const [h, m] = timePart.split(":").map(Number);
-      let hours = h;
-      if (period === "PM" && h !== 12) hours += 12;
-      if (period === "AM" && h === 12) hours = 0;
-      scheduledAt = `${slot.date}T${String(hours).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-    }
+    const [timePart, period] = (claimed.time_est as string).split(" ");
+    const [h, m] = timePart.split(":").map(Number);
+    let hours = h;
+    if (period === "PM" && h !== 12) hours += 12;
+    if (period === "AM" && h === 12) hours = 0;
+    scheduledAt = `${claimed.date}T${String(hours).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   }
 
   const { data, error } = await supabaseAdmin
@@ -73,13 +93,22 @@ export async function POST(request: Request) {
     .select()
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    // Release the slot if booking insert failed
+    if (slot_id) {
+      await supabaseAdmin
+        .from("availability_slots")
+        .update({ is_booked: false })
+        .eq("id", slot_id);
+    }
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
-  // Mark slot as booked
+  // Link the slot back to this booking
   if (slot_id && data) {
     await supabaseAdmin
       .from("availability_slots")
-      .update({ is_booked: true, booking_id: data.id })
+      .update({ booking_id: data.id })
       .eq("id", slot_id);
   }
 

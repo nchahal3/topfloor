@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, X, Check } from "lucide-react";
 import type { SessionRow } from "@/lib/supabase";
+import { datetimeLocalToTimeEst } from "@/lib/time";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const DAY_ORDER: Record<string, number> = { Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6, Sunday: 7 };
@@ -20,7 +21,7 @@ const TYPE_COLORS: Record<string, string> = {
 const BLANK_FORM = {
   day: "Monday", time_est: "", title: "", description: "", type: "Live",
   requires_tier: "", is_active: true, is_recurring: true, scheduled_for: "",
-  discord_link: "https://discord.gg/kxnfaPNC",
+  discord_link: "https://discord.gg/kxnfaPNC", duration_minutes: 60,
 };
 
 export default function ScheduleTab() {
@@ -49,7 +50,7 @@ export default function ScheduleTab() {
       description: s.description ?? "", type: s.type,
       requires_tier: s.requires_tier ?? "", is_active: s.is_active,
       is_recurring: s.is_recurring, scheduled_for: s.scheduled_for ?? "",
-      discord_link: s.discord_link,
+      discord_link: s.discord_link, duration_minutes: s.duration_minutes ?? 60,
     });
     setEditId(s.id);
     setShowForm(true);
@@ -62,6 +63,7 @@ export default function ScheduleTab() {
       day_order: form.is_recurring ? (DAY_ORDER[form.day] ?? 0) : 99,
       requires_tier: form.requires_tier || null,
       scheduled_for: form.scheduled_for || null,
+      duration_minutes: form.duration_minutes || 60,
     };
     const url = editId ? `/api/admin/sessions/${editId}` : "/api/admin/sessions";
     const method = editId ? "PUT" : "POST";
@@ -138,13 +140,33 @@ export default function ScheduleTab() {
               </div>
             ) : (
               <div>
-                <label style={labelStyle}>Date & Time</label>
-                <input style={inputStyle} type="datetime-local" value={form.scheduled_for} onChange={(e) => inp("scheduled_for", e.target.value)} />
+                <label style={labelStyle}>Date (auto-fills time below)</label>
+                <input
+                  style={inputStyle}
+                  type="datetime-local"
+                  value={form.scheduled_for}
+                  onChange={(e) => {
+                    inp("scheduled_for", e.target.value);
+                    const derived = datetimeLocalToTimeEst(e.target.value);
+                    if (derived) inp("time_est", derived);
+                  }}
+                />
               </div>
             )}
             <div>
-              <label style={labelStyle}>Time (EST)</label>
-              <input style={inputStyle} value={form.time_est} onChange={(e) => inp("time_est", e.target.value)} placeholder="9:00 AM EST" />
+              <label style={labelStyle}>Time EST</label>
+              <input style={inputStyle} value={form.time_est} onChange={(e) => inp("time_est", e.target.value)} placeholder="9:00 AM" />
+            </div>
+            <div>
+              <label style={labelStyle}>Duration (minutes)</label>
+              <input
+                style={inputStyle}
+                type="number"
+                min={15}
+                step={15}
+                value={form.duration_minutes}
+                onChange={(e) => setForm((f) => ({ ...f, duration_minutes: parseInt(e.target.value) || 60 }))}
+              />
             </div>
             <div>
               <label style={labelStyle}>Required Tier</label>

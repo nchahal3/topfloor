@@ -1,27 +1,11 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { timeToMinutes, minutesToTime, sortByTimeEst } from "@/lib/time";
 
 async function checkAdminAuth() {
   const c = await cookies();
   return c.get("admin_auth")?.value === process.env.ADMIN_PASSWORD;
-}
-
-function timeToMinutes(time: string): number {
-  const [timePart, period] = time.split(" ");
-  const [h, m] = timePart.split(":").map(Number);
-  let total = h * 60 + m;
-  if (period === "PM" && h !== 12) total += 720;
-  if (period === "AM" && h === 12) total -= 720;
-  return total;
-}
-
-function minutesToTime(minutes: number): string {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  const period = h >= 12 ? "PM" : "AM";
-  const display = h > 12 ? h - 12 : h === 0 ? 12 : h;
-  return `${display}:${String(m).padStart(2, "0")} ${period}`;
 }
 
 export async function GET() {
@@ -30,11 +14,22 @@ export async function GET() {
   const { data, error } = await supabaseAdmin
     .from("availability_slots")
     .select("*")
-    .order("date", { ascending: true })
-    .order("time_est", { ascending: true });
+    .order("date", { ascending: true });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data ?? []);
+
+  // Sort each day's slots chronologically
+  const byDate = (data ?? []).reduce<Record<string, typeof data>>((acc, slot) => {
+    if (!acc[slot.date]) acc[slot.date] = [];
+    acc[slot.date]!.push(slot);
+    return acc;
+  }, {});
+
+  const sorted = Object.keys(byDate)
+    .sort()
+    .flatMap((date) => sortByTimeEst(byDate[date]!));
+
+  return NextResponse.json(sorted);
 }
 
 export async function POST(request: Request) {
@@ -55,7 +50,6 @@ export async function POST(request: Request) {
   const duration = body.duration_minutes ?? 30;
   const callType = body.call_type ?? "any";
 
-  // Derive day name for recurring session conflict check
   const dateObj = new Date(body.date + "T12:00:00");
   const dayName = dateObj.toLocaleDateString("en-US", { weekday: "long" });
 
@@ -64,18 +58,24 @@ export async function POST(request: Request) {
     .from("sessions")
     .select("time_est, duration_minutes, is_recurring, day, scheduled_for");
 
-  // Build blocked minute ranges from sessions
   const blockedRanges = (sessions ?? [])
     .filter((s) =>
       (s.is_recurring && s.day === dayName) ||
-      (!s.is_recurring && s.scheduled_for === body.date)
+      (!s.is_recurring && s.scheduled_for === body.date),
     )
     .map((s: { time_est: string; duration_minutes: number }) => ({
       start: timeToMinutes(s.time_est),
       end: timeToMinutes(s.time_est) + (s.duration_minutes ?? 60),
     }));
 
-  // Generate slot times from start to end
+  // Fetch existing slots for this date to prevent duplicates
+  const { data: existingSlots } = await supabaseAdmin
+    .from("availability_slots")
+    .select("time_est")
+    .eq("date", body.date);
+
+  const existingTimes = new Set((existingSlots ?? []).map((s: { time_est: string }) => s.time_est));
+
   const startMin = timeToMinutes(body.start_time);
   const endMin = timeToMinutes(body.end_time);
 
@@ -84,8 +84,10 @@ export async function POST(request: Request) {
 
   for (let t = startMin; t + duration <= endMin; t += duration) {
     const timeStr = minutesToTime(t);
-    const overlaps = blockedRanges.some((r) => t < r.end && t + duration > r.start);
-    if (overlaps) {
+
+    if (existingTimes.has(timeStr)) {
+      skipped.push({ time_est: timeStr, reason: "already_exists" });
+    } else if (blockedRanges.some((r) => t < r.end && t + duration > r.start)) {
       skipped.push({ time_est: timeStr, reason: "session_conflict" });
     } else {
       toCreate.push({ date: body.date, time_est: timeStr, duration_minutes: duration, call_type: callType, is_booked: false });
