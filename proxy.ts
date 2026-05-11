@@ -1,27 +1,25 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-const isPublicRoute = createRouteMatcher([
-  "/",
-  "/sign-in(.*)",
-  "/sign-up(.*)",
-  "/pricing(.*)",
-  "/contact(.*)",
-  "/api/webhook(.*)",
-  "/api/clerk-webhook(.*)",
-  "/api/contact(.*)",
-  "/api/checkout(.*)",
-  "/api/availability(.*)",
-]);
+const isWebhookRoute = (pathname: string) =>
+  pathname.startsWith("/api/webhook") || pathname.startsWith("/api/clerk-webhook");
 
-export default clerkMiddleware(async (auth, req) => {
-  if (!isPublicRoute(req)) await auth.protect();
-});
+const isProtectedRoute = createRouteMatcher(["/dashboard(.*)", "/admin(.*)"]);
+
+export default function middleware(req: NextRequest) {
+  // Bypass Clerk entirely for webhook routes — they use their own signature verification
+  if (isWebhookRoute(req.nextUrl.pathname)) {
+    return NextResponse.next();
+  }
+  return clerkMiddleware(async (auth, request) => {
+    if (isProtectedRoute(request)) await auth.protect();
+  })(req as never, new Response() as never);
+}
 
 export const config = {
   matcher: [
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // Exclude webhook routes from Clerk middleware — they use their own signature verification
-    "/api/(?!webhook|clerk-webhook)(.*)",
-    "/(trpc)(.*)",
+    "/(api|trpc)(.*)",
   ],
 };
