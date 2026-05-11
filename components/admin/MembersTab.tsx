@@ -371,7 +371,8 @@ export default function MembersTab({ members }: { members: Member[] }) {
                 !cancelledIds.has(selectedMember.id) &&
                 selectedMember.status !== "canceled" &&
                 selectedMember.status !== "free" &&
-                (!!selectedMember.subscriptionId || selectedMember.status === "lifetime")
+                selectedMember.status !== "lifetime" &&
+                !!selectedMember.subscriptionId
               );
               return (
                 <div style={{ marginBottom: 20, padding: "14px 16px", borderRadius: 12, background: "rgba(255,68,68,0.03)", border: `1px solid ${hasActiveSub ? "rgba(255,165,0,0.2)" : "rgba(255,68,68,0.1)"}` }}>
@@ -383,7 +384,7 @@ export default function MembersTab({ members }: { members: Member[] }) {
                         Delete User
                       </button>
                       <p style={{ color: "#ffa500", fontSize: 12, margin: 0 }}>
-                        ⚠ {selectedMember.status === "lifetime" ? "Lifetime member — cancel membership first" : "Cancel their subscription first"}
+                        ⚠ Cancel their subscription first
                       </p>
                     </div>
                   ) : deleteConfirm === 0 ? (
