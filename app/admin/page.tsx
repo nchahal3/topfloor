@@ -4,6 +4,7 @@ import { clerkClient } from "@clerk/nextjs/server";
 import LoginForm from "./LoginForm";
 import AdminDashboard from "@/components/admin/AdminDashboard";
 import type { Member } from "@/components/admin/MembersTab";
+import { getAdminToken } from "@/lib/admin-auth";
 
 const PLAN_NAMES: Record<string, string> = {
   price_1TRIBdRxClGX2uTFE404PcWF: "Bronze ($200/mo)",
@@ -107,7 +108,7 @@ async function getMembers(): Promise<Member[]> {
 
 export default async function AdminPage() {
   const cookieStore = await cookies();
-  const isAuth = cookieStore.get("admin_auth")?.value === process.env.ADMIN_PASSWORD;
+  const isAuth = cookieStore.get("admin_auth")?.value === getAdminToken();
 
   if (!isAuth) return <LoginForm />;
 

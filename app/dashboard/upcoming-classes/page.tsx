@@ -43,6 +43,18 @@ export default async function UpcomingClassesPage() {
         </p>
       </div>
 
+      {!tier && classes.length > 0 && (
+        <div style={{ marginBottom: 24, padding: "16px 20px", borderRadius: 14, background: "rgba(0,255,136,0.05)", border: "1px solid rgba(0,255,136,0.2)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+          <div>
+            <p style={{ color: "#f5f5f5", fontWeight: 700, fontSize: 15, margin: "0 0 4px" }}>You&apos;re viewing the schedule as a free member</p>
+            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, margin: 0 }}>Subscribe to join live sessions starting at $200/mo.</p>
+          </div>
+          <Link href="/pricing" style={{ flexShrink: 0, padding: "10px 24px", borderRadius: 999, background: "#00ff88", color: "#000", fontWeight: 700, fontSize: 13, textDecoration: "none", whiteSpace: "nowrap" }}>
+            View Plans →
+          </Link>
+        </div>
+      )}
+
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {classes.map((cls) => {
           const unlocked = hasAccess(tier, (cls.requires_tier as Tier) ?? null);

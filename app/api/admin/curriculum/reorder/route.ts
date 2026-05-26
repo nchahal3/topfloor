@@ -1,10 +1,11 @@
+import { getAdminToken } from "@/lib/admin-auth";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 
 async function checkAdmin() {
   const c = await cookies();
-  return c.get("admin_auth")?.value === process.env.ADMIN_PASSWORD;
+  return c.get("admin_auth")?.value === getAdminToken();
 }
 
 export async function PUT(request: Request) {

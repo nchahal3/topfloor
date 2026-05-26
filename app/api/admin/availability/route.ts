@@ -1,3 +1,4 @@
+import { getAdminToken } from "@/lib/admin-auth";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
@@ -5,7 +6,7 @@ import { timeToMinutes, minutesToTime, sortByTimeEst } from "@/lib/time";
 
 async function checkAdminAuth() {
   const c = await cookies();
-  return c.get("admin_auth")?.value === process.env.ADMIN_PASSWORD;
+  return c.get("admin_auth")?.value === getAdminToken();
 }
 
 export async function GET() {

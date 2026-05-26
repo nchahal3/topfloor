@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 
 async function isAdmin() {
   const cookieStore = await cookies();
-  return cookieStore.get("admin_auth")?.value === process.env.ADMIN_PASSWORD;
+  return cookieStore.get("admin_auth")?.value === (await import("@/lib/admin-auth")).getAdminToken();
 }
 
 export async function POST(
