@@ -54,7 +54,7 @@ async function getCurriculumData(tier: Tier): Promise<Module[]> {
           if (canAccess && lesson.pdf_path) {
             const { data } = await supabaseAdmin.storage
               .from("Curriculum")
-              .createSignedUrl(lesson.pdf_path, 3600);
+              .createSignedUrl(lesson.pdf_path, 86400);
             pdf_url = data?.signedUrl ?? null;
           }
           return {

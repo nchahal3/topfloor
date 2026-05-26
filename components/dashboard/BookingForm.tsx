@@ -328,7 +328,12 @@ export default function BookingForm() {
           />
         </div>
 
-        {error && <p style={{ color: "#ff4444", fontSize: 13, margin: 0 }}>{error}</p>}
+        {error && (
+          <div style={{ padding: "12px 16px", borderRadius: 10, background: "rgba(255,68,68,0.08)", border: "1px solid rgba(255,68,68,0.3)", display: "flex", alignItems: "flex-start", gap: 10 }}>
+            <span style={{ color: "#ff6666", fontSize: 16, lineHeight: 1, flexShrink: 0 }}>⚠</span>
+            <p style={{ color: "#ff6666", fontSize: 13, margin: 0, lineHeight: 1.5 }}>{error}</p>
+          </div>
+        )}
 
         <button
           type="submit"
