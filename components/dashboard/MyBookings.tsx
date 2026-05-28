@@ -88,7 +88,7 @@ export default function MyBookings() {
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
               {b.zoom_link && b.status === "confirmed" && (
                 <a href={b.zoom_link} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 8, background: "rgba(0,255,136,0.08)", border: "1px solid rgba(0,255,136,0.25)", color: "#00ff88", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
-                  Join Zoom <ExternalLink size={11} />
+                  Join Call <ExternalLink size={11} />
                 </a>
               )}
               {canCancel && !isConfirming && (
@@ -106,12 +106,12 @@ export default function MyBookings() {
 
           {b.status === "pending" && !isConfirming && (
             <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 11, margin: "10px 0 0" }}>
-              Coach Floor will confirm within 24 hours — you&apos;ll get an email with your Zoom link.
+              Coach Floor will confirm within 24 hours — you&apos;ll get an email with your meeting link.
             </p>
           )}
           {b.status === "confirmed" && !b.zoom_link && !isConfirming && (
             <p style={{ color: "rgba(240,192,64,0.5)", fontSize: 11, margin: "10px 0 0" }}>
-              Confirmed — Zoom link coming soon.
+              Confirmed — meeting link coming soon.
             </p>
           )}
         </div>

@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CheckCircle, Calendar, Clock, ChevronLeft, ChevronRight } from "lucide-react";
+import { CheckCircle, Calendar, Clock, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
 import type { AvailabilitySlot } from "@/lib/supabase";
 
-type ActiveBooking = { id: string; status: string; preferred_time: string; call_type: string };
+type ActiveBooking = { id: string; status: string; preferred_time: string; call_type: string; zoom_link?: string | null };
 
 type SlotsByDate = Record<string, AvailabilitySlot[]>;
 
@@ -113,10 +113,22 @@ export default function BookingForm() {
           </div>
           <p style={{ color: "#f5f5f5", fontSize: 14, margin: 0 }}>{activeBooking.preferred_time}</p>
         </div>
+        {activeBooking.zoom_link && activeBooking.status === "confirmed" ? (
+          <a
+            href={activeBooking.zoom_link}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 20px", borderRadius: 999, background: "rgba(0,255,136,0.1)", border: "1px solid rgba(0,255,136,0.3)", color: "#00ff88", fontSize: 13, fontWeight: 700, textDecoration: "none", marginBottom: 12 }}
+          >
+            <ExternalLink size={13} /> Join Call
+          </a>
+        ) : null}
         <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, margin: 0, lineHeight: 1.6 }}>
           {activeBooking.status === "pending"
             ? "Your request is pending — Coach Floor will confirm within 24 hours. You can book a new slot once this is completed or cancelled."
-            : "You have a confirmed call coming up. Once it's completed you'll be able to book again."}
+            : activeBooking.zoom_link
+              ? "Your call is confirmed. Use the link above to join."
+              : "Confirmed — your meeting link will arrive by email shortly."}
         </p>
       </div>
     );
@@ -130,7 +142,7 @@ export default function BookingForm() {
         </div>
         <p style={{ color: "#f5f5f5", fontWeight: 700, fontSize: 18, margin: "0 0 8px" }}>Request Submitted!</p>
         <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 14, margin: 0, lineHeight: 1.6 }}>
-          Coach Floor will confirm your call within 24 hours. Check your email for a Zoom link.
+          Coach Floor will confirm your call within 24 hours. Check your email for the meeting link.
         </p>
         <button
           type="button"

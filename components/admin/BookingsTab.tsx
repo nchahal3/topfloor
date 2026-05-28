@@ -381,6 +381,7 @@ export default function BookingsTab({ filterEmail }: { filterEmail?: string }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editState, setEditState] = useState<Record<string, { status: string; admin_notes: string; scheduled_at: string; zoom_link: string }>>({});
   const [saving, setSaving] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<"bookings" | "availability">("bookings");
 
   const fetchBookings = async () => {
@@ -408,6 +409,14 @@ export default function BookingsTab({ filterEmail }: { filterEmail?: string }) {
       }));
     }
     setExpandedId((prev) => (prev === b.id ? null : b.id));
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this booking permanently?")) return;
+    setDeleting(id);
+    await fetch(`/api/admin/bookings/${id}`, { method: "DELETE" });
+    await fetchBookings();
+    setDeleting(null);
   };
 
   const handleSave = async (id: string) => {
@@ -555,12 +564,12 @@ export default function BookingsTab({ filterEmail }: { filterEmail?: string }) {
                             />
                           </div>
                           <div style={{ gridColumn: "1 / -1" }}>
-                            <label style={{ display: "block", color: "rgba(255,255,255,0.4)", fontSize: 11, fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 5 }}>Zoom Link</label>
+                            <label style={{ display: "block", color: "rgba(255,255,255,0.4)", fontSize: 11, fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 5 }}>Meeting Link</label>
                             <input
                               type="url"
                               style={inputStyle}
                               value={e.zoom_link}
-                              placeholder="https://zoom.us/j/..."
+                              placeholder="https://zoom.us/j/... or discord.gg/..."
                               onChange={(ev) => setEditState((prev) => ({ ...prev, [b.id]: { ...e, zoom_link: ev.target.value } }))}
                             />
                           </div>
@@ -575,11 +584,18 @@ export default function BookingsTab({ filterEmail }: { filterEmail?: string }) {
                             />
                           </div>
                         </div>
-                        <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-                          <button type="button" onClick={() => handleSave(b.id)} disabled={saving === b.id} style={{ padding: "8px 18px", borderRadius: 8, background: "#00ff88", color: "#000", fontWeight: 700, fontSize: 12, border: "none", cursor: "pointer", opacity: saving === b.id ? 0.6 : 1 }}>
-                            {saving === b.id ? "Saving..." : "Save Changes"}
-                          </button>
-                          <button type="button" onClick={() => setExpandedId(null)} style={{ padding: "8px 14px", borderRadius: 8, background: "transparent", color: "rgba(255,255,255,0.35)", fontSize: 12, border: "1px solid rgba(255,255,255,0.08)", cursor: "pointer" }}>Cancel</button>
+                        <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap", justifyContent: "space-between" }}>
+                          <div style={{ display: "flex", gap: 8 }}>
+                            <button type="button" onClick={() => handleSave(b.id)} disabled={saving === b.id} style={{ padding: "8px 18px", borderRadius: 8, background: "#00ff88", color: "#000", fontWeight: 700, fontSize: 12, border: "none", cursor: "pointer", opacity: saving === b.id ? 0.6 : 1 }}>
+                              {saving === b.id ? "Saving..." : "Save Changes"}
+                            </button>
+                            <button type="button" onClick={() => setExpandedId(null)} style={{ padding: "8px 14px", borderRadius: 8, background: "transparent", color: "rgba(255,255,255,0.35)", fontSize: 12, border: "1px solid rgba(255,255,255,0.08)", cursor: "pointer" }}>Cancel</button>
+                          </div>
+                          {["cancelled", "completed"].includes(b.status) && (
+                            <button type="button" onClick={() => handleDelete(b.id)} disabled={deleting === b.id} style={{ padding: "8px 14px", borderRadius: 8, background: "rgba(255,68,68,0.08)", border: "1px solid rgba(255,68,68,0.2)", color: "#ff6666", fontSize: 12, fontWeight: 600, cursor: "pointer", opacity: deleting === b.id ? 0.5 : 1 }}>
+                              {deleting === b.id ? "Deleting..." : "Delete"}
+                            </button>
+                          )}
                         </div>
                       </div>
                     )}

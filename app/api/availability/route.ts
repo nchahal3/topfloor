@@ -10,7 +10,7 @@ export async function GET() {
   if (userId) {
     const { data: activeBookings } = await supabaseAdmin
       .from("bookings")
-      .select("id, status, preferred_time, call_type")
+      .select("id, status, preferred_time, call_type, zoom_link")
       .eq("clerk_user_id", userId)
       .in("status", ["pending", "confirmed"])
       .limit(1);

@@ -55,7 +55,7 @@ export default async function BookACallPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {[
             "Tell us your preferred times and we'll confirm within 24 hours",
-            "You'll get a confirmation with a Zoom link",
+            "You'll get a confirmation with a meeting link",
             "Come prepared with your questions or trades to review",
             "Coach Floor shows up on time, every time",
           ].map((item) => (

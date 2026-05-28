@@ -65,11 +65,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
             ${zoomLink ? `
             <div style="text-align:center;margin:28px 0;">
               <a href="${zoomLink}" style="display:inline-block;background:#00ff88;color:#000;font-weight:bold;padding:14px 32px;border-radius:999px;text-decoration:none;font-size:15px;">
-                Join Zoom Call →
+                Join Call →
               </a>
             </div>
             <p style="color:#555;font-size:12px;text-align:center;">Or copy this link: <a href="${zoomLink}" style="color:#00ff88;">${zoomLink}</a></p>
-            ` : `<p style="color:#aaa;">Coach Floor will send your Zoom link shortly.</p>`}
+            ` : `<p style="color:#aaa;">Coach Floor will send your meeting link shortly.</p>`}
             <a href="${baseUrl}/dashboard/book-a-call" style="display:inline-block;margin-top:8px;color:#00ff88;font-size:13px;">View in dashboard →</a>
             <hr style="border:none;border-top:1px solid #222;margin:24px 0;" />
             <p style="color:#444;font-size:11px;">Trading involves significant risk. 🔝Floor provides educational content only.</p>
@@ -102,4 +102,31 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   }
 
   return NextResponse.json(data);
+}
+
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  if (!(await checkAdminAuth())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { id } = await params;
+
+  const { data: existing } = await supabaseAdmin
+    .from("bookings")
+    .select("status, slot_id")
+    .eq("id", id)
+    .single();
+
+  if (existing && ["pending", "confirmed"].includes(existing.status)) {
+    return NextResponse.json({ error: "Cannot delete an active booking. Cancel it first." }, { status: 400 });
+  }
+
+  if (existing?.slot_id) {
+    await supabaseAdmin
+      .from("availability_slots")
+      .update({ is_booked: false, booking_id: null })
+      .eq("id", existing.slot_id);
+  }
+
+  const { error } = await supabaseAdmin.from("bookings").delete().eq("id", id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  return NextResponse.json({ success: true });
 }
