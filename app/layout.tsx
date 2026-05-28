@@ -27,14 +27,6 @@ export const metadata: Metadata = {
       "Live trade alerts, private Discord, full curriculum, and 1-on-1 mentorship. Trade from the top — every single day.",
     url: "https://www.topfloortradesofficial.com",
     siteName: "TopFloor",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "TopFloor — Elite Day Trading Coaching",
-      },
-    ],
     type: "website",
   },
   twitter: {
@@ -42,7 +34,6 @@ export const metadata: Metadata = {
     title: "TopFloor | Elite Day Trading Coaching",
     description:
       "Live trade alerts, private Discord, full curriculum, and 1-on-1 mentorship. Trade from the top — every single day.",
-    images: ["/og-image.png"],
   },
 };
 

@@ -1,14 +1,7 @@
 "use client";
 
 import Link from "next/link";
-
-const NAV_LINKS = [
-  { href: "#about", label: "About" },
-  { href: "#what-you-get", label: "What You Get" },
-  { href: "#pricing", label: "Pricing" },
-  { href: "#faq", label: "FAQ" },
-  { href: "/contact", label: "Contact" },
-];
+import { NAV_LINKS } from "@/lib/nav";
 
 function InstagramIcon() {
   return (
@@ -70,31 +63,16 @@ export default function Footer() {
               Navigation
             </p>
             <div className="flex flex-col gap-3">
-              {NAV_LINKS.map((link) =>
-                link.href.startsWith("/") ? (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="text-sm transition-colors"
-                    style={{ color: "rgba(255,255,255,0.5)" }}
-                  >
-                    {link.label}
-                  </Link>
-                ) : (
-                  <a
-                    key={link.href}
-                    href={link.href}
-                    className="text-sm transition-colors cursor-pointer"
-                    style={{ color: "rgba(255,255,255,0.5)" }}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      document.querySelector(link.href)?.scrollIntoView({ behavior: "smooth" });
-                    }}
-                  >
-                    {link.label}
-                  </a>
-                )
-              )}
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="text-sm transition-colors"
+                  style={{ color: "rgba(255,255,255,0.5)" }}
+                >
+                  {link.label}
+                </Link>
+              ))}
             </div>
           </div>
 
@@ -112,6 +90,8 @@ export default function Footer() {
                   key={label}
                   href={href}
                   aria-label={label}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-10 h-10 rounded-xl flex items-center justify-center border transition-all duration-200"
                   style={{
                     background: "rgba(255,255,255,0.03)",
@@ -139,9 +119,25 @@ export default function Footer() {
           className="border-t pt-8 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between"
           style={{ borderColor: "rgba(255,255,255,0.05)" }}
         >
-          <p className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>
-            © 2025 🔝Floor. All rights reserved.
-          </p>
+          <div className="flex flex-col gap-2">
+            <p className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>
+              © 2025 🔝Floor. All rights reserved.
+            </p>
+            <div className="flex gap-4">
+              <Link href="/privacy" className="text-xs transition-colors" style={{ color: "rgba(255,255,255,0.25)" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.25)")}
+              >
+                Privacy Policy
+              </Link>
+              <Link href="/terms" className="text-xs transition-colors" style={{ color: "rgba(255,255,255,0.25)" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.25)")}
+              >
+                Terms of Service
+              </Link>
+            </div>
+          </div>
           <p
             className="text-xs max-w-lg leading-relaxed"
             style={{ color: "rgba(255,255,255,0.18)" }}
