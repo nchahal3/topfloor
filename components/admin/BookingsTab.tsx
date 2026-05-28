@@ -382,6 +382,7 @@ export default function BookingsTab({ filterEmail }: { filterEmail?: string }) {
   const [editState, setEditState] = useState<Record<string, { status: string; admin_notes: string; scheduled_at: string; zoom_link: string }>>({});
   const [saving, setSaving] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<"bookings" | "availability">("bookings");
 
   const fetchBookings = async () => {
@@ -412,8 +413,8 @@ export default function BookingsTab({ filterEmail }: { filterEmail?: string }) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this booking permanently?")) return;
     setDeleting(id);
+    setConfirmDeleteId(null);
     await fetch(`/api/admin/bookings/${id}`, { method: "DELETE" });
     await fetchBookings();
     setDeleting(null);
@@ -538,14 +539,34 @@ export default function BookingsTab({ filterEmail }: { filterEmail?: string }) {
                         </div>
                       </button>
                       {["cancelled", "completed"].includes(b.status) && (
-                        <button
-                          type="button"
-                          onClick={(ev) => { ev.stopPropagation(); handleDelete(b.id); }}
-                          disabled={deleting === b.id}
-                          style={{ flexShrink: 0, padding: "6px 12px", marginRight: 12, borderRadius: 6, background: "rgba(255,68,68,0.08)", border: "1px solid rgba(255,68,68,0.2)", color: "#ff6666", fontSize: 11, fontWeight: 600, cursor: "pointer", opacity: deleting === b.id ? 0.5 : 1 }}
-                        >
-                          {deleting === b.id ? "..." : "Delete"}
-                        </button>
+                        confirmDeleteId === b.id ? (
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, marginRight: 12, flexShrink: 0 }}>
+                            <span style={{ color: "rgba(255,255,255,0.45)", fontSize: 11, whiteSpace: "nowrap" }}>Sure?</span>
+                            <button
+                              type="button"
+                              onClick={(ev) => { ev.stopPropagation(); handleDelete(b.id); }}
+                              disabled={deleting === b.id}
+                              style={{ padding: "5px 10px", borderRadius: 6, background: "rgba(255,68,68,0.15)", border: "1px solid rgba(255,68,68,0.4)", color: "#ff6666", fontSize: 11, fontWeight: 700, cursor: "pointer" }}
+                            >
+                              {deleting === b.id ? "..." : "Yes"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(ev) => { ev.stopPropagation(); setConfirmDeleteId(null); }}
+                              style={{ padding: "5px 10px", borderRadius: 6, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.4)", fontSize: 11, fontWeight: 600, cursor: "pointer" }}
+                            >
+                              No
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={(ev) => { ev.stopPropagation(); setConfirmDeleteId(b.id); }}
+                            style={{ flexShrink: 0, padding: "6px 12px", marginRight: 12, borderRadius: 6, background: "rgba(255,68,68,0.08)", border: "1px solid rgba(255,68,68,0.2)", color: "#ff6666", fontSize: 11, fontWeight: 600, cursor: "pointer" }}
+                          >
+                            Delete
+                          </button>
+                        )
                       )}
                     </div>
 
