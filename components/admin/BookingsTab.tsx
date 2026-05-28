@@ -172,6 +172,7 @@ function formatSlotDate(dateStr: string) {
 function AvailabilityPanel() {
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
   const [loading, setLoading] = useState(true);
+  const [upcomingBookings, setUpcomingBookings] = useState<BookingRow[]>([]);
   const [newDate, setNewDate] = useState("");
   const [newStartTime, setNewStartTime] = useState("9:00 AM");
   const [newEndTime, setNewEndTime] = useState("1:00 PM");
@@ -184,9 +185,18 @@ function AvailabilityPanel() {
 
   const fetch$ = async () => {
     setLoading(true);
-    const res = await fetch("/api/admin/availability");
-    const data = await res.json();
-    setSlots(Array.isArray(data) ? data : []);
+    const [availRes, bookingsRes] = await Promise.all([
+      fetch("/api/admin/availability"),
+      fetch("/api/admin/bookings"),
+    ]);
+    const availData = await availRes.json();
+    const bookingsData = await bookingsRes.json();
+    setSlots(Array.isArray(availData) ? availData : []);
+    if (Array.isArray(bookingsData)) {
+      setUpcomingBookings(
+        bookingsData.filter((b: BookingRow) => ["pending", "confirmed"].includes(b.status))
+      );
+    }
     setLoading(false);
   };
 
@@ -234,6 +244,61 @@ function AvailabilityPanel() {
 
   return (
     <div>
+
+      {/* ── Upcoming Sessions ── */}
+      {upcomingBookings.length > 0 && (
+        <div style={{ marginBottom: 24 }}>
+          <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", margin: "0 0 10px" }}>
+            Upcoming Sessions — {upcomingBookings.length} {upcomingBookings.length === 1 ? "session" : "sessions"}
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {upcomingBookings.map((b) => {
+              const isConfirmed = b.status === "confirmed";
+              const accentColor = isConfirmed ? "#00ff88" : "#f0c040";
+              const accentBg = isConfirmed ? "rgba(0,255,136,0.06)" : "rgba(240,192,64,0.06)";
+              const accentBorder = isConfirmed ? "rgba(0,255,136,0.18)" : "rgba(240,192,64,0.18)";
+              return (
+                <div key={b.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 16px", borderRadius: 12, background: accentBg, border: `1px solid ${accentBorder}` }}>
+                  {/* Status dot */}
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: accentColor, flexShrink: 0, boxShadow: `0 0 6px ${accentColor}` }} />
+
+                  {/* Info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 2 }}>
+                      <span style={{ color: "#f5f5f5", fontWeight: 700, fontSize: 13 }}>{b.member_name ?? b.member_email}</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: b.call_type === "intro" ? "#00ff88" : "#f0c040", background: b.call_type === "intro" ? "rgba(0,255,136,0.1)" : "rgba(240,192,64,0.1)", padding: "2px 7px", borderRadius: 4, textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>
+                        {b.call_type === "intro" ? "Intro" : "Trade Review"}
+                      </span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: accentColor, background: `${accentColor}18`, padding: "2px 7px", borderRadius: 4, textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>
+                        {b.status}
+                      </span>
+                    </div>
+                    <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>{b.preferred_time}</span>
+                  </div>
+
+                  {/* Meeting link or placeholder */}
+                  {b.zoom_link ? (
+                    <a
+                      href={b.zoom_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 8, background: "rgba(0,255,136,0.1)", border: "1px solid rgba(0,255,136,0.25)", color: "#00ff88", fontSize: 12, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" as const }}
+                    >
+                      Join Call ↗
+                    </a>
+                  ) : isConfirmed ? (
+                    <span style={{ flexShrink: 0, fontSize: 11, color: "rgba(240,192,64,0.6)", background: "rgba(240,192,64,0.06)", border: "1px solid rgba(240,192,64,0.15)", padding: "5px 10px", borderRadius: 8, whiteSpace: "nowrap" as const }}>
+                      No link yet
+                    </span>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ height: 1, background: "rgba(255,255,255,0.05)", margin: "20px 0 4px" }} />
+        </div>
+      )}
+
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div>
           <h3 style={{ color: "#f5f5f5", fontSize: 15, fontWeight: 700, margin: 0 }}>Available Time Slots</h3>
