@@ -514,28 +514,40 @@ export default function BookingsTab({ filterEmail }: { filterEmail?: string }) {
                 const e = editState[b.id] ?? { status: b.status, admin_notes: b.admin_notes ?? "", scheduled_at: b.scheduled_at ?? "", zoom_link: b.zoom_link ?? "" };
                 return (
                   <div key={b.id} style={{ borderRadius: 12, background: "#111", border: "1px solid rgba(255,255,255,0.05)", overflow: "hidden" }}>
-                    <button
-                      type="button"
-                      onClick={() => initEdit(b)}
-                      style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}
-                    >
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                          <span style={{ color: "#f5f5f5", fontWeight: 600, fontSize: 14 }}>{b.member_name ?? b.member_email}</span>
-                          <span style={{ fontSize: 10, fontWeight: 700, color: b.call_type === "intro" ? "#00ff88" : "#f0c040", background: b.call_type === "intro" ? "rgba(0,255,136,0.1)" : "rgba(240,192,64,0.1)", padding: "2px 7px", borderRadius: 4, textTransform: "uppercase" }}>
-                            {b.call_type === "intro" ? "Intro" : "Trade Review"}
-                          </span>
-                          <span style={{ padding: "2px 8px", borderRadius: 999, fontSize: 10, fontWeight: 700, background: s.bg, color: s.color, textTransform: "uppercase" }}>{b.status}</span>
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <button
+                        type="button"
+                        onClick={() => initEdit(b)}
+                        style={{ flex: 1, display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: "none", border: "none", cursor: "pointer", textAlign: "left", minWidth: 0 }}
+                      >
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                            <span style={{ color: "#f5f5f5", fontWeight: 600, fontSize: 14 }}>{b.member_name ?? b.member_email}</span>
+                            <span style={{ fontSize: 10, fontWeight: 700, color: b.call_type === "intro" ? "#00ff88" : "#f0c040", background: b.call_type === "intro" ? "rgba(0,255,136,0.1)" : "rgba(240,192,64,0.1)", padding: "2px 7px", borderRadius: 4, textTransform: "uppercase" }}>
+                              {b.call_type === "intro" ? "Intro" : "Trade Review"}
+                            </span>
+                            <span style={{ padding: "2px 8px", borderRadius: 999, fontSize: 10, fontWeight: 700, background: s.bg, color: s.color, textTransform: "uppercase" }}>{b.status}</span>
+                          </div>
+                          <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, margin: "3px 0 0" }}>
+                            {b.member_email} · {b.preferred_time}
+                          </p>
+                          {b.topic && <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, margin: "3px 0 0", fontStyle: "italic" }}>"{b.topic}"</p>}
                         </div>
-                        <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, margin: "3px 0 0" }}>
-                          {b.member_email} · {b.preferred_time}
-                        </p>
-                        {b.topic && <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, margin: "3px 0 0", fontStyle: "italic" }}>"{b.topic}"</p>}
-                      </div>
-                      <div style={{ color: "rgba(255,255,255,0.3)", flexShrink: 0 }}>
-                        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                      </div>
-                    </button>
+                        <div style={{ color: "rgba(255,255,255,0.3)", flexShrink: 0 }}>
+                          {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        </div>
+                      </button>
+                      {["cancelled", "completed"].includes(b.status) && (
+                        <button
+                          type="button"
+                          onClick={(ev) => { ev.stopPropagation(); handleDelete(b.id); }}
+                          disabled={deleting === b.id}
+                          style={{ flexShrink: 0, padding: "6px 12px", marginRight: 12, borderRadius: 6, background: "rgba(255,68,68,0.08)", border: "1px solid rgba(255,68,68,0.2)", color: "#ff6666", fontSize: 11, fontWeight: 600, cursor: "pointer", opacity: deleting === b.id ? 0.5 : 1 }}
+                        >
+                          {deleting === b.id ? "..." : "Delete"}
+                        </button>
+                      )}
+                    </div>
 
                     {isExpanded && (
                       <div style={{ padding: "0 16px 16px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
