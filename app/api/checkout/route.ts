@@ -3,10 +3,10 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 const PRICE_IDS: Record<string, string> = {
-  bronze: "price_1TRIBdRxClGX2uTFE404PcWF",
-  foundation: "price_1TPYX3RxClGX2uTFzwnMHkP2",
-  elite_monthly: "price_1TPYXsRxClGX2uTFcMCkSlMo",
-  elite_lifetime: "price_1TPYYGRxClGX2uTF7o1v901o",
+  bronze: "price_1TcXNFLzOgqHnoj8K3UFHzkb",
+  foundation: "price_1TcXPLLzOgqHnoj8SssRgzrw",
+  elite_monthly: "price_1TcXPvLzOgqHnoj8CddbTIjW",
+  elite_lifetime: "price_1TcXQfLzOgqHnoj8KnOfBONZ",
 };
 
 const RECURRING = new Set(["bronze", "foundation", "elite_monthly"]);

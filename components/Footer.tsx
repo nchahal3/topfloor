@@ -121,7 +121,7 @@ export default function Footer() {
         >
           <div className="flex flex-col gap-2">
             <p className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>
-              © 2025 🔝Floor. All rights reserved.
+              © {new Date().getFullYear()} 🔝Floor. All rights reserved.
             </p>
             <div className="flex gap-4">
               <Link href="/privacy" className="text-xs transition-colors" style={{ color: "rgba(255,255,255,0.25)" }}

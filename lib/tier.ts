@@ -29,8 +29,8 @@ export const TIER_COLORS: Record<string, string> = {
 
 // Maps Stripe price IDs to tiers
 export const PRICE_TIER: Record<string, Tier> = {
-  price_1TRIBdRxClGX2uTFE404PcWF: "bronze",   // $200/mo Bronze
-  price_1TPYX3RxClGX2uTFzwnMHkP2: "silver",  // $500/mo Foundation → Silver
-  price_1TPYXsRxClGX2uTFcMCkSlMo: "gold",    // $750/mo Elite → Gold
-  price_1TPYYGRxClGX2uTF7o1v901o: "lifetime", // $2,000 Lifetime
+  price_1TcXNFLzOgqHnoj8K3UFHzkb: "bronze",
+  price_1TcXPLLzOgqHnoj8SssRgzrw: "silver",
+  price_1TcXPvLzOgqHnoj8CddbTIjW: "gold",
+  price_1TcXQfLzOgqHnoj8KnOfBONZ: "lifetime",
 };

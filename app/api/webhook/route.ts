@@ -9,10 +9,10 @@ const FROM_EMAIL = "noreply@topfloortradesofficial.com";
 const DISCORD_INVITE = "https://discord.gg/kxnfaPNC";
 
 const PLAN_NAMES: Record<string, string> = {
-  price_1TRIBdRxClGX2uTFE404PcWF: "Bronze ($200/mo)",
-  price_1TPYX3RxClGX2uTFzwnMHkP2: "Silver ($500/mo)",
-  price_1TPYXsRxClGX2uTFcMCkSlMo: "Gold ($750/mo)",
-  price_1TPYYGRxClGX2uTF7o1v901o: "Elite Lifetime ($2,000)",
+  price_1TcXNFLzOgqHnoj8K3UFHzkb: "Bronze ($200/mo)",
+  price_1TcXPLLzOgqHnoj8SssRgzrw: "Silver ($500/mo)",
+  price_1TcXPvLzOgqHnoj8CddbTIjW: "Gold ($750/mo)",
+  price_1TcXQfLzOgqHnoj8KnOfBONZ: "Elite Lifetime ($2,000)",
 };
 
 export async function POST(request: Request) {
@@ -38,10 +38,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid webhook signature" }, { status: 400 });
   }
 
-  if (
-    event.type === "checkout.session.completed" ||
-    event.type === "payment_intent.succeeded"
-  ) {
+  if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const customerEmail = session.customer_details?.email ?? "Unknown";
     const customerName = session.customer_details?.name ?? "New Member";

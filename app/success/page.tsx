@@ -1,9 +1,10 @@
 import Link from "next/link";
 
 const PLAN_NAMES: Record<string, string> = {
-  foundation: "Foundation",
-  elite_monthly: "Elite Mentorship",
-  elite_lifetime: "Elite Mentorship Lifetime",
+  bronze: "Bronze Plan ($200/mo)",
+  foundation: "Silver Plan ($500/mo)",
+  elite_monthly: "Gold Plan ($750/mo)",
+  elite_lifetime: "Elite Lifetime ($2,000)",
 };
 
 export default async function SuccessPage({

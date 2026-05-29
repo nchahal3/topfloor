@@ -35,6 +35,7 @@ export async function POST(request: Request) {
     await resend.emails.send({
       from: "noreply@topfloortradesofficial.com",
       to: process.env.COACH_EMAIL!,
+      replyTo: email,
       subject: `New lead from ${escapeHtml(name)} — 🔝Floor`,
       html: `
         <div style="font-family:sans-serif;max-width:540px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
