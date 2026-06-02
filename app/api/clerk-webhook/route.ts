@@ -2,7 +2,7 @@ import { Webhook } from "svix";
 import { Resend } from "resend";
 import { NextResponse } from "next/server";
 
-const DISCORD_INVITE = "https://discord.gg/kxnfaPNC";
+const DISCORD_INVITE = "https://discord.gg/TvhhdGtU";
 
 export async function POST(request: Request) {
   const secret = process.env.CLERK_WEBHOOK_SECRET;

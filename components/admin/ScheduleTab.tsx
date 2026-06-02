@@ -21,7 +21,7 @@ const TYPE_COLORS: Record<string, string> = {
 const BLANK_FORM = {
   day: "Monday", time_est: "", title: "", description: "", type: "Live",
   requires_tier: "", is_active: true, is_recurring: true, scheduled_for: "",
-  discord_link: "https://discord.gg/kxnfaPNC", duration_minutes: 60,
+  discord_link: "https://discord.gg/TvhhdGtU", duration_minutes: 60,
 };
 
 export default function ScheduleTab() {

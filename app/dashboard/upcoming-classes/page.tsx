@@ -6,7 +6,7 @@ import { hasAccess, TIER_LABELS } from "@/lib/tier";
 import { supabaseAdmin } from "@/lib/supabase";
 import type { SessionRow } from "@/lib/supabase";
 
-const DISCORD_INVITE = "https://discord.gg/kxnfaPNC";
+const DISCORD_INVITE = "https://discord.gg/TvhhdGtU";
 
 const TYPE_COLORS: Record<string, string> = {
   Live: "#00ff88",

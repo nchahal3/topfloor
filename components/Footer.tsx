@@ -23,7 +23,7 @@ function DiscordIcon() {
 
 const SOCIAL_LINKS = [
   { href: "https://www.instagram.com/topfloor_trades/", label: "Instagram", icon: InstagramIcon },
-  { href: "https://discord.gg/kxnfaPNC", label: "Discord", icon: DiscordIcon },
+  { href: "https://discord.gg/TvhhdGtU", label: "Discord", icon: DiscordIcon },
 ];
 
 export default function Footer() {

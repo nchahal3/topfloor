@@ -101,7 +101,7 @@ export default function Hero() {
           className="flex flex-col sm:flex-row gap-4 justify-center mb-14"
         >
           <a
-            href="https://discord.gg/kxnfaPNC"
+            href="https://discord.gg/TvhhdGtU"
             target="_blank"
             rel="noopener noreferrer"
             className="btn-primary px-8 py-4 text-lg"
