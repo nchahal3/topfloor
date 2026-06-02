@@ -304,7 +304,7 @@ export default async function CurriculumPage() {
                           <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, marginBottom: 8 }}>{lesson.title}</p>
                           <div style={{ position: "relative", width: "100%", paddingBottom: "56.25%", borderRadius: 12, overflow: "hidden", background: "#000" }}>
                             <iframe
-                              src={`https://www.youtube.com/embed/${lesson.video_id}`}
+                              src={lesson.video_id!.startsWith("https://") ? lesson.video_id! : `https://www.youtube.com/embed/${lesson.video_id}`}
                               title={lesson.title}
                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                               allowFullScreen

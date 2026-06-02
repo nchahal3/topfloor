@@ -464,10 +464,23 @@ function LessonForm({ moduleId, existing, onClose, onSaved }: { moduleId: string
     setUploading(false);
   };
 
+  const parseVideoInput = (raw: string): string | null => {
+    const s = raw.trim();
+    if (!s) return null;
+    // Google Drive share link → extract file ID and store embed URL
+    const driveMatch = s.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (driveMatch) return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+    // YouTube full URL → extract video ID
+    const ytMatch = s.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    if (ytMatch) return ytMatch[1];
+    // Already a raw YouTube ID or stored embed URL
+    return s;
+  };
+
   const handleSave = async () => {
     if (!form.title.trim()) { setErr("Title is required"); return; }
     setSaving(true); setErr(null);
-    const payload = { title: form.title.trim(), notes: form.notes.trim() || null, video_id: form.video_id.trim() || null, module_id: moduleId };
+    const payload = { title: form.title.trim(), notes: form.notes.trim() || null, video_id: parseVideoInput(form.video_id), module_id: moduleId };
     const url = existing ? `/api/admin/curriculum/lessons/${existing.id}` : "/api/admin/curriculum/lessons";
     const res = await fetch(url, { method: existing ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
     if (!res.ok) { const d = await res.json(); setErr(d.error ?? "Save failed"); setSaving(false); return; }
@@ -555,12 +568,12 @@ function LessonForm({ moduleId, existing, onClose, onSaved }: { moduleId: string
           <input ref={fileInputRef} type="file" accept="application/pdf" aria-label="Upload PDF" style={{ display: "none" }} onChange={handleFileSelect} disabled={uploading} />
         </div>
 
-        {/* YouTube Video */}
+        {/* Video Link */}
         <div>
-          <label style={labelStyle}>YouTube Video ID</label>
-          <input style={inputStyle} value={form.video_id} onChange={(e) => setForm((f) => ({ ...f, video_id: e.target.value }))} placeholder="e.g. dQw4w9WgXcQ" />
+          <label style={labelStyle}>Video Link</label>
+          <input style={inputStyle} value={form.video_id} onChange={(e) => setForm((f) => ({ ...f, video_id: e.target.value }))} placeholder="YouTube URL, Google Drive share link, or YouTube video ID" />
           <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 11, marginTop: 5 }}>
-            From youtube.com/watch?v=<strong>THIS_PART</strong> — use unlisted videos only
+            Paste a YouTube link, Google Drive share link, or just the YouTube video ID
           </p>
         </div>
       </div>
