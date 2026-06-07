@@ -103,7 +103,7 @@ export default function Hero() {
             Join the Community
           </a>
           <a
-            href="https://discord.gg/TvhhdGtU"
+            href="https://discord.gg/QShqUxBK"
             target="_blank"
             rel="noopener noreferrer"
             className="btn-outline px-8 py-4 text-lg"
