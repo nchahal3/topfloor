@@ -22,11 +22,11 @@ import { TIER_LABELS, TIER_COLORS } from "@/lib/tier";
 
 const NAV_ITEMS = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard, badge: null },
-  { label: "Funded Accounts", href: "/dashboard/funded-accounts", icon: TrendingUp, badge: "FREE" },
   { label: "Curriculum", href: "/dashboard/curriculum", icon: BookOpen, badge: null },
+  { label: "Upcoming Classes", href: "/dashboard/upcoming-classes", icon: Video, badge: null },
+  { label: "Funded Accounts", href: "/dashboard/funded-accounts", icon: TrendingUp, badge: "FREE" },
   { label: "Achievements", href: "/dashboard/achievements", icon: Trophy, badge: "FREE" },
   { label: "Book a Call", href: "/dashboard/book-a-call", icon: Calendar, badge: "FREE" },
-  { label: "Upcoming Classes", href: "/dashboard/upcoming-classes", icon: Video, badge: null },
 ];
 
 export default function DashboardSidebar({ tier }: { tier: Tier }) {
