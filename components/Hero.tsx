@@ -4,10 +4,6 @@ import { motion } from "framer-motion";
 
 const AVATAR_COLORS = ["#2a6e4a", "#1a4f6e", "#6e2a4a", "#4a4a2a", "#2a4a6e"];
 
-function smoothScroll(e: React.MouseEvent<HTMLAnchorElement>, id: string) {
-  e.preventDefault();
-  document.querySelector(id)?.scrollIntoView({ behavior: "smooth" });
-}
 
 export default function Hero() {
   return (
@@ -101,16 +97,15 @@ export default function Hero() {
           className="flex flex-col sm:flex-row gap-4 justify-center mb-14"
         >
           <a
-            href="https://discord.gg/TvhhdGtU"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/pricing"
             className="btn-primary px-8 py-4 text-lg"
           >
             Join the Community
           </a>
           <a
-            href="#what-you-get"
-            onClick={(e) => smoothScroll(e, "#what-you-get")}
+            href="https://discord.gg/TvhhdGtU"
+            target="_blank"
+            rel="noopener noreferrer"
             className="btn-outline px-8 py-4 text-lg"
           >
             Watch Free Training
