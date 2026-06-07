@@ -1,17 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { Users, CalendarDays, Calendar, BookOpen } from "lucide-react";
+import { Users, CalendarDays, Calendar, BookOpen, Trophy } from "lucide-react";
 import MembersTab, { type Member } from "./MembersTab";
 import ScheduleTab from "./ScheduleTab";
 import BookingsTab from "./BookingsTab";
 import CurriculumTab from "./CurriculumTab";
+import AchievementsTab from "./AchievementsTab";
 
 const TABS = [
   { id: "members", label: "Members", icon: Users },
   { id: "schedule", label: "Schedule", icon: Calendar },
   { id: "bookings", label: "1-on-1 Bookings", icon: CalendarDays },
   { id: "curriculum", label: "Curriculum", icon: BookOpen },
+  { id: "achievements", label: "Achievements", icon: Trophy },
 ];
 
 export default function AdminDashboard({ members }: { members: Member[] }) {
@@ -70,6 +72,7 @@ export default function AdminDashboard({ members }: { members: Member[] }) {
           {activeTab === "schedule" && <ScheduleTab />}
           {activeTab === "bookings" && <BookingsTab />}
           {activeTab === "curriculum" && <CurriculumTab />}
+          {activeTab === "achievements" && <AchievementsTab />}
         </div>
       </div>
     </main>
