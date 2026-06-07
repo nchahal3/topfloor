@@ -296,15 +296,34 @@ export default function CurriculumTab() {
                                 )}
                               </div>
                               {lesson.pdf_path && (
-                                <p style={{ color: "rgba(240,192,64,0.6)", fontSize: 11, margin: "3px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 420 }}>
+                                <a
+                                  href={`/api/admin/curriculum/file-url?path=${encodeURIComponent(lesson.pdf_path)}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{ display: "block", color: "rgba(240,192,64,0.8)", fontSize: 11, margin: "3px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 420, textDecoration: "underline", cursor: "pointer" }}
+                                >
                                   📄 {lesson.pdf_path.split("/").pop()}
-                                </p>
+                                </a>
                               )}
-                              {lesson.video_id && (
-                                <p style={{ color: "rgba(0,255,136,0.5)", fontSize: 11, margin: "3px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 420 }}>
-                                  🎬 {lesson.video_id.startsWith("https://") ? lesson.video_id : `youtube.com/watch?v=${lesson.video_id}`}
-                                </p>
-                              )}
+                              {lesson.video_id && (() => {
+                                const isDrive = lesson.video_id.startsWith("https://drive.google.com");
+                                const videoUrl = isDrive
+                                  ? lesson.video_id.replace("/preview", "/view")
+                                  : `https://www.youtube.com/watch?v=${lesson.video_id}`;
+                                const label = isDrive
+                                  ? lesson.video_id
+                                  : `youtube.com/watch?v=${lesson.video_id}`;
+                                return (
+                                  <a
+                                    href={videoUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{ display: "block", color: "rgba(0,255,136,0.7)", fontSize: 11, margin: "3px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 420, textDecoration: "underline", cursor: "pointer" }}
+                                  >
+                                    🎬 {label}
+                                  </a>
+                                );
+                              })()}
                               {lesson.notes && (
                                 <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, margin: "3px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 420 }}>
                                   {lesson.notes}
