@@ -14,15 +14,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   const { id } = await params;
   const body = await request.json();
 
-  const { data, error } = await supabaseAdmin
+  const { error } = await supabaseAdmin
     .from("curriculum_lessons")
     .update(body)
-    .eq("id", id)
-    .select()
-    .single();
+    .eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data);
+  return NextResponse.json({ success: true });
 }
 
 export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
