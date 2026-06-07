@@ -295,8 +295,18 @@ export default function CurriculumTab() {
                                   <span style={{ fontSize: 10, color: "rgba(255,255,255,0.2)", fontStyle: "italic" }}>No content yet</span>
                                 )}
                               </div>
+                              {lesson.pdf_path && (
+                                <p style={{ color: "rgba(240,192,64,0.6)", fontSize: 11, margin: "3px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 420 }}>
+                                  📄 {lesson.pdf_path.split("/").pop()}
+                                </p>
+                              )}
+                              {lesson.video_id && (
+                                <p style={{ color: "rgba(0,255,136,0.5)", fontSize: 11, margin: "3px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 420 }}>
+                                  🎬 {lesson.video_id.startsWith("https://") ? lesson.video_id : `youtube.com/watch?v=${lesson.video_id}`}
+                                </p>
+                              )}
                               {lesson.notes && (
-                                <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, margin: "3px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 480 }}>
+                                <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, margin: "3px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 420 }}>
                                   {lesson.notes}
                                 </p>
                               )}
