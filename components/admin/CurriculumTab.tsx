@@ -410,7 +410,7 @@ function ModuleForm({ existing, onClose, onSaved }: { existing?: Module; onClose
           <p style={{ color: "#00ff88", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", margin: "0 0 4px" }}>{existing ? "Edit Module" : "New Module"}</p>
           <p style={{ color: "#f5f5f5", fontWeight: 700, fontSize: 18, margin: 0 }}>{existing ? "Edit Module" : "Add Module"}</p>
         </div>
-        <button type="button" onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.4)", padding: 4 }}><X size={18} /></button>
+        <button type="button" onClick={onClose} title="Close" style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.4)", padding: 4 }}><X size={18} /></button>
       </div>
 
       {err && <p style={{ color: "#ff4444", fontSize: 12, marginBottom: 12 }}>{err}</p>}
@@ -460,16 +460,29 @@ function LessonForm({ moduleId, existing, onClose, onSaved }: { moduleId: string
 
   const uploadPdf = async (lessonId: string, file: File) => {
     setUploading(true);
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("lessonId", lessonId);
-    const res = await fetch("/api/admin/curriculum/upload", { method: "POST", body: fd });
-    if (res.ok) {
-      const d = await res.json();
-      setPdfPath(d.path);
+    // Step 1: get a signed URL — bypasses Vercel's 4.5MB body limit
+    const presignRes = await fetch("/api/admin/curriculum/presign", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lessonId }),
+    });
+    if (!presignRes.ok) {
+      const d = await presignRes.json();
+      setErr(d.error ?? "Failed to prepare upload");
+      setUploading(false);
+      return;
+    }
+    const { signedUrl, path } = await presignRes.json();
+    // Step 2: upload the file directly to Supabase (no Vercel size limit)
+    const uploadRes = await fetch(signedUrl, {
+      method: "PUT",
+      headers: { "Content-Type": "application/pdf" },
+      body: file,
+    });
+    if (uploadRes.ok) {
+      setPdfPath(path);
     } else {
-      const d = await res.json();
-      setErr(d.error ?? "PDF upload failed");
+      setErr("PDF upload failed — try again");
     }
     setUploading(false);
   };
@@ -531,7 +544,7 @@ function LessonForm({ moduleId, existing, onClose, onSaved }: { moduleId: string
           <p style={{ color: "#00ff88", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", margin: "0 0 4px" }}>{existing ? "Edit Lesson" : "New Lesson"}</p>
           <p style={{ color: "#f5f5f5", fontWeight: 700, fontSize: 18, margin: 0 }}>{existing ? existing.title : "Add Lesson"}</p>
         </div>
-        <button type="button" onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.4)", padding: 4 }}><X size={18} /></button>
+        <button type="button" onClick={onClose} title="Close" style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.4)", padding: 4 }}><X size={18} /></button>
       </div>
 
       {err && <p style={{ color: "#ff4444", fontSize: 12, marginBottom: 12 }}>{err}</p>}
