@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const user = await currentUser();
-  const { category, notes, file_path } = await request.json();
+  const { category, notes, file_path, review_quote, review_role } = await request.json();
 
   if (!category || !file_path) {
     return NextResponse.json({ error: "category and file_path required" }, { status: 400 });
@@ -36,6 +36,8 @@ export async function POST(request: Request) {
       category,
       notes: notes ?? null,
       file_path,
+      review_quote: review_quote ?? null,
+      review_role: review_role ?? null,
       status: "pending",
     })
     .select()

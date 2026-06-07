@@ -3,6 +3,8 @@ import Hero from "@/components/Hero";
 import StatsTicker from "@/components/StatsTicker";
 import About from "@/components/About";
 import FeatureTeasers from "@/components/FeatureTeasers";
+import Testimonials from "@/components/Testimonials";
+import StudentWins from "@/components/StudentWins";
 import CommunityCTA from "@/components/CommunityCTA";
 import Footer from "@/components/Footer";
 
@@ -15,6 +17,8 @@ export default function Home() {
         <StatsTicker />
         <About />
         <FeatureTeasers />
+        <Testimonials />
+        <StudentWins />
         <CommunityCTA />
       </main>
       <Footer />
