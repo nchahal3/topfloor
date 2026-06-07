@@ -130,10 +130,6 @@ export default async function DashboardPage() {
                   <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", background: "rgba(255,255,255,0.06)", padding: "2px 8px", borderRadius: 4, letterSpacing: "0.06em" }}>
                     SOON
                   </span>
-                ) : card.free ? (
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "#00ff88", background: "rgba(0,255,136,0.1)", padding: "2px 8px", borderRadius: 4, letterSpacing: "0.06em" }}>
-                    FREE
-                  </span>
                 ) : locked ? (
                   <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.04)", padding: "2px 8px", borderRadius: 4, letterSpacing: "0.06em" }}>
                     LOCKED
@@ -142,9 +138,16 @@ export default async function DashboardPage() {
               </div>
               <p style={{ color: locked ? "rgba(255,255,255,0.4)" : "#f5f5f5", fontWeight: 600, fontSize: 15, margin: "0 0 6px" }}>{card.label}</p>
               <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 13, margin: 0, lineHeight: 1.5 }}>{card.desc}</p>
-              <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 14, color: card.comingSoon ? "rgba(255,255,255,0.2)" : locked ? "rgba(255,255,255,0.18)" : "#00ff88" }}>
-                <span style={{ fontSize: 12, fontWeight: 600 }}>{card.comingSoon ? "Coming soon" : locked ? "Upgrade to unlock" : "Open"}</span>
-                <ArrowRight size={12} />
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 14 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 4, color: card.comingSoon ? "rgba(255,255,255,0.2)" : locked ? "rgba(255,255,255,0.18)" : "#00ff88" }}>
+                  <span style={{ fontSize: 12, fontWeight: 600 }}>{card.comingSoon ? "Coming soon" : locked ? "Upgrade to unlock" : "Open"}</span>
+                  <ArrowRight size={12} />
+                </div>
+                {card.free && !card.comingSoon && (
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#00ff88", background: "rgba(0,255,136,0.1)", padding: "2px 8px", borderRadius: 4, letterSpacing: "0.06em" }}>
+                    FREE
+                  </span>
+                )}
               </div>
             </Link>
           );
