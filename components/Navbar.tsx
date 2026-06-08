@@ -70,7 +70,7 @@ export default function Navbar() {
             }}
             className="flex items-center"
           >
-            <Image src="/Logo.png" alt="TopFloor Trades" width={48} height={48} style={{ objectFit: "contain" }} />
+            <Image src="/Logo.png" alt="TopFloor Trades" width={100} height={100} style={{ objectFit: "contain" }} />
           </Link>
 
           {/* Desktop nav links */}
