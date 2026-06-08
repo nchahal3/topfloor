@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Menu, X, ChevronDown } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth, UserButton } from "@clerk/nextjs";
 import { NAV_LINKS, MEMBER_LINKS } from "@/lib/nav";
@@ -67,10 +68,9 @@ export default function Navbar() {
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }
             }}
-            className="display-font text-2xl tracking-wide glow-green-subtle"
-            style={{ color: "#00ff88" }}
+            className="flex items-center"
           >
-            🔝Floor
+            <Image src="/Logo.png" alt="TopFloor Trades" width={48} height={48} style={{ objectFit: "contain" }} />
           </Link>
 
           {/* Desktop nav links */}
