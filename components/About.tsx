@@ -42,14 +42,13 @@ export default function About() {
               />
               <div className="text-center px-8">
                 <div
-                  className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 border-2 display-font text-3xl"
+                  className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 border-2 display-font text-4xl"
                   style={{
                     background: "rgba(0,255,136,0.1)",
                     borderColor: "rgba(0,255,136,0.4)",
-                    color: "#00ff88",
                   }}
                 >
-                  CF
+                  🔝
                 </div>
                 <p
                   className="display-font text-2xl"
