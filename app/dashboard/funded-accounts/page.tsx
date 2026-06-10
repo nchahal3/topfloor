@@ -41,7 +41,7 @@ export default function FundedAccountsPage() {
           Funded Accounts
         </h1>
         <p style={{ color: "rgba(255,255,255,0.4)", marginTop: 10, fontSize: 15, maxWidth: 560 }}>
-          Coach Floor's personally vetted prop firms. Use the promo codes below for exclusive discounts. Pass your eval and start trading with real capital.
+          Coach Floor's personally vetted prop firms. Pass your eval and start trading with real capital.
         </p>
       </div>
 
@@ -87,24 +87,6 @@ export default function FundedAccountsPage() {
               <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 14, margin: "0 0 16px", lineHeight: 1.6 }}>
                 {firm.description}
               </p>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                <div
-                  style={{
-                    padding: "8px 16px",
-                    borderRadius: 8,
-                    background: "rgba(255,255,255,0.05)",
-                    border: "1px dashed rgba(255,255,255,0.15)",
-                  }}
-                >
-                  <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", margin: "0 0 2px" }}>
-                    PROMO CODE
-                  </p>
-                  <p style={{ color: "#f0c040", fontWeight: 800, fontSize: 16, margin: 0, letterSpacing: "0.05em" }}>
-                    {firm.code}
-                  </p>
-                </div>
-                <p style={{ color: "#00ff88", fontSize: 13, fontWeight: 600, margin: 0 }}>✓ {firm.discount}</p>
-              </div>
             </div>
 
             {/* CTA */}
