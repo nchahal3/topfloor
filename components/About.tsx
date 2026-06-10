@@ -4,9 +4,9 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 
 const CREDENTIALS = [
-  { icon: "📈", label: "7+ Years Trading" },
-  { icon: "✅", label: "1,200+ Students" },
-  { icon: "🏆", label: "87% Win Rate" },
+  { icon: "📈", label: "7+ Years in the Markets" },
+  { icon: "✅", label: "Live Sessions Every Day" },
+  { icon: "🏆", label: "87% Member Win Rate" },
 ];
 
 export default function About() {
@@ -41,26 +41,40 @@ export default function About() {
                     "radial-gradient(circle, rgba(0,255,136,0.15) 0%, transparent 70%)",
                 }}
               />
-              <div className="text-center px-8">
-                <Image
-                  src="/Logo.png"
-                  alt="TopFloor Trades Logo"
-                  width={180}
-                  height={180}
-                  className="mx-auto mb-4 drop-shadow-lg"
-                  style={{ objectFit: "contain" }}
-                />
+              <div className="text-center px-8 pb-20">
+                <div
+                  className="mx-auto mb-5"
+                  style={{
+                    width: 200,
+                    height: 200,
+                    borderRadius: 16,
+                    overflow: "hidden",
+                    background: "#fff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 0 40px rgba(240,192,64,0.15)",
+                  }}
+                >
+                  <Image
+                    src="/Logo.png"
+                    alt="TopFloor Trades Logo"
+                    width={190}
+                    height={190}
+                    style={{ objectFit: "contain" }}
+                  />
+                </div>
                 <p
                   className="display-font text-2xl"
                   style={{ color: "#f0c040" }}
                 >
-                  Coach Floor
+                  TopFloor Team
                 </p>
                 <p
-                  className="text-sm mt-1"
+                  className="text-sm mt-2"
                   style={{ color: "rgba(255,255,255,0.4)" }}
                 >
-                  Professional Day Trader
+                  Built for Struggling Traders
                 </p>
               </div>
 
@@ -79,13 +93,13 @@ export default function About() {
                       className="display-font text-2xl"
                       style={{ color: "#00ff88" }}
                     >
-                      $5K
+                      DAILY
                     </p>
                     <p
                       className="text-xs"
                       style={{ color: "rgba(255,255,255,0.4)" }}
                     >
-                      Started With
+                      Live Sessions
                     </p>
                   </div>
                   <div
@@ -97,13 +111,13 @@ export default function About() {
                       className="display-font text-2xl"
                       style={{ color: "#f0c040" }}
                     >
-                      6-FIG
+                      $4.2M+
                     </p>
                     <p
                       className="text-xs"
                       style={{ color: "rgba(255,255,255,0.4)" }}
                     >
-                      Achieved
+                      Community Profits
                     </p>
                   </div>
                   <div
@@ -115,13 +129,13 @@ export default function About() {
                       className="display-font text-2xl"
                       style={{ color: "#00ff88" }}
                     >
-                      7 YRS
+                      87%
                     </p>
                     <p
                       className="text-xs"
                       style={{ color: "rgba(255,255,255,0.4)" }}
                     >
-                      Experience
+                      Win Rate
                     </p>
                   </div>
                 </div>
@@ -140,32 +154,31 @@ export default function About() {
               className="text-xs font-bold tracking-widest uppercase mb-4"
               style={{ color: "#00ff88" }}
             >
-              Meet Your Coach
+              Our Mission
             </p>
             <h2 className="display-font text-4xl sm:text-5xl lg:text-6xl text-white leading-none mb-6">
-              I Turned $5K Into{" "}
-              <span style={{ color: "#f0c040" }}>Six Figures</span> —{" "}
+              The Platform Built for{" "}
+              <span style={{ color: "#f0c040" }}>Traders</span>{" "}
               <br className="hidden sm:block" />
-              Now I&apos;m Showing You How.
+              Who Are Tired of Losing.
             </h2>
             <p
               className="text-base sm:text-lg leading-relaxed mb-8"
               style={{ color: "rgba(255,255,255,0.6)" }}
             >
-              Coach Floor has been trading full-time for over 7 years across
-              futures, options, and momentum stocks. He started with $5,000 and
-              built it into a six-figure account. Not through luck or some
-              secret formula, but by developing a process that actually works in
-              real market conditions. He started 🔝Floor because the good
-              information shouldn&apos;t be locked behind a hedge fund paywall.
+              TopFloor was built by traders who know what it feels like to sit
+              alone at a screen, second-guessing every move. Our team brings
+              7+ years of live trading experience across futures, options, and
+              momentum stocks. We didn&apos;t build this for traders who already
+              have it figured out. We built it for everyone else.
             </p>
             <p
               className="text-base leading-relaxed mb-10"
               style={{ color: "rgba(255,255,255,0.45)" }}
             >
               No fluff. No overnight-millionaire promises. Just battle-tested
-              setups, live execution, and a community that holds you
-              accountable every single trading day.
+              setups, live execution, and a community of real traders who hold
+              each other accountable every single day.
             </p>
 
             {/* Credential chips */}

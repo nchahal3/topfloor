@@ -1,60 +1,171 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const PROOF_IMAGES = [
-  "/certs/cert-1.jpg",
-  "/certs/cert-2.jpg",
-  "/certs/cert-3.jpg",
-  "/certs/cert-4.jpg",
-  "/certs/cert-5.jpg",
-  "/certs/cert-6.jpg",
+const PROOF = [
+  { src: "/certs/cert-1.jpg", label: "Alpha Futures Pass" },
+  { src: "/certs/cert-2.jpg", label: "Lucid 50K Funded" },
+  { src: "/certs/cert-3.jpg", label: "Lucid Funded Account" },
+  { src: "/certs/cert-4.jpg", label: "Topstep Funded Trader" },
+  { src: "/certs/cert-5.jpg", label: "Lucid 50K Funded" },
+  { src: "/certs/cert-6.jpg", label: "Payout Confirmed" },
 ];
 
 export default function FundedWins() {
+  const [current, setCurrent] = useState(0);
+  const [direction, setDirection] = useState(1);
+
+  const go = useCallback((index: number) => {
+    setDirection(index > current ? 1 : -1);
+    setCurrent(index);
+  }, [current]);
+
+  const next = useCallback(() => go((current + 1) % PROOF.length), [current, go]);
+  const prev = () => go((current - 1 + PROOF.length) % PROOF.length);
+
+  useEffect(() => {
+    const t = setInterval(next, 5000);
+    return () => clearInterval(t);
+  }, [next]);
+
   return (
-    <section className="py-20 sm:py-28" style={{ background: "#0d0d0d" }}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-14"
-        >
+    <section className="py-20 sm:py-28" style={{ background: "#0a0a0a" }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        {/* Header */}
+        <div className="text-center mb-12">
           <p className="text-xs font-bold tracking-widest uppercase mb-4" style={{ color: "#00ff88" }}>
-            Proof
+            Verified Proof
           </p>
           <h2 className="display-font text-4xl sm:text-5xl lg:text-6xl text-white leading-none mb-4">
             Members Winning.
           </h2>
           <p className="text-base max-w-xl mx-auto" style={{ color: "rgba(255,255,255,0.45)" }}>
-            Funded accounts, payouts, and passed evaluations — straight from our community.
+            Funded accounts, payouts, and passed evaluations from our community.
           </p>
-        </motion.div>
-
-        <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
-          {PROOF_IMAGES.map((src, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ duration: 0.5, delay: i * 0.07 }}
-              className="break-inside-avoid rounded-2xl overflow-hidden border"
-              style={{ borderColor: "rgba(255,255,255,0.06)" }}
-            >
-              <Image
-                src={src}
-                alt={`Member proof ${i + 1}`}
-                width={600}
-                height={400}
-                style={{ width: "100%", height: "auto", display: "block" }}
-              />
-            </motion.div>
-          ))}
         </div>
+
+        {/* Slider */}
+        <div className="relative">
+          {/* Main frame */}
+          <div
+            className="relative overflow-hidden rounded-2xl"
+            style={{
+              border: "1px solid rgba(0,255,136,0.12)",
+              height: "clamp(380px, 58vw, 620px)",
+            }}
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={current}
+                initial={{ opacity: 0, x: direction * 80 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: direction * -80 }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                className="absolute inset-0"
+              >
+                {/* Blurred bg fill */}
+                <Image
+                  src={PROOF[current].src}
+                  alt=""
+                  fill
+                  style={{ objectFit: "cover", filter: "blur(28px) brightness(0.35)", transform: "scale(1.1)", zIndex: 1 }}
+                  aria-hidden
+                />
+                {/* Sharp foreground image */}
+                <Image
+                  src={PROOF[current].src}
+                  alt={PROOF[current].label}
+                  fill
+                  style={{ objectFit: "contain", zIndex: 2 }}
+                  priority
+                />
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Label */}
+            <div
+              className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide"
+              style={{
+                background: "rgba(0,0,0,0.7)",
+                backdropFilter: "blur(10px)",
+                border: "1px solid rgba(0,255,136,0.25)",
+                color: "#00ff88",
+                whiteSpace: "nowrap",
+                zIndex: 10,
+              }}
+            >
+              {PROOF[current].label}
+            </div>
+
+            {/* Arrows */}
+            <button
+              type="button"
+              onClick={prev}
+              aria-label="Previous"
+              className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center rounded-full"
+              style={{
+                width: 44, height: 44, zIndex: 10,
+                background: "rgba(0,0,0,0.6)",
+                backdropFilter: "blur(8px)",
+                border: "1px solid rgba(255,255,255,0.12)",
+                color: "#fff", cursor: "pointer",
+              }}
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <button
+              type="button"
+              onClick={next}
+              aria-label="Next"
+              className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center rounded-full"
+              style={{
+                width: 44, height: 44, zIndex: 10,
+                background: "rgba(0,0,0,0.6)",
+                backdropFilter: "blur(8px)",
+                border: "1px solid rgba(255,255,255,0.12)",
+                color: "#fff", cursor: "pointer",
+              }}
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
+
+          {/* Counter */}
+          <p className="text-center mt-4 text-xs" style={{ color: "rgba(255,255,255,0.25)", letterSpacing: "0.08em" }}>
+            {current + 1} / {PROOF.length}
+          </p>
+
+          {/* Thumbnail strip */}
+          <div className="flex gap-3 mt-4 justify-center flex-wrap">
+            {PROOF.map((item, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => go(i)}
+                aria-label={`View ${item.label}`}
+                className="relative rounded-xl overflow-hidden flex-shrink-0"
+                style={{
+                  width: 96, height: 66,
+                  border: i === current ? "2px solid #00ff88" : "2px solid rgba(255,255,255,0.08)",
+                  opacity: i === current ? 1 : 0.4,
+                  cursor: "pointer",
+                  background: "#111",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <Image src={item.src} alt={item.label} fill style={{ objectFit: "cover" }} />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <p className="text-center text-xs mt-10" style={{ color: "rgba(255,255,255,0.2)" }}>
+          Individual results vary. Past performance does not guarantee future results. Trading involves risk.
+        </p>
       </div>
     </section>
   );

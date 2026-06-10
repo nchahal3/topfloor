@@ -7,7 +7,7 @@ const TESTIMONIALS = [
     name: "Teeghan W.",
     role: "Futures Trader",
     quote:
-      "Passed my Alpha Futures evaluation after joining 🔝Floor. Coach Floor taught me how to manage risk properly and stick to a system. Could not have done it without this community.",
+      "Passed my Alpha Futures evaluation after joining TopFloor. Coach Floor taught me how to manage risk properly and stick to a system. Could not have done it without this community.",
     profit: "Passed Alpha Futures",
     initials: "TW",
     color: "#1a4f3a",
@@ -16,7 +16,7 @@ const TESTIMONIALS = [
     name: "Noah",
     role: "Funded Trader",
     quote:
-      "Got my Lucid Trading 50K funded account after applying the 🔝Floor system. The live sessions and coaching calls made all the difference. Worth every penny.",
+      "Got my Lucid Trading 50K funded account after applying the TopFloor system. The live sessions and coaching calls made all the difference. Worth every penny.",
     profit: "Lucid 50K Funded",
     initials: "N",
     color: "#1a2f5a",
@@ -34,7 +34,7 @@ const TESTIMONIALS = [
     name: "Nav",
     role: "Day Trader",
     quote:
-      "Passed my Lucid Trading evaluation and got funded. The 🔝Floor model is the real deal. If you put in the work and follow the system, results will come.",
+      "Passed my Lucid Trading evaluation and got funded. The TopFloor model is the real deal. If you put in the work and follow the system, results will come.",
     profit: "Lucid 50K Funded",
     initials: "TF",
     color: "#4f3a1a",
@@ -82,7 +82,7 @@ export default function Testimonials() {
             className="text-base max-w-xl mx-auto"
             style={{ color: "rgba(255,255,255,0.45)" }}
           >
-            Straight from the members. No edits, no cherry picking.
+            Real feedback from real members of the TopFloor community.
           </p>
         </motion.div>
 

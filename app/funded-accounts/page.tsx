@@ -1,6 +1,7 @@
 import { ExternalLink } from "lucide-react";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
+import BottomCTA from "@/components/BottomCTA";
 
 const FIRMS = [
   {
@@ -35,7 +36,7 @@ const FIRMS = [
 export default function FundedAccountsPage() {
   return (
     <PageLayout>
-      <PageHeader label="Coach Floor's Picks" title="Get Funded" subtitle="Coach Floor's personally vetted prop firms — with exclusive discount codes. Pass your eval and start trading with real capital." />
+      <PageHeader label="Coach Floor's Picks" title="Get Funded" subtitle="Coach Floor's personally vetted prop firms. Pass your eval and start trading with real capital." />
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "60px 24px" }}>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -79,24 +80,6 @@ export default function FundedAccountsPage() {
                   <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 14, margin: "0 0 18px", lineHeight: 1.6 }}>
                     {firm.description}
                   </p>
-                  <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-                    <div
-                      style={{
-                        padding: "10px 18px",
-                        borderRadius: 10,
-                        background: "rgba(255,255,255,0.04)",
-                        border: "1px dashed rgba(255,255,255,0.12)",
-                      }}
-                    >
-                      <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", margin: "0 0 3px", textTransform: "uppercase" }}>
-                        Promo Code
-                      </p>
-                      <p style={{ color: "#f0c040", fontWeight: 800, fontSize: 17, margin: 0, letterSpacing: "0.06em" }}>
-                        {firm.code}
-                      </p>
-                    </div>
-                    <p style={{ color: "#00ff88", fontSize: 13, fontWeight: 600, margin: 0 }}>✓ {firm.discount}</p>
-                  </div>
                 </div>
 
                 <a
@@ -140,6 +123,10 @@ export default function FundedAccountsPage() {
             </p>
           </div>
         </div>
+      <BottomCTA
+        headline="Get Funded. Trade With Real Capital."
+        sub="Join the community, learn the system, and use our partner firms to get a funded account."
+      />
     </PageLayout>
   );
 }

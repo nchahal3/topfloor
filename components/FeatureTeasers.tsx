@@ -1,51 +1,141 @@
 "use client";
 
-import Link from "next/link";
-import { TrendingUp, BookOpen, Users, Video, ArrowRight } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const FEATURE_TEASERS = [
-  { icon: BookOpen, label: "Curriculum", desc: "5+ hours of coaching content from Coach Floor.", href: "/features" },
-  { icon: Video, label: "Live Sessions", desc: "Weekly live trades and market breakdowns.", href: "/results" },
-  { icon: TrendingUp, label: "Get Funded", desc: "Exclusive promo codes for top prop firms.", href: "/funded-accounts" },
-  { icon: Users, label: "Community", desc: "Private Discord with daily signals and alerts.", href: "/features" },
+const RESULTS = [
+  "/certs/cert-1.jpg",
+  "/certs/cert-2.jpg",
+  "/certs/cert-3.jpg",
+  "/certs/cert-4.jpg",
+  "/certs/cert-5.jpg",
+  "/certs/cert-6.jpg",
 ];
 
 export default function FeatureTeasers() {
+  const [current, setCurrent] = useState(0);
+
+  const next = useCallback(() => {
+    setCurrent((i) => (i + 1) % RESULTS.length);
+  }, []);
+
+  const prev = () => {
+    setCurrent((i) => (i - 1 + RESULTS.length) % RESULTS.length);
+  };
+
+  useEffect(() => {
+    const timer = setInterval(next, 4000);
+    return () => clearInterval(timer);
+  }, [next]);
+
   return (
     <section style={{ background: "#0d0d0d", padding: "80px 24px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 48 }}>
+
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: 52 }}>
           <p style={{ color: "#00ff88", fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", margin: "0 0 12px" }}>
-            Everything You Need
+            Real Proof
           </p>
           <h2 className="display-font" style={{ color: "#f5f5f5", fontSize: "clamp(36px, 6vw, 60px)", margin: 0, lineHeight: 1 }}>
-            Built for Serious Traders
+            Results That Speak For Themselves
           </h2>
+          <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 15, marginTop: 16, maxWidth: 480, margin: "16px auto 0" }}>
+            Verified payouts and funded account passes from our community.
+          </p>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 16 }}>
-          {FEATURE_TEASERS.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.label}
-                href={item.href}
-                style={{ display: "block", padding: "24px", borderRadius: 16, background: "#111", border: "1px solid rgba(255,255,255,0.06)", textDecoration: "none", transition: "border-color 0.2s" }}
-                onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(0,255,136,0.2)")}
-                onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)")}
-              >
-                <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(0,255,136,0.08)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
-                  <Icon size={18} style={{ color: "#00ff88" }} />
+
+        {/* Slider */}
+        <div style={{ position: "relative", maxWidth: 720, margin: "0 auto" }}>
+          {/* Track */}
+          <div style={{ borderRadius: 20, overflow: "hidden", border: "1px solid rgba(0,255,136,0.15)" }}>
+            <div
+              style={{
+                display: "flex",
+                transition: "transform 0.5s cubic-bezier(0.4,0,0.2,1)",
+                transform: `translateX(-${current * 100}%)`,
+              }}
+            >
+              {RESULTS.map((src, i) => (
+                <div
+                  key={i}
+                  style={{ minWidth: "100%", height: 460, position: "relative", background: "#111", flexShrink: 0 }}
+                >
+                  <Image
+                    src={src}
+                    alt={`Member result ${i + 1}`}
+                    fill
+                    style={{ objectFit: "contain" }}
+                    priority={i === 0}
+                  />
                 </div>
-                <p style={{ color: "#f5f5f5", fontWeight: 700, fontSize: 16, margin: "0 0 6px" }}>{item.label}</p>
-                <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, margin: "0 0 16px", lineHeight: 1.5 }}>{item.desc}</p>
-                <div style={{ display: "flex", alignItems: "center", gap: 4, color: "#00ff88" }}>
-                  <span style={{ fontSize: 12, fontWeight: 600 }}>Learn more</span>
-                  <ArrowRight size={12} />
-                </div>
-              </Link>
-            );
-          })}
+              ))}
+            </div>
+          </div>
+
+          {/* Prev arrow */}
+          <button
+            type="button"
+            onClick={prev}
+            style={{
+              position: "absolute", left: -20, top: "50%", transform: "translateY(-50%)",
+              width: 44, height: 44, borderRadius: "50%",
+              background: "rgba(10,10,10,0.9)", border: "1px solid rgba(255,255,255,0.12)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer", color: "#fff", zIndex: 10,
+              boxShadow: "0 4px 20px rgba(0,0,0,0.5)",
+            }}
+            aria-label="Previous result"
+          >
+            <ChevronLeft size={18} />
+          </button>
+
+          {/* Next arrow */}
+          <button
+            type="button"
+            onClick={next}
+            style={{
+              position: "absolute", right: -20, top: "50%", transform: "translateY(-50%)",
+              width: 44, height: 44, borderRadius: "50%",
+              background: "rgba(10,10,10,0.9)", border: "1px solid rgba(255,255,255,0.12)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer", color: "#fff", zIndex: 10,
+              boxShadow: "0 4px 20px rgba(0,0,0,0.5)",
+            }}
+            aria-label="Next result"
+          >
+            <ChevronRight size={18} />
+          </button>
         </div>
+
+        {/* Dots */}
+        <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 28 }}>
+          {RESULTS.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setCurrent(i)}
+              aria-label={`Go to result ${i + 1}`}
+              style={{
+                width: i === current ? 28 : 8,
+                height: 8,
+                borderRadius: 4,
+                background: i === current ? "#00ff88" : "rgba(255,255,255,0.18)",
+                border: "none",
+                cursor: "pointer",
+                padding: 0,
+                transition: "all 0.3s ease",
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Counter */}
+        <p style={{ textAlign: "center", marginTop: 16, fontSize: 12, color: "rgba(255,255,255,0.25)", letterSpacing: "0.08em" }}>
+          {current + 1} / {RESULTS.length}
+        </p>
+
       </div>
     </section>
   );
