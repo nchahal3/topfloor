@@ -48,15 +48,10 @@ export async function PATCH(request: Request) {
     const memberEmail = user.emailAddresses[0]?.emailAddress ?? "";
     const memberName = [user.firstName, user.lastName].filter(Boolean).join(" ") || "Member";
 
-    // Update Clerk tier immediately
-    await client.users.updateUserMetadata(clerkUserId, {
-      publicMetadata: { tier: tier ?? null },
-    });
-
     const tierLabel = tier ? (TIER_LABELS[tier] ?? tier) : "No Access";
     const amount = tier ? (TIER_AMOUNT[tier] ?? "") : "";
 
-    // --- Monthly → Lifetime: cancel sub, send payment link ---
+    // --- Monthly → Lifetime: cancel sub, send payment link, do NOT grant access yet ---
     if (tier === "lifetime" && subscriptionId) {
       try {
         await stripe.subscriptions.cancel(subscriptionId);
@@ -108,7 +103,11 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ success: true });
     }
 
-    // --- Regular tier change (Bronze/Silver/Gold or remove access) ---
+    // --- Regular tier change (Bronze/Silver/Gold, remove access, or lifetime with no existing sub) ---
+    // Update Clerk tier — only for non-lifetime-from-subscription cases
+    await client.users.updateUserMetadata(clerkUserId, {
+      publicMetadata: { tier: tier ?? null },
+    });
     let nextBillingDate = "your next billing date";
     if (subscriptionId && tier && tier !== "lifetime") {
       const newPriceId = TIER_PRICE[tier];
