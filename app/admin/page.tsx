@@ -16,6 +16,23 @@ const PLAN_NAMES: Record<string, string> = {
 async function getMembers(): Promise<Member[]> {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
+  // Fetch all Clerk users first so we can cross-reference current tier for every member
+  const clerk = await clerkClient();
+  const clerkUsers = await clerk.users.getUserList({ limit: 500 });
+  const clerkByEmail = new Map(
+    clerkUsers.data.map((u) => [
+      (u.emailAddresses[0]?.emailAddress ?? "").toLowerCase(),
+      {
+        clerkTier: (u.publicMetadata?.tier as string | null) ?? null,
+        clerkUserId: u.id,
+        phone: u.phoneNumbers[0]?.phoneNumber ?? "—",
+        discord: (u.publicMetadata?.discord as string) ?? "—",
+        joinedAt: new Date(u.createdAt).toLocaleDateString("en-CA", { month: "short", day: "numeric", year: "numeric" }),
+        fullName: [u.firstName, u.lastName].filter(Boolean).join(" ") || "—",
+      },
+    ])
+  );
+
   const sessions = await stripe.checkout.sessions.list({ limit: 100, status: "complete" });
 
   // Deduplicate by email first, then fetch all line items + subscriptions in parallel
@@ -64,10 +81,12 @@ async function getMembers(): Promise<Member[]> {
     const email = session.customer_details?.email ?? "";
     const discord =
       session.custom_fields?.find((f) => f.key === "discord_username")?.text?.value ?? "—";
+    const clerkData = clerkByEmail.get(email.toLowerCase());
 
     members.push({
       id: session.id,
-      clerkUserId: session.metadata?.clerkUserId ?? null,
+      clerkUserId: session.metadata?.clerkUserId ?? clerkData?.clerkUserId ?? null,
+      clerkTier: clerkData?.clerkTier ?? null,
       name: session.customer_details?.name ?? "—",
       email,
       phone: session.customer_details?.phone ?? "—",
@@ -83,36 +102,24 @@ async function getMembers(): Promise<Member[]> {
   }
 
   // Add free Clerk users (signed up but never paid)
-  try {
-    const clerk = await clerkClient();
-    const clerkUsers = await clerk.users.getUserList({ limit: 500 });
-    const paidEmails = new Set(members.map((m) => m.email.toLowerCase()));
-
-    for (const user of clerkUsers.data) {
-      const email = user.emailAddresses[0]?.emailAddress ?? "";
-      if (!email || paidEmails.has(email.toLowerCase())) continue;
-
-      const firstName = user.firstName ?? "";
-      const lastName = user.lastName ?? "";
-      const fullName = [firstName, lastName].filter(Boolean).join(" ") || "—";
-
-      members.push({
-        id: user.id,
-        clerkUserId: user.id,
-        name: fullName,
-        email,
-        phone: user.phoneNumbers[0]?.phoneNumber ?? "—",
-        discord: (user.publicMetadata?.discord as string) ?? "—",
-        plan: "Free",
-        status: "free",
-        nextPayment: "—",
-        joinedAt: new Date(user.createdAt).toLocaleDateString("en-CA", {
-          month: "short", day: "numeric", year: "numeric",
-        }),
-        subscriptionId: null,
-      });
-    }
-  } catch {}
+  const paidEmails = new Set(members.map((m) => m.email.toLowerCase()));
+  for (const [email, data] of clerkByEmail) {
+    if (!email || paidEmails.has(email)) continue;
+    members.push({
+      id: data.clerkUserId,
+      clerkUserId: data.clerkUserId,
+      clerkTier: data.clerkTier,
+      name: data.fullName,
+      email,
+      phone: data.phone,
+      discord: data.discord,
+      plan: "Free",
+      status: "free",
+      nextPayment: "—",
+      joinedAt: data.joinedAt,
+      subscriptionId: null,
+    });
+  }
 
   return members;
 }

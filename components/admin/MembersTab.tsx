@@ -10,6 +10,7 @@ const ITEMS_PER_PAGE = 25;
 export type Member = {
   id: string;
   clerkUserId: string | null;
+  clerkTier: string | null;
   name: string;
   email: string;
   phone: string;
@@ -32,14 +33,6 @@ const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
 
 const FILTER_TABS = ["all", "active", "free", "past_due", "canceled", "lifetime"];
 
-function inferTierFromPlan(plan: string): string {
-  const p = plan.toLowerCase();
-  if (p.includes("lifetime")) return "lifetime";
-  if (p.includes("gold")) return "gold";
-  if (p.includes("silver")) return "silver";
-  if (p.includes("bronze")) return "bronze";
-  return "none";
-}
 
 function parseMRR(plan: string): number {
   if (!plan.includes("/mo")) return 0;
@@ -133,7 +126,7 @@ export default function MembersTab({ members }: { members: Member[] }) {
   };
 
   const openMember = (m: Member) => {
-    const current = overrideTiers[m.id] ?? (m.status === "lifetime" ? "lifetime" : m.status === "active" || m.status === "paid" ? inferTierFromPlan(m.plan) : "none");
+    const current = overrideTiers[m.id] ?? m.clerkTier ?? "none";
     setTierValue(current);
     setTierConfirm(false);
     setCancelConfirm(0);
@@ -272,6 +265,16 @@ export default function MembersTab({ members }: { members: Member[] }) {
                     <span style={{ padding: "3px 10px", borderRadius: 999, fontSize: 11, fontWeight: 700, background: ss.bg, color: ss.color }}>
                       {displayStatus.toUpperCase()}
                     </span>
+                    {m.clerkTier !== null && (
+                      <span style={{ display: "block", marginTop: 4, fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)" }}>
+                        Access: {m.clerkTier}
+                      </span>
+                    )}
+                    {m.clerkTier === null && displayStatus !== "free" && (
+                      <span style={{ display: "block", marginTop: 4, fontSize: 10, fontWeight: 600, color: "#ff4444" }}>
+                        Access: none
+                      </span>
+                    )}
                   </td>
                   <td style={{ padding: "12px 16px", whiteSpace: "nowrap", ...paymentDateStyle(m.nextPayment) }}>{m.nextPayment}</td>
                   <td style={{ padding: "12px 16px", whiteSpace: "nowrap" }}>
