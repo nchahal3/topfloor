@@ -51,8 +51,13 @@ export async function PATCH(request: Request) {
     const tierLabel = tier ? (TIER_LABELS[tier] ?? tier) : "No Access";
     const amount = tier ? (TIER_AMOUNT[tier] ?? "") : "";
 
-    // --- Monthly → Lifetime: cancel sub, send payment link, do NOT grant access yet ---
+    // --- Monthly → Lifetime: cancel sub, remove access, send payment link ---
+    // Access is restored automatically when webhook fires after they pay $2,000
     if (tier === "lifetime" && subscriptionId) {
+      // Remove access until they complete lifetime payment
+      await client.users.updateUserMetadata(clerkUserId, {
+        publicMetadata: { tier: null },
+      });
       try {
         await stripe.subscriptions.cancel(subscriptionId);
       } catch (err) {
