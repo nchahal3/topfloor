@@ -9,6 +9,7 @@ const ITEMS_PER_PAGE = 25;
 
 export type Member = {
   id: string;
+  clerkUserId: string | null;
   name: string;
   email: string;
   phone: string;
@@ -146,7 +147,7 @@ export default function MembersTab({ members }: { members: Member[] }) {
       const res = await fetch("/api/admin/members/tier", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clerkUserId: member.id, tier: tierValue === "none" ? null : tierValue }),
+        body: JSON.stringify({ clerkUserId: member.clerkUserId, tier: tierValue === "none" ? null : tierValue, subscriptionId: member.subscriptionId }),
       });
       if (!res.ok) {
         const d = await res.json();
@@ -169,7 +170,7 @@ export default function MembersTab({ members }: { members: Member[] }) {
       const res = await fetch(`/api/admin/members/${member.subscriptionId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "cancel", clerkUserId: member.id }),
+        body: JSON.stringify({ action: "cancel", clerkUserId: member.clerkUserId }),
       });
       if (!res.ok) {
         const d = await res.json();

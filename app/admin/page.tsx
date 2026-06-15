@@ -58,6 +58,7 @@ async function getMembers(): Promise<Member[]> {
 
     members.push({
       id: session.id,
+      clerkUserId: session.metadata?.clerkUserId ?? null,
       name: session.customer_details?.name ?? "—",
       email,
       phone: session.customer_details?.phone ?? "—",
@@ -88,6 +89,7 @@ async function getMembers(): Promise<Member[]> {
 
       members.push({
         id: user.id,
+        clerkUserId: user.id,
         name: fullName,
         email,
         phone: user.phoneNumbers[0]?.phoneNumber ?? "—",
