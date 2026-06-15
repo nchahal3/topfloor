@@ -2,9 +2,9 @@ import Link from "next/link";
 
 const PLAN_NAMES: Record<string, string> = {
   bronze: "Bronze Plan ($200/mo)",
-  foundation: "Silver Plan ($500/mo)",
-  elite_monthly: "Gold Plan ($750/mo)",
-  elite_lifetime: "Elite Lifetime ($2,000)",
+  silver: "Silver Plan ($500/mo)",
+  gold: "Gold Plan ($750/mo)",
+  lifetime: "Elite Lifetime ($2,000)",
 };
 
 export default async function SuccessPage({

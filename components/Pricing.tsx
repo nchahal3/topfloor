@@ -25,7 +25,7 @@ const PLANS = [
     cta: "Get Started",
   },
   {
-    id: "foundation",
+    id: "silver",
     name: "Silver",
     tierColor: "#c0c0c0",
     price: "$500",
@@ -44,7 +44,7 @@ const PLANS = [
     cta: "Join Silver",
   },
   {
-    id: "elite_monthly",
+    id: "gold",
     name: "Gold",
     tierColor: "#f0c040",
     price: "$750",
@@ -65,7 +65,7 @@ const PLANS = [
 ];
 
 const LIFETIME = {
-  id: "elite_lifetime",
+  id: "lifetime",
   name: "Elite Lifetime",
   price: "$2,000",
   period: "one-time",
