@@ -31,6 +31,15 @@ const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
 
 const FILTER_TABS = ["all", "active", "free", "past_due", "canceled", "lifetime"];
 
+function inferTierFromPlan(plan: string): string {
+  const p = plan.toLowerCase();
+  if (p.includes("lifetime")) return "lifetime";
+  if (p.includes("gold")) return "gold";
+  if (p.includes("silver")) return "silver";
+  if (p.includes("bronze")) return "bronze";
+  return "none";
+}
+
 function parseMRR(plan: string): number {
   if (!plan.includes("/mo")) return 0;
   const match = plan.match(/\$(\d+)/);
@@ -73,6 +82,10 @@ export default function MembersTab({ members }: { members: Member[] }) {
   const [deleteConfirm, setDeleteConfirm] = useState(0);
   const [deleting, setDeleting] = useState(false);
   const [deletedEmails, setDeletedEmails] = useState<Set<string>>(new Set());
+  const [tierValue, setTierValue] = useState("none");
+  const [tierConfirm, setTierConfirm] = useState(false);
+  const [tierChanging, setTierChanging] = useState(false);
+  const [overrideTiers, setOverrideTiers] = useState<Record<string, string>>({});
   const { toast } = useToast();
 
   const planOptions = ["all", ...Array.from(new Set(members.map((m) => m.plan))).sort()];
@@ -116,6 +129,37 @@ export default function MembersTab({ members }: { members: Member[] }) {
     }
     setDeleteConfirm(0);
     setDeleting(false);
+  };
+
+  const openMember = (m: Member) => {
+    const current = overrideTiers[m.id] ?? (m.status === "lifetime" ? "lifetime" : m.status === "active" || m.status === "paid" ? inferTierFromPlan(m.plan) : "none");
+    setTierValue(current);
+    setTierConfirm(false);
+    setCancelConfirm(0);
+    setDeleteConfirm(0);
+    setSelectedMember(m);
+  };
+
+  const handleTierChange = async (member: Member) => {
+    setTierChanging(true);
+    try {
+      const res = await fetch("/api/admin/members/tier", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clerkUserId: member.id, tier: tierValue === "none" ? null : tierValue }),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        toast(d.error ?? "Failed to update tier.", "error");
+      } else {
+        setOverrideTiers((prev) => ({ ...prev, [member.id]: tierValue }));
+        setTierConfirm(false);
+        toast(`${member.name}'s tier updated to ${tierValue === "none" ? "No Access" : tierValue.charAt(0).toUpperCase() + tierValue.slice(1)}.`);
+      }
+    } catch {
+      toast("Something went wrong.", "error");
+    }
+    setTierChanging(false);
   };
 
   const handleCancel = async (member: Member) => {
@@ -236,7 +280,7 @@ export default function MembersTab({ members }: { members: Member[] }) {
                   <td style={{ padding: "12px 16px" }}>
                     <button
                       type="button"
-                      onClick={() => setSelectedMember(m)}
+                      onClick={() => openMember(m)}
                       style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 7, border: "1px solid rgba(0,255,136,0.2)", background: "rgba(0,255,136,0.06)", color: "#00ff88", fontSize: 11, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}
                     >
                       <CalendarDays size={12} /> Manage
@@ -329,6 +373,48 @@ export default function MembersTab({ members }: { members: Member[] }) {
               <div>
                 <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", margin: "0 0 3px" }}>Joined</p>
                 <p style={{ color: "#f5f5f5", fontSize: 13, margin: 0 }}>{selectedMember.joinedAt}</p>
+              </div>
+            </div>
+
+            {/* Change Tier */}
+            <div style={{ marginBottom: 20, padding: "14px 16px", borderRadius: 12, background: "rgba(240,192,64,0.03)", border: "1px solid rgba(240,192,64,0.15)" }}>
+              <p style={{ color: "#f0c040", fontWeight: 700, fontSize: 13, margin: "0 0 4px" }}>Change Tier</p>
+              <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, margin: "0 0 12px" }}>Manually override this member's access level. Takes effect immediately.</p>
+
+              {selectedMember.status === "lifetime" && (
+                <div style={{ marginBottom: 12, padding: "8px 12px", borderRadius: 8, background: "rgba(255,165,0,0.08)", border: "1px solid rgba(255,165,0,0.2)" }}>
+                  <p style={{ color: "#ffa500", fontSize: 12, fontWeight: 600, margin: 0 }}>⚠ This member paid for lifetime access. Removing access will revoke their permanent membership.</p>
+                </div>
+              )}
+
+              <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                <select
+                  aria-label="Select tier"
+                  value={tierValue}
+                  onChange={(e) => { setTierValue(e.target.value); setTierConfirm(false); }}
+                  style={{ padding: "7px 10px", borderRadius: 8, background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.12)", color: "#f5f5f5", fontSize: 13, fontWeight: 600, outline: "none", cursor: "pointer" }}
+                >
+                  <option value="bronze">Bronze</option>
+                  <option value="silver">Silver</option>
+                  <option value="gold">Gold</option>
+                  <option value="lifetime">Lifetime</option>
+                  <option value="none">Remove Access</option>
+                </select>
+                {!tierConfirm ? (
+                  <button type="button" onClick={() => setTierConfirm(true)} style={{ padding: "7px 16px", borderRadius: 8, background: "rgba(240,192,64,0.1)", border: "1px solid rgba(240,192,64,0.3)", color: "#f0c040", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                    Apply Change
+                  </button>
+                ) : (
+                  <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                    <span style={{ color: "rgba(255,255,255,0.45)", fontSize: 12 }}>
+                      Set to <strong style={{ color: tierValue === "none" ? "#ff4444" : "#f0c040" }}>{tierValue === "none" ? "No Access" : tierValue.charAt(0).toUpperCase() + tierValue.slice(1)}</strong>?
+                    </span>
+                    <button type="button" onClick={() => handleTierChange(selectedMember)} disabled={tierChanging} style={{ padding: "6px 14px", borderRadius: 8, background: "#f0c040", border: "none", color: "#000", fontSize: 12, fontWeight: 700, cursor: "pointer", opacity: tierChanging ? 0.6 : 1 }}>
+                      {tierChanging ? "Saving..." : "Confirm"}
+                    </button>
+                    <button type="button" onClick={() => setTierConfirm(false)} style={{ padding: "6px 10px", borderRadius: 8, background: "transparent", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.35)", fontSize: 12, cursor: "pointer" }}>Cancel</button>
+                  </div>
+                )}
               </div>
             </div>
 
