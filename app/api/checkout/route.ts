@@ -3,13 +3,13 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 const PRICE_IDS: Record<string, string> = {
-  bronze: "price_1TcXNFLzOgqHnoj8K3UFHzkb",
-  foundation: "price_1TcXPLLzOgqHnoj8SssRgzrw",
-  elite_monthly: "price_1TcXPvLzOgqHnoj8CddbTIjW",
-  elite_lifetime: "price_1TcXQfLzOgqHnoj8KnOfBONZ",
+  bronze: "price_1TiikP8sHKVNeGWtxjodurtl",
+  silver: "price_1Tiike8sHKVNeGWtJr1gxDZx",
+  gold: "price_1Tiiku8sHKVNeGWtthSeTog0",
+  lifetime: "price_1Tiil68sHKVNeGWt4SFHY6P5",
 };
 
-const RECURRING = new Set(["bronze", "foundation", "elite_monthly"]);
+const RECURRING = new Set(["bronze", "silver", "gold"]);
 
 export async function POST(request: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);

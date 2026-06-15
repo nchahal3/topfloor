@@ -29,8 +29,8 @@ export const TIER_COLORS: Record<string, string> = {
 
 // Maps Stripe price IDs to tiers
 export const PRICE_TIER: Record<string, Tier> = {
-  price_1TcXNFLzOgqHnoj8K3UFHzkb: "bronze",
-  price_1TcXPLLzOgqHnoj8SssRgzrw: "silver",
-  price_1TcXPvLzOgqHnoj8CddbTIjW: "gold",
-  price_1TcXQfLzOgqHnoj8KnOfBONZ: "lifetime",
+  price_1TiikP8sHKVNeGWtxjodurtl: "bronze",
+  price_1Tiike8sHKVNeGWtJr1gxDZx: "silver",
+  price_1Tiiku8sHKVNeGWtthSeTog0: "gold",
+  price_1Tiil68sHKVNeGWt4SFHY6P5: "lifetime",
 };

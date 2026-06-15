@@ -7,10 +7,10 @@ import type { Member } from "@/components/admin/MembersTab";
 import { getAdminToken } from "@/lib/admin-auth";
 
 const PLAN_NAMES: Record<string, string> = {
-  price_1TcXNFLzOgqHnoj8K3UFHzkb: "Bronze ($200/mo)",
-  price_1TcXPLLzOgqHnoj8SssRgzrw: "Silver ($500/mo)",
-  price_1TcXPvLzOgqHnoj8CddbTIjW: "Gold ($750/mo)",
-  price_1TcXQfLzOgqHnoj8KnOfBONZ: "Elite Lifetime ($2,000)",
+  price_1TiikP8sHKVNeGWtxjodurtl: "Bronze ($200/mo)",
+  price_1Tiike8sHKVNeGWtJr1gxDZx: "Silver ($500/mo)",
+  price_1Tiiku8sHKVNeGWtthSeTog0: "Gold ($750/mo)",
+  price_1Tiil68sHKVNeGWt4SFHY6P5: "Lifetime ($2,000)",
 };
 
 async function getMembers(): Promise<Member[]> {
