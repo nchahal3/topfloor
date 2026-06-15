@@ -18,41 +18,50 @@ async function getMembers(): Promise<Member[]> {
 
   const sessions = await stripe.checkout.sessions.list({ limit: 100, status: "complete" });
 
+  // Deduplicate by email first, then fetch all line items + subscriptions in parallel
   const seen = new Set<string>();
-  const members: Member[] = [];
-
-  for (const session of sessions.data) {
-    const email = session.customer_details?.email ?? "";
-    if (!email || seen.has(email)) continue;
+  const uniqueSessions = sessions.data.filter((s) => {
+    const email = s.customer_details?.email ?? "";
+    if (!email || seen.has(email)) return false;
     seen.add(email);
+    return true;
+  });
 
-    let planName = "Unknown";
-    try {
-      const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
-      const priceId = lineItems.data[0]?.price?.id ?? "";
-      planName = PLAN_NAMES[priceId] ?? "Unknown";
-    } catch {}
+  type SubInfo = { status?: string; current_period_end?: number; items?: { data?: Array<{ current_period_end?: number }> } };
 
-    let status = "paid";
-    let nextPayment = "—";
-    if (session.subscription) {
-      try {
-        const sub = await stripe.subscriptions.retrieve(session.subscription as string) as unknown as {
-          status?: string;
-          current_period_end?: number;
-          items?: { data?: Array<{ current_period_end?: number }> };
-        };
-        status = sub.status ?? "active";
-        const periodEnd = sub.current_period_end ?? sub.items?.data?.[0]?.current_period_end;
-        if (periodEnd) {
-          const d = new Date(Number(periodEnd) * 1000);
-          if (!isNaN(d.getTime())) {
-            nextPayment = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-          }
+  const enriched = await Promise.all(
+    uniqueSessions.map(async (session) => {
+      const [lineItemsResult, subResult] = await Promise.allSettled([
+        stripe.checkout.sessions.listLineItems(session.id),
+        session.subscription
+          ? stripe.subscriptions.retrieve(session.subscription as string)
+          : Promise.resolve(null),
+      ]);
+
+      const priceId =
+        lineItemsResult.status === "fulfilled"
+          ? (lineItemsResult.value.data[0]?.price?.id ?? "")
+          : "";
+      const planName = PLAN_NAMES[priceId] ?? "Unknown";
+
+      const sub = subResult.status === "fulfilled" ? (subResult.value as unknown as SubInfo) : null;
+      const status = sub?.status ?? "paid";
+      let nextPayment = "—";
+      const periodEnd = sub?.current_period_end ?? sub?.items?.data?.[0]?.current_period_end;
+      if (periodEnd) {
+        const d = new Date(Number(periodEnd) * 1000);
+        if (!isNaN(d.getTime())) {
+          nextPayment = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
         }
-      } catch {}
-    }
+      }
 
+      return { session, planName, status, nextPayment };
+    })
+  );
+
+  const members: Member[] = [];
+  for (const { session, planName, status, nextPayment } of enriched) {
+    const email = session.customer_details?.email ?? "";
     const discord =
       session.custom_fields?.find((f) => f.key === "discord_username")?.text?.value ?? "—";
 

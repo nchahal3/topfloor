@@ -56,15 +56,46 @@ export async function POST(request: Request) {
     } catch {}
 
     const clerkUserId = session.metadata?.clerkUserId;
+    let alreadyProcessed = false;
     if (clerkUserId && tier) {
       try {
         const client = await clerkClient();
-        await client.users.updateUserMetadata(clerkUserId, {
-          publicMetadata: { tier, pendingLifetime: false },
-        });
+        const existingUser = await client.users.getUser(clerkUserId);
+        const existingTier = existingUser.publicMetadata?.tier;
+        if (existingTier === tier) {
+          alreadyProcessed = true;
+        } else {
+          await client.users.updateUserMetadata(clerkUserId, {
+            publicMetadata: { tier, pendingLifetime: false },
+          });
+        }
       } catch (err) {
         console.error("Failed to update Clerk user tier:", err);
+        // Alert coach so they can manually fix access
+        await resend.emails.send({
+          from: FROM_EMAIL,
+          to: process.env.COACH_EMAIL!,
+          subject: `⚠️ URGENT: Failed to grant dashboard access — ${customerName}`,
+          html: `
+            <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#1a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;border:2px solid #ff4444;">
+              <h2 style="color:#ff4444;margin-top:0;">⚠️ Access Grant Failed</h2>
+              <p style="color:#aaa;">A payment was received but the member's dashboard access could not be automatically granted. Manual action required.</p>
+              <table style="width:100%;border-collapse:collapse;">
+                <tr><td style="padding:8px 0;color:#999;width:120px;">Name</td><td style="padding:8px 0;font-weight:bold;">${customerName}</td></tr>
+                <tr><td style="padding:8px 0;color:#999;">Email</td><td style="padding:8px 0;"><a href="mailto:${customerEmail}" style="color:#00ff88;">${customerEmail}</a></td></tr>
+                <tr><td style="padding:8px 0;color:#999;">Plan</td><td style="padding:8px 0;color:#f0c040;font-weight:bold;">${planName}</td></tr>
+                <tr><td style="padding:8px 0;color:#999;">Clerk ID</td><td style="padding:8px 0;font-family:monospace;font-size:12px;">${clerkUserId ?? "missing"}</td></tr>
+                <tr><td style="padding:8px 0;color:#999;">Error</td><td style="padding:8px 0;color:#ff4444;">${err instanceof Error ? err.message : String(err)}</td></tr>
+              </table>
+              <p style="color:#aaa;margin-top:16px;">Go to the admin panel and manually set their tier to <strong>${tier}</strong>.</p>
+            </div>
+          `,
+        }).catch(() => {});
       }
+    }
+
+    if (alreadyProcessed) {
+      return NextResponse.json({ received: true });
     }
 
     await resend.emails.send({

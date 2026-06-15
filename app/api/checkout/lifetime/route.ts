@@ -6,14 +6,19 @@ import { PRICE_TIER } from "@/lib/tier";
 const lifetimePriceId = Object.entries(PRICE_TIER).find(([, t]) => t === "lifetime")?.[0];
 
 export async function GET() {
+  const base = process.env.NEXT_PUBLIC_URL ?? "https://topfloortradesofficial.com";
+
   const { userId } = await auth();
   if (!userId) {
-    const base = process.env.NEXT_PUBLIC_URL ?? "https://topfloortradesofficial.com";
     return NextResponse.redirect(`${base}/sign-in`);
   }
 
+  if (!lifetimePriceId) {
+    console.error("Lifetime price ID not found in PRICE_TIER map");
+    return NextResponse.redirect(`${base}/pricing?error=config`);
+  }
+
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-  const base = process.env.NEXT_PUBLIC_URL ?? "https://topfloortradesofficial.com";
 
   const user = await currentUser();
   const email = user?.emailAddresses[0]?.emailAddress;
@@ -26,7 +31,7 @@ export async function GET() {
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
-    line_items: [{ price: lifetimePriceId!, quantity: 1 }],
+    line_items: [{ price: lifetimePriceId, quantity: 1 }],
     ...(customerId ? { customer: customerId } : { customer_email: email }),
     success_url: `${base}/success?plan=lifetime`,
     cancel_url: `${base}/dashboard`,
