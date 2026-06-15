@@ -60,7 +60,7 @@ export async function POST(request: Request) {
       try {
         const client = await clerkClient();
         await client.users.updateUserMetadata(clerkUserId, {
-          publicMetadata: { tier },
+          publicMetadata: { tier, pendingLifetime: false },
         });
       } catch (err) {
         console.error("Failed to update Clerk user tier:", err);

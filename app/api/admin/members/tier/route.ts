@@ -54,9 +54,9 @@ export async function PATCH(request: Request) {
     // --- Monthly → Lifetime: cancel sub, remove access, send payment link ---
     // Access is restored automatically when webhook fires after they pay $2,000
     if (tier === "lifetime" && subscriptionId) {
-      // Remove access until they complete lifetime payment
+      // Remove access, flag as pending lifetime payment
       await client.users.updateUserMetadata(clerkUserId, {
-        publicMetadata: { tier: null },
+        publicMetadata: { tier: null, pendingLifetime: true },
       });
       try {
         await stripe.subscriptions.cancel(subscriptionId);
@@ -76,7 +76,7 @@ export async function PATCH(request: Request) {
                 <p style="color:#aaa;line-height:1.6;">Hey ${memberName}, your monthly subscription has been cancelled and you've been moved to a <strong style="color:#f0c040;">Lifetime</strong> membership.</p>
                 <p style="color:#aaa;line-height:1.6;">Your access is active right now. Please complete the one-time <strong style="color:#f5f5f5;">$2,000 lifetime payment</strong> to lock in your access permanently.</p>
                 <div style="text-align:center;margin:32px 0;">
-                  <a href="${BASE_URL}/pricing" style="display:inline-block;background:#f0c040;color:#000;font-weight:bold;padding:14px 32px;border-radius:999px;text-decoration:none;font-size:16px;">
+                  <a href="${BASE_URL}/api/checkout/lifetime" style="display:inline-block;background:#f0c040;color:#000;font-weight:bold;padding:14px 32px;border-radius:999px;text-decoration:none;font-size:16px;">
                     Complete Lifetime Payment →
                   </a>
                 </div>
