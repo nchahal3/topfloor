@@ -6,7 +6,7 @@ import type { Tier } from "@/lib/tier";
 import { PRICE_TIER } from "@/lib/tier";
 
 const FROM_EMAIL = "noreply@topfloortradesofficial.com";
-const DISCORD_INVITE = "https://discord.gg/TvhhdGtU";
+const DISCORD_INVITE = "https://discord.gg/TVxNWph5BQ";
 
 const PLAN_NAMES: Record<string, string> = {
   price_1TiikP8sHKVNeGWtxjodurtl: "Bronze ($200/mo)",
