@@ -99,7 +99,7 @@ export default function ContactSection() {
                 Expect a reply within 24 hours. In the meantime, come hang in the Discord.
               </p>
               <a
-                href="https://discord.gg/TVxNWph5BQ"
+                href="https://discord.gg/yebuyWPswJ"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-primary inline-block px-7 py-3 text-sm"
@@ -269,7 +269,7 @@ export default function ContactSection() {
                   </p>
                 </div>
                 <a
-                  href="https://discord.gg/TVxNWph5BQ"
+                  href="https://discord.gg/yebuyWPswJ"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn-primary shrink-0 px-5 py-2.5 text-sm"
