@@ -144,5 +144,127 @@ export async function POST(request: Request) {
     });
   }
 
+  // ── Subscription cancelled (all retries exhausted or manually cancelled) ──
+  if (event.type === "customer.subscription.deleted") {
+    const subscription = event.data.object as Stripe.Subscription;
+    const clerkUserId = subscription.metadata?.clerkUserId;
+
+    // Get customer email + name from Stripe
+    let memberEmail = "";
+    let memberName = "Member";
+    try {
+      const customer = await stripe.customers.retrieve(subscription.customer as string) as Stripe.Customer;
+      memberEmail = customer.email ?? "";
+      memberName = customer.name ?? "Member";
+    } catch {}
+
+    // Revoke Clerk access
+    const client = await clerkClient();
+    if (clerkUserId) {
+      try {
+        await client.users.updateUserMetadata(clerkUserId, { publicMetadata: { tier: null } });
+      } catch (err) {
+        console.error("Failed to revoke Clerk tier on subscription deletion:", err);
+      }
+    } else if (memberEmail) {
+      // Fallback: look up by email if clerkUserId missing (older subscriptions)
+      try {
+        const users = await client.users.getUserList({ emailAddress: [memberEmail] });
+        if (users.data.length > 0) {
+          await client.users.updateUserMetadata(users.data[0].id, { publicMetadata: { tier: null } });
+        }
+      } catch (err) {
+        console.error("Failed to revoke Clerk tier by email:", err);
+      }
+    }
+
+    if (memberEmail) {
+      await Promise.all([
+        resend.emails.send({
+          from: FROM_EMAIL,
+          to: memberEmail,
+          subject: "Your 🔝Floor membership has ended",
+          html: `
+            <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
+              <h2 style="color:#f5f5f5;margin-top:0;">Your membership has ended</h2>
+              <p style="color:#aaa;line-height:1.6;">Hey ${memberName}, your 🔝Floor subscription has been cancelled and your dashboard access has been removed.</p>
+              <p style="color:#aaa;line-height:1.6;">If this was a mistake or you'd like to rejoin, you can resubscribe anytime.</p>
+              <div style="text-align:center;margin:32px 0;">
+                <a href="${process.env.NEXT_PUBLIC_URL}/pricing" style="display:inline-block;background:#00ff88;color:#000;font-weight:bold;padding:14px 32px;border-radius:999px;text-decoration:none;font-size:16px;">
+                  Rejoin 🔝Floor →
+                </a>
+              </div>
+              <hr style="border:none;border-top:1px solid #222;margin:24px 0;" />
+              <p style="color:#444;font-size:11px;">Trading involves significant risk. Past performance is not indicative of future results.</p>
+            </div>
+          `,
+        }),
+        resend.emails.send({
+          from: FROM_EMAIL,
+          to: process.env.COACH_EMAIL!,
+          subject: `❌ Member Cancelled — ${memberName}`,
+          html: `
+            <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
+              <h2 style="color:#ff4444;margin-top:0;">Member Cancelled</h2>
+              <table style="width:100%;border-collapse:collapse;">
+                <tr><td style="padding:8px 0;color:#999;width:100px;">Name</td><td style="padding:8px 0;font-weight:bold;">${memberName}</td></tr>
+                <tr><td style="padding:8px 0;color:#999;">Email</td><td style="padding:8px 0;"><a href="mailto:${memberEmail}" style="color:#00ff88;">${memberEmail}</a></td></tr>
+                <tr><td style="padding:8px 0;color:#999;">Action</td><td style="padding:8px 0;color:#ff4444;">Subscription cancelled, dashboard access revoked</td></tr>
+              </table>
+            </div>
+          `,
+        }),
+      ]).catch((e) => console.error("Cancel email failed:", e));
+    }
+  }
+
+  // ── Payment failed (warn member, don't revoke yet — Stripe will retry) ──
+  if (event.type === "invoice.payment_failed") {
+    const invoice = event.data.object as Stripe.Invoice & { customer_email?: string; customer_name?: string; attempt_count?: number };
+    const memberEmail = invoice.customer_email ?? "";
+    const memberName = invoice.customer_name ?? "Member";
+    const attemptCount = invoice.attempt_count ?? 1;
+
+    if (memberEmail) {
+      await Promise.all([
+        resend.emails.send({
+          from: FROM_EMAIL,
+          to: memberEmail,
+          subject: "⚠️ Payment failed — action required",
+          html: `
+            <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;border:1px solid rgba(255,165,0,0.3);">
+              <h2 style="color:#ffa500;margin-top:0;">Payment Failed</h2>
+              <p style="color:#aaa;line-height:1.6;">Hey ${memberName}, we couldn't process your 🔝Floor subscription payment${attemptCount > 1 ? ` (attempt ${attemptCount})` : ""}.</p>
+              <p style="color:#aaa;line-height:1.6;">Please update your payment method to keep your access. If payment isn't resolved, your membership will be cancelled automatically.</p>
+              <div style="text-align:center;margin:32px 0;">
+                <a href="${process.env.NEXT_PUBLIC_URL}/dashboard" style="display:inline-block;background:#ffa500;color:#000;font-weight:bold;padding:14px 32px;border-radius:999px;text-decoration:none;font-size:16px;">
+                  Update Payment Method →
+                </a>
+              </div>
+              <hr style="border:none;border-top:1px solid #222;margin:24px 0;" />
+              <p style="color:#444;font-size:11px;">Trading involves significant risk. Past performance is not indicative of future results.</p>
+            </div>
+          `,
+        }),
+        resend.emails.send({
+          from: FROM_EMAIL,
+          to: process.env.COACH_EMAIL!,
+          subject: `⚠️ Payment Failed — ${memberName} (attempt ${attemptCount})`,
+          html: `
+            <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
+              <h2 style="color:#ffa500;margin-top:0;">Payment Failed</h2>
+              <table style="width:100%;border-collapse:collapse;">
+                <tr><td style="padding:8px 0;color:#999;width:100px;">Name</td><td style="padding:8px 0;font-weight:bold;">${memberName}</td></tr>
+                <tr><td style="padding:8px 0;color:#999;">Email</td><td style="padding:8px 0;"><a href="mailto:${memberEmail}" style="color:#00ff88;">${memberEmail}</a></td></tr>
+                <tr><td style="padding:8px 0;color:#999;">Attempt</td><td style="padding:8px 0;color:#ffa500;font-weight:bold;">#${attemptCount}</td></tr>
+                <tr><td style="padding:8px 0;color:#999;">Note</td><td style="padding:8px 0;">Access not revoked yet — Stripe will retry automatically</td></tr>
+              </table>
+            </div>
+          `,
+        }),
+      ]).catch((e) => console.error("Payment failed email error:", e));
+    }
+  }
+
   return NextResponse.json({ received: true });
 }

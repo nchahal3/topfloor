@@ -43,6 +43,8 @@ export async function POST(request: Request) {
       mode: isRecurring ? "subscription" : "payment",
       line_items: [{ price: priceId, quantity: 1 }],
       ...(customerId ? { customer: customerId } : {}),
+      // Store clerkUserId on the subscription itself so cancellation webhooks can find the user
+      ...(isRecurring && userId ? { subscription_data: { metadata: { clerkUserId: userId } } } : {}),
       success_url: `${baseUrl}/success?plan=${plan}`,
       cancel_url: `${baseUrl}/pricing`,
       phone_number_collection: { enabled: true },
