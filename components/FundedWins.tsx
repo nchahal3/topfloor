@@ -6,12 +6,21 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const PROOF = [
-  { src: "/certs/cert-1.jpg", label: "Alpha Futures Pass" },
-  { src: "/certs/cert-2.jpg", label: "Lucid 50K Funded" },
-  { src: "/certs/cert-3.jpg", label: "Lucid Funded Account" },
-  { src: "/certs/cert-4.jpg", label: "Topstep Funded Trader" },
-  { src: "/certs/cert-5.jpg", label: "Lucid 50K Funded" },
-  { src: "/certs/cert-6.jpg", label: "Payout Confirmed" },
+  { src: "/results/Result1.jpeg", label: "Daily PNL Calendar" },
+  { src: "/results/Result2.PNG", label: "$13,000 Alpha Futures Payout" },
+  { src: "/results/Result3.PNG", label: "$8,500 Lucid Trading Payout" },
+  { src: "/results/Result4.PNG", label: "$56,500 Lifetime Payouts" },
+  { src: "/results/Result5.PNG", label: "Topstep Funded Trader — Philip Wilson" },
+  { src: "/results/Result6.PNG", label: "$1,350 Alpha Futures Payout" },
+  { src: "/results/Result7.PNG", label: "$1,094 Lucid Trading Payout" },
+  { src: "/results/Result8.JPG", label: "Topstep Funded Trader — Clyde Macapagal" },
+  { src: "/results/Result9.JPEG", label: "Lucid LucidFlex 50K Funded" },
+  { src: "/results/Result10.JPEG", label: "Lucid LucidFlex 50K Funded" },
+  { src: "/results/Result11.JPEG", label: "Topstep Funded Trader — Jesus Villanueva" },
+  { src: "/results/Result12.JPEG", label: "Topstep Funded Trader — Jesus Villanueva" },
+  { src: "/results/Result13.JPEG", label: "Topstep Payout Approved" },
+  { src: "/results/Result14.PNG", label: "Topstep Payout Processed" },
+  { src: "/results/Result15.PNG", label: "Funded Account Certificate" },
 ];
 
 export default function FundedWins() {
