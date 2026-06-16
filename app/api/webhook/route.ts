@@ -67,7 +67,12 @@ export async function POST(request: Request) {
           alreadyProcessed = true;
         } else {
           await client.users.updateUserMetadata(clerkUserId, {
-            publicMetadata: { tier, pendingLifetime: false },
+            publicMetadata: {
+              tier,
+              pendingLifetime: false,
+              phone: customerPhone !== "Not provided" ? customerPhone : undefined,
+              discordUsername: discordUsername !== "Not provided" ? discordUsername : undefined,
+            },
           });
         }
       } catch (err) {
