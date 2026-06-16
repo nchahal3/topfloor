@@ -111,7 +111,7 @@ export async function PATCH(request: Request) {
     // --- Regular tier change (Bronze/Silver/Gold, remove access, or lifetime with no existing sub) ---
     // Update Clerk tier — only for non-lifetime-from-subscription cases
     await client.users.updateUserMetadata(clerkUserId, {
-      publicMetadata: { tier: tier ?? null },
+      publicMetadata: { tier: tier ?? null, pendingLifetime: false },
     });
     let nextBillingDate = "your next billing date";
     if (subscriptionId && tier && tier !== "lifetime") {

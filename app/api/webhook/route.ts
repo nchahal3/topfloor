@@ -57,6 +57,7 @@ export async function POST(request: Request) {
 
     const clerkUserId = session.metadata?.clerkUserId;
     let alreadyProcessed = false;
+    let clerkFailed = false;
     if (clerkUserId && tier) {
       try {
         const client = await clerkClient();
@@ -71,6 +72,7 @@ export async function POST(request: Request) {
         }
       } catch (err) {
         console.error("Failed to update Clerk user tier:", err);
+        clerkFailed = true;
         // Alert coach so they can manually fix access
         await resend.emails.send({
           from: FROM_EMAIL,
@@ -94,7 +96,8 @@ export async function POST(request: Request) {
       }
     }
 
-    if (alreadyProcessed) {
+    // Don't send welcome email if Clerk failed (member has no access yet)
+    if (alreadyProcessed || clerkFailed) {
       return NextResponse.json({ received: true });
     }
 
