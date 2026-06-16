@@ -44,7 +44,7 @@ async function getMembers(): Promise<Member[]> {
     return true;
   });
 
-  type SubInfo = { status?: string; current_period_end?: number; items?: { data?: Array<{ current_period_end?: number }> } };
+  type SubInfo = { status?: string; current_period_end?: number; items?: { data?: Array<{ current_period_end?: number; price?: { id?: string } }> } };
 
   const enriched = await Promise.all(
     uniqueSessions.map(async (session) => {
@@ -55,13 +55,16 @@ async function getMembers(): Promise<Member[]> {
           : Promise.resolve(null),
       ]);
 
+      const sub = subResult.status === "fulfilled" ? (subResult.value as unknown as SubInfo) : null;
+
+      // Prefer live subscription price (reflects admin tier changes); fall back to original checkout
       const priceId =
-        lineItemsResult.status === "fulfilled"
+        sub?.items?.data?.[0]?.price?.id
+        ?? (lineItemsResult.status === "fulfilled"
           ? (lineItemsResult.value.data[0]?.price?.id ?? "")
-          : "";
+          : "");
       const planName = PLAN_NAMES[priceId] ?? "Unknown";
 
-      const sub = subResult.status === "fulfilled" ? (subResult.value as unknown as SubInfo) : null;
       const status = sub?.status ?? "paid";
       let nextPayment = "—";
       const periodEnd = sub?.current_period_end ?? sub?.items?.data?.[0]?.current_period_end;
