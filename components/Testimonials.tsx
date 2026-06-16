@@ -1,6 +1,25 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
+
+const PROOF_IMAGES = [
+  "/results/Result1.jpeg",
+  "/results/Result2.PNG",
+  "/results/Result3.PNG",
+  "/results/Result4.PNG",
+  "/results/Result5.PNG",
+  "/results/Result6.PNG",
+  "/results/Result7.PNG",
+  "/results/Result8.JPG",
+  "/results/Result9.JPEG",
+  "/results/Result10.JPEG",
+  "/results/Result11.JPEG",
+  "/results/Result12.JPEG",
+  "/results/Result13.JPEG",
+  "/results/Result14.PNG",
+  "/results/Result15.PNG",
+];
 
 const TESTIMONIALS = [
   {
@@ -150,6 +169,43 @@ export default function Testimonials() {
             </motion.div>
           ))}
         </div>
+
+        {/* Proof gallery */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.6 }}
+          className="mt-20"
+        >
+          <p className="text-center text-xs font-bold tracking-widest uppercase mb-4" style={{ color: "#00ff88" }}>
+            Proof
+          </p>
+          <h3 className="display-font text-3xl sm:text-4xl text-white text-center mb-10">
+            Results That Speak For Themselves
+          </h3>
+          <div className="columns-2 sm:columns-3 lg:columns-4 gap-4 space-y-4">
+            {PROOF_IMAGES.map((src, i) => (
+              <motion.div
+                key={src}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.45, delay: i * 0.04 }}
+                className="break-inside-avoid rounded-xl overflow-hidden border"
+                style={{ borderColor: "rgba(255,255,255,0.08)" }}
+              >
+                <Image
+                  src={src}
+                  alt={`Member result ${i + 1}`}
+                  width={600}
+                  height={800}
+                  className="w-full h-auto object-cover"
+                />
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
 
         {/* Disclaimer */}
         <p
