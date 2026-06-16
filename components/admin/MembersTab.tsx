@@ -265,14 +265,9 @@ export default function MembersTab({ members }: { members: Member[] }) {
                     <span style={{ padding: "3px 10px", borderRadius: 999, fontSize: 11, fontWeight: 700, background: ss.bg, color: ss.color }}>
                       {displayStatus.toUpperCase()}
                     </span>
-                    {m.clerkTier !== null && (
-                      <span style={{ display: "block", marginTop: 4, fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)" }}>
-                        Access: {m.clerkTier}
-                      </span>
-                    )}
-                    {m.clerkTier === null && displayStatus !== "free" && (
+                    {m.plan !== "Free" && displayStatus === "free" && (
                       <span style={{ display: "block", marginTop: 4, fontSize: 10, fontWeight: 600, color: "#ff4444" }}>
-                        Access: none
+                        access revoked
                       </span>
                     )}
                   </td>

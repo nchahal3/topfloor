@@ -82,17 +82,28 @@ async function getMembers(): Promise<Member[]> {
     const discord =
       session.custom_fields?.find((f) => f.key === "discord_username")?.text?.value ?? "—";
     const clerkData = clerkByEmail.get(email.toLowerCase());
+    const clerkTier = clerkData?.clerkTier ?? null;
+
+    // Derive effective status from Clerk (source of truth for access)
+    // Keep Stripe failure states (canceled/past_due) regardless of Clerk
+    const stripeStatus = session.mode === "payment" ? "lifetime" : status;
+    const effectiveStatus = (() => {
+      if (stripeStatus === "canceled" || stripeStatus === "past_due") return stripeStatus;
+      if (clerkTier === "lifetime") return "lifetime";
+      if (clerkTier) return "active";
+      return "free"; // null clerkTier = no access, even if they paid
+    })();
 
     members.push({
       id: session.id,
       clerkUserId: session.metadata?.clerkUserId ?? clerkData?.clerkUserId ?? null,
-      clerkTier: clerkData?.clerkTier ?? null,
+      clerkTier,
       name: session.customer_details?.name ?? "—",
       email,
       phone: session.customer_details?.phone ?? "—",
       discord,
       plan: planName,
-      status: session.mode === "payment" ? "lifetime" : status,
+      status: effectiveStatus,
       nextPayment,
       joinedAt: new Date(session.created * 1000).toLocaleDateString("en-CA", {
         month: "short", day: "numeric", year: "numeric",
