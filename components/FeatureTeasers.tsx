@@ -5,12 +5,21 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const RESULTS = [
-  "/certs/cert-1.jpg",
-  "/certs/cert-2.jpg",
-  "/certs/cert-3.jpg",
-  "/certs/cert-4.jpg",
-  "/certs/cert-5.jpg",
-  "/certs/cert-6.jpg",
+  "/results/Result1.jpeg",
+  "/results/Result2.PNG",
+  "/results/Result3.PNG",
+  "/results/Result4.PNG",
+  "/results/Result5.PNG",
+  "/results/Result6.PNG",
+  "/results/Result7.PNG",
+  "/results/Result8.JPG",
+  "/results/Result9.JPEG",
+  "/results/Result10.JPEG",
+  "/results/Result11.JPEG",
+  "/results/Result12.JPEG",
+  "/results/Result13.JPEG",
+  "/results/Result14.PNG",
+  "/results/Result15.PNG",
 ];
 
 export default function FeatureTeasers() {
