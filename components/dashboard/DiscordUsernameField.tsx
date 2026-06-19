@@ -35,7 +35,7 @@ export default function DiscordUsernameField({ initial }: { initial: string }) {
         DISCORD USERNAME
       </p>
       <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 13, margin: "0 0 14px" }}>
-        Add your Discord username so Coach Floor can find you in the server.
+        Add your Discord username so we can find you in the server.
       </p>
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
         <input
