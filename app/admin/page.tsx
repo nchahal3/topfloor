@@ -26,7 +26,7 @@ async function getMembers(): Promise<Member[]> {
         clerkTier: (u.publicMetadata?.tier as string | null) ?? null,
         clerkUserId: u.id,
         phone: u.phoneNumbers[0]?.phoneNumber ?? "—",
-        discord: (u.publicMetadata?.discord as string) ?? "—",
+        discord: (u.publicMetadata?.discordUsername as string) ?? (u.publicMetadata?.discord as string) ?? "—",
         joinedAt: new Date(u.createdAt).toLocaleDateString("en-CA", { month: "short", day: "numeric", year: "numeric" }),
         fullName: [u.firstName, u.lastName].filter(Boolean).join(" ") || "—",
       },
@@ -82,9 +82,11 @@ async function getMembers(): Promise<Member[]> {
   const members: Member[] = [];
   for (const { session, planName, status, nextPayment } of enriched) {
     const email = session.customer_details?.email ?? "";
-    const discord =
-      session.custom_fields?.find((f) => f.key === "discord_username")?.text?.value ?? "—";
     const clerkData = clerkByEmail.get(email.toLowerCase());
+    const discord =
+      session.custom_fields?.find((f) => f.key === "discord_username")?.text?.value
+      ?? clerkData?.discord
+      ?? "—";
     const clerkTier = clerkData?.clerkTier ?? null;
 
     // Derive effective status from Clerk (source of truth for access)
