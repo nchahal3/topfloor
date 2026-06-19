@@ -15,6 +15,7 @@ const PROOF = [
   { src: "/results/Result5.PNG", label: "Topstep Funded Trader — Philip Wilson" },
   { src: "/results/Result7.PNG", label: "$1,094 Lucid Trading Payout" },
   { src: "/results/Result14.PNG", label: "Topstep Payout Processed" },
+  { src: "/results/Results16.png", label: "Funded Account Result" },
   { src: "/results/Result3.PNG", label: "$8,500 Lucid Trading Payout" },
   { src: "/results/Result10.JPEG", label: "Lucid LucidFlex 50K Funded" },
   { src: "/results/Result6.PNG", label: "$1,350 Alpha Futures Payout" },

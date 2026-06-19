@@ -14,6 +14,7 @@ const RESULTS = [
   "/results/Result5.PNG",
   "/results/Result7.PNG",
   "/results/Result14.PNG",
+  "/results/Results16.png",
   "/results/Result3.PNG",
   "/results/Result10.JPEG",
   "/results/Result6.PNG",
