@@ -5,19 +5,19 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const RESULTS = [
-  "/results/Result1.jpeg",
-  "/results/Result2.PNG",
-  "/results/Result3.PNG",
   "/results/Result4.PNG",
+  "/results/Result2.PNG",
   "/results/Result5.PNG",
-  "/results/Result6.PNG",
-  "/results/Result7.PNG",
-  "/results/Result8.JPG",
   "/results/Result9.JPEG",
-  "/results/Result10.JPEG",
   "/results/Result11.JPEG",
+  "/results/Result3.PNG",
+  "/results/Result8.JPG",
+  "/results/Result6.PNG",
+  "/results/Result10.JPEG",
   "/results/Result12.JPEG",
+  "/results/Result7.PNG",
   "/results/Result13.JPEG",
+  "/results/Result1.jpeg",
   "/results/Result14.PNG",
   "/results/Result15.PNG",
 ];
