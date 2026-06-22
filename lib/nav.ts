@@ -5,16 +5,21 @@ import {
   Calendar,
   Video,
   Trophy,
+  User,
+  HelpCircle,
 } from "lucide-react";
 
 export const NAV_LINKS = [
-  { href: "/about", label: "About" },
   { href: "/features", label: "What You Get" },
-  { href: "/results", label: "Results" },
   { href: "/pricing", label: "Pricing" },
   { href: "/funded-accounts", label: "Get Funded" },
-  { href: "/faq", label: "FAQ" },
   { href: "/contact", label: "Contact" },
+];
+
+export const ABOUT_LINKS = [
+  { href: "/about", label: "About Coach Floor", icon: User, desc: "Meet your coach" },
+  { href: "/results", label: "Results", icon: Trophy, desc: "Member wins & payouts" },
+  { href: "/faq", label: "FAQ", icon: HelpCircle, desc: "Common questions" },
 ];
 
 export const MEMBER_LINKS = [

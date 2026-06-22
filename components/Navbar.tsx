@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth, UserButton } from "@clerk/nextjs";
-import { NAV_LINKS, MEMBER_LINKS } from "@/lib/nav";
+import { NAV_LINKS, MEMBER_LINKS, ABOUT_LINKS } from "@/lib/nav";
 
 export default function Navbar() {
   const { isSignedIn } = useAuth();
@@ -14,8 +14,13 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
   const [mobileMembersOpen, setMobileMembersOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const aboutRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+
+  const aboutActive = ABOUT_LINKS.some((l) => l.href === pathname);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -27,6 +32,9 @@ export default function Navbar() {
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setMembersOpen(false);
+      }
+      if (aboutRef.current && !aboutRef.current.contains(e.target as Node)) {
+        setAboutOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -75,6 +83,58 @@ export default function Navbar() {
 
           {/* Desktop nav links */}
           <div className="hidden lg:flex items-center gap-6">
+            {/* About dropdown */}
+            <div ref={aboutRef} style={{ position: "relative" }}>
+              <button
+                type="button"
+                onClick={() => setAboutOpen((o) => !o)}
+                className="flex items-center gap-1 text-sm font-medium transition-colors duration-200"
+                style={{ color: aboutOpen || aboutActive ? "#00ff88" : "rgba(255,255,255,0.65)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+              >
+                About
+                <ChevronDown size={14} style={{ transform: aboutOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
+              </button>
+
+              {aboutOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% + 16px)",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: 280,
+                    background: "#111",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    borderRadius: 16,
+                    padding: 8,
+                    boxShadow: "0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,255,136,0.06)",
+                  }}
+                >
+                  {ABOUT_LINKS.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setAboutOpen(false)}
+                        style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 10, textDecoration: "none", transition: "background 0.15s" }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.04)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                      >
+                        <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(0,255,136,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <Icon size={14} style={{ color: "#00ff88" }} />
+                        </div>
+                        <div>
+                          <p style={{ color: "#f5f5f5", fontSize: 13, fontWeight: 600, margin: 0 }}>{item.label}</p>
+                          <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, margin: 0 }}>{item.desc}</p>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
             {NAV_LINKS.map((link) => {
               const isActive = pathname === link.href;
               return (
@@ -205,6 +265,35 @@ export default function Navbar() {
           style={{ background: "rgba(10,10,10,0.98)", backdropFilter: "blur(16px)", borderColor: "rgba(255,255,255,0.05)" }}
         >
           <div className="px-4 py-5 flex flex-col gap-1">
+            {/* Mobile About section */}
+            <button
+              type="button"
+              onClick={() => setMobileAboutOpen((o) => !o)}
+              className="flex items-center justify-between w-full py-2.5 text-base font-medium"
+              style={{ color: aboutActive ? "#00ff88" : "rgba(255,255,255,0.75)", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}
+            >
+              <span>About</span>
+              <ChevronDown size={16} style={{ transform: mobileAboutOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s", color: "rgba(255,255,255,0.4)" }} />
+            </button>
+
+            {mobileAboutOpen && (
+              <div style={{ paddingLeft: 12, display: "flex", flexDirection: "column", gap: 2, marginBottom: 4 }}>
+                {ABOUT_LINKS.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", textDecoration: "none" }}
+                    >
+                      <Icon size={14} style={{ color: "#00ff88", flexShrink: 0 }} />
+                      <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 14 }}>{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
