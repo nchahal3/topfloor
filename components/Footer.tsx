@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { NAV_LINKS } from "@/lib/nav";
 
 function InstagramIcon() {
@@ -22,7 +23,7 @@ function DiscordIcon() {
 }
 
 const SOCIAL_LINKS = [
-  { href: "https://www.instagram.com/topfloor_trades/", label: "Instagram", icon: InstagramIcon },
+  { href: "https://www.instagram.com/topfloortradesofficial/", label: "Instagram", icon: InstagramIcon },
   { href: "https://discord.gg/yebuyWPswJ", label: "Discord", icon: DiscordIcon },
 ];
 
@@ -39,12 +40,14 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
           {/* Brand */}
           <div>
-            <Link
-              href="/"
-              className="display-font text-3xl glow-green-subtle block mb-3"
-              style={{ color: "#00ff88" }}
-            >
-              🔝Floor
+            <Link href="/" className="inline-block mb-4">
+              <Image
+                src="/Logo.png"
+                alt="TopFloor Trades"
+                width={150}
+                height={60}
+                style={{ objectFit: "contain", width: 150, height: "auto" }}
+              />
             </Link>
             <p
               className="text-sm leading-relaxed max-w-xs"
