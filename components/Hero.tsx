@@ -1,152 +1,98 @@
-"use client";
+import Image from "next/image";
+import HeroIntro from "@/components/HeroIntro";
+import RealismButton from "@/components/ui/shiny-borders-button";
 
-import { motion } from "framer-motion";
-
-const AVATAR_COLORS = ["#2a6e4a", "#1a4f6e", "#6e2a4a", "#4a4a2a", "#2a4a6e"];
-
+const AVATAR_COLORS = ["#1a4f3a", "#1a2f5a", "#3a1a4f", "#4f3a1a", "#2a3f1a"];
 
 export default function Hero() {
   return (
-    <section
-      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
-      style={{ background: "#0a0a0a" }}
-    >
-      {/* Subtle diagonal green gradient */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "linear-gradient(135deg, rgba(0,255,136,0.06) 0%, transparent 55%)",
-        }}
+    <section className="relative isolate min-h-screen w-full overflow-hidden bg-black text-white">
+      {/* intro animation that plays then fades to reveal the hero */}
+      <HeroIntro />
+
+      {/* neon staircase background (video's final frame, seamless fade) */}
+      <Image
+        src="/hero-end.png"
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover object-center"
       />
 
-      {/* Grid overlay */}
-      <div className="absolute inset-0 grid-bg pointer-events-none" />
+      {/* readability gradient on the left, behind the copy */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black from-0% via-black/75 via-25% to-transparent to-50%" />
 
-      {/* Green radial glow behind text */}
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          top: "30%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "70vw",
-          height: "50vh",
-          background:
-            "radial-gradient(ellipse, rgba(0,255,136,0.07) 0%, transparent 70%)",
-        }}
-      />
-
-      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 text-center pt-24 pb-20">
-        {/* Live badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border mb-8"
-          style={{
-            background: "rgba(0,255,136,0.08)",
-            borderColor: "rgba(0,255,136,0.25)",
-            color: "#00ff88",
-          }}
-        >
-          <span
-            className="w-2 h-2 rounded-full animate-pulse"
-            style={{ background: "#00ff88" }}
-          />
-          <span className="text-sm font-semibold tracking-wide">
-            Live Sessions Running Daily
-          </span>
-        </motion.div>
-
-        {/* Main headline */}
-        <motion.h1
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.75, delay: 0.1 }}
-          className="display-font leading-none text-white mb-6"
-          style={{ fontSize: "clamp(3.5rem, 10vw, 8rem)" }}
-        >
-          Trade Smarter.
-          <br />
-          Win Bigger.
-          <br />
-          Live at the{" "}
-          <span className="glow-green" style={{ color: "#00ff88" }}>
-            🔝Floor.
-          </span>
-        </motion.h1>
-
-        {/* Subheadline */}
-        <motion.p
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="text-lg sm:text-xl max-w-2xl mx-auto mb-10"
-          style={{ color: "rgba(255,255,255,0.55)" }}
-        >
-          Join 1,200+ traders who are finally trading with a real edge. Live
-          sessions, real alerts, and a community that actually shows up.
-        </motion.p>
-
-        {/* CTA buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center mb-14"
-        >
-          <a
-            href="/pricing"
-            className="btn-primary px-8 py-4 text-lg"
+      {/* overlay copy */}
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl items-center px-6">
+        <div className="max-w-xl font-display">
+          {/* live badge */}
+          <div
+            className="mb-7 inline-flex items-center gap-2 rounded-full border px-4 py-1.5"
+            style={{
+              background: "rgba(0,255,136,0.08)",
+              borderColor: "rgba(0,255,136,0.25)",
+              color: "#00ff88",
+            }}
           >
-            Join the Community
-          </a>
-          <a
-            href="https://discord.gg/yebuyWPswJ"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-outline px-8 py-4 text-lg"
-          >
-            Watch Free Training
-          </a>
-        </motion.div>
-
-        {/* Social proof */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.75 }}
-          className="flex items-center justify-center gap-3"
-        >
-          <div className="flex -space-x-2">
-            {AVATAR_COLORS.map((color, i) => (
-              <div
-                key={i}
-                className="w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold text-white"
-                style={{
-                  background: color,
-                  borderColor: "#0a0a0a",
-                }}
-              />
-            ))}
+            <span
+              className="h-2 w-2 animate-pulse rounded-full"
+              style={{ background: "#00ff88" }}
+            />
+            <span className="text-sm font-semibold tracking-wide">
+              Live Sessions Running Daily
+            </span>
           </div>
-          <span className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
-            <span className="font-semibold" style={{ color: "#00ff88" }}>
-              1,200+
-            </span>{" "}
-            members trading live
-          </span>
-        </motion.div>
-      </div>
 
-      {/* Bottom fade */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none"
-        style={{
-          background: "linear-gradient(to top, #0a0a0a, transparent)",
-        }}
-      />
+          <h1 className="text-5xl font-semibold leading-[1.05] tracking-tight sm:text-6xl">
+            Trade smarter.
+            <br />
+            Win bigger.
+            <br />
+            Live at the{" "}
+            <span className="glow-green" style={{ color: "#00ff88" }}>
+              Floor.
+            </span>
+          </h1>
+
+          <p className="mt-6 max-w-md text-lg leading-8 text-zinc-300">
+            Join 1,200+ traders who are finally trading with a real edge. Live
+            sessions, real alerts, and a community that actually shows up.
+          </p>
+
+          <div className="mt-8 flex flex-wrap items-center gap-5">
+            <RealismButton
+              text="Join the Community"
+              href="/pricing"
+              variant="green"
+            />
+            <RealismButton
+              text="Watch Free Training"
+              href="https://discord.gg/yebuyWPswJ"
+              variant="gold"
+            />
+          </div>
+
+          {/* social proof */}
+          <div className="mt-10 flex items-center gap-3">
+            <div className="flex -space-x-2">
+              {AVATAR_COLORS.map((color, i) => (
+                <div
+                  key={i}
+                  className="h-8 w-8 rounded-full border-2"
+                  style={{ background: color, borderColor: "#0a0a0a" }}
+                />
+              ))}
+            </div>
+            <span className="text-sm text-zinc-400">
+              <span className="font-semibold" style={{ color: "#00ff88" }}>
+                1,200+
+              </span>{" "}
+              members trading live
+            </span>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

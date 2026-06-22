@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bebas_Neue, DM_Sans } from "next/font/google";
+import { Bebas_Neue, DM_Sans, Space_Grotesk } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 
@@ -13,6 +13,12 @@ const bebasNeue = Bebas_Neue({
 const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-dm-sans",
+  display: "swap",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space-grotesk",
   display: "swap",
 });
 
@@ -42,7 +48,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${bebasNeue.variable} ${dmSans.variable}`}>
+      <html
+        lang="en"
+        className={`${bebasNeue.variable} ${dmSans.variable} ${spaceGrotesk.variable}`}
+      >
         <body className="min-h-screen antialiased">{children}</body>
       </html>
     </ClerkProvider>

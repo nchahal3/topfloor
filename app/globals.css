@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@theme {
+  --font-display: var(--font-space-grotesk);
+}
+
 :root {
   --brand-green: #00ff88;
   --brand-gold: #f0c040;
