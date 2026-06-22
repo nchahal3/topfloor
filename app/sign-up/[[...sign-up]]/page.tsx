@@ -4,6 +4,7 @@ import { useSignUp } from "@clerk/nextjs/legacy";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function SignUpPage() {
@@ -73,12 +74,17 @@ export default function SignUpPage() {
   };
 
   return (
-    <main style={{ background: "#0a0a0a", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px" }}>
-      <Link href="/" style={{ fontFamily: "var(--font-bebas), 'Bebas Neue', cursive", fontSize: 28, color: "#00ff88", textDecoration: "none", letterSpacing: "0.05em", marginBottom: 32 }}>
-        🔝Floor
+    <main style={{ position: "relative", overflow: "hidden", background: "#0a0a0a", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px" }}>
+      {/* neon background in our style */}
+      <Image src="/about-banner.png" alt="" fill priority sizes="100vw" style={{ objectFit: "cover", objectPosition: "center", zIndex: 0 }} />
+      {/* black overlay behind the form */}
+      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.78)", zIndex: 0 }} />
+
+      <Link href="/" style={{ position: "relative", zIndex: 1, marginBottom: 32 }}>
+        <Image src="/Logo.png" alt="TopFloor Trades" width={150} height={60} style={{ objectFit: "contain", width: 150, height: "auto" }} />
       </Link>
 
-      <div style={{ width: "100%", maxWidth: 420, background: "#111", borderRadius: 16, border: "1px solid rgba(255,255,255,0.06)", boxShadow: "0 0 40px rgba(0,255,136,0.08)", padding: "32px 28px" }}>
+      <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: 420, background: "#111", borderRadius: 16, border: "1px solid rgba(255,255,255,0.06)", boxShadow: "0 0 40px rgba(0,255,136,0.08)", padding: "32px 28px" }}>
 
         {step === "form" ? (
           <>
@@ -191,7 +197,7 @@ export default function SignUpPage() {
         )}
       </div>
 
-      <p style={{ color: "rgba(255,255,255,0.15)", fontSize: 11, marginTop: 20, textAlign: "center", maxWidth: 360 }}>
+      <p style={{ position: "relative", zIndex: 1, color: "rgba(255,255,255,0.3)", fontSize: 11, marginTop: 20, textAlign: "center", maxWidth: 360 }}>
         By signing up you agree to our terms. Trading involves significant risk.
       </p>
     </main>
