@@ -4,33 +4,38 @@ import { useEffect, useRef, useState } from "react";
 
 export default function HeroIntro() {
   const [done, setDone] = useState(false);
+  // If autoplay is blocked (iOS Low Power / Low Data Mode, etc.) we drop the
+  // <video> entirely so no play button is ever shown — the static hero behind
+  // it (hero-end.png) becomes the background instantly.
+  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const v = videoRef.current;
     if (v) {
-      // Mobile (esp. iOS Safari) only autoplays when muted is guaranteed and
-      // the play() call is made programmatically. React doesn't reliably emit
-      // the `muted` attribute into the HTML, so set it explicitly here.
       v.muted = true;
       v.setAttribute("muted", "");
       const attempt = v.play();
       if (attempt && typeof attempt.catch === "function") {
         attempt.catch(() => {
-          // autoplay still blocked (e.g. iOS Low Power Mode) — fallback timer
-          // below reveals the hero; the poster keeps it from showing a play button
+          // autoplay refused by the device — reveal the static hero now and
+          // remove the video so there's no lingering play button
+          setAutoplayBlocked(true);
+          setDone(true);
         });
       }
     }
 
-    // Fallback: if autoplay is blocked or onEnded never fires, reveal the hero
-    // anyway shortly after the clip's ~9s runtime.
+    // Fallback: if onEnded never fires for some reason, reveal after ~9s.
     timer.current = setTimeout(() => setDone(true), 9800);
     return () => {
       if (timer.current) clearTimeout(timer.current);
     };
   }, []);
+
+  // Nothing to overlay once we've fallen back to the static hero.
+  if (autoplayBlocked) return null;
 
   return (
     <div
