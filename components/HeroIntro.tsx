@@ -2,7 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export default function HeroIntro() {
+export default function HeroIntro({
+  src = "/hero-intro.mp4",
+  poster = "/hero-end.png",
+}: {
+  src?: string;
+  poster?: string;
+}) {
   const [done, setDone] = useState(false);
   // If autoplay is blocked (iOS Low Power / Low Data Mode, etc.) we drop the
   // <video> entirely so no play button is ever shown — the static hero behind
@@ -47,12 +53,12 @@ export default function HeroIntro() {
       <video
         ref={videoRef}
         className="h-full w-full object-cover"
-        src="/hero-intro.mp4"
+        src={src}
         autoPlay
         muted
         playsInline
         preload="auto"
-        poster="/hero-end.png"
+        poster={poster}
         onEnded={() => setDone(true)}
       />
     </div>

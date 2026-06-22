@@ -7,21 +7,39 @@ const AVATAR_COLORS = ["#1a4f3a", "#1a2f5a", "#3a1a4f", "#4f3a1a", "#2a3f1a"];
 export default function Hero() {
   return (
     <section className="relative isolate min-h-screen w-full overflow-hidden bg-black text-white">
-      {/* intro animation that plays then fades to reveal the hero */}
-      <HeroIntro />
+      {/* MOBILE: portrait staircase (leans right) — video intro + matching frame */}
+      <div className="md:hidden">
+        <HeroIntro src="/hero-intro-mobile.mp4" poster="/hero-mobile.png" />
+        <Image
+          src="/hero-mobile.png"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+      </div>
 
-      {/* neon staircase background (video's final frame, seamless fade) */}
-      <Image
-        src="/hero-end.png"
-        alt=""
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover object-center"
-      />
+      {/* DESKTOP: landscape staircase — unchanged */}
+      <div className="hidden md:block">
+        <HeroIntro src="/hero-intro.mp4" poster="/hero-end.png" />
+        <Image
+          src="/hero-end.png"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+      </div>
 
       {/* readability gradient on the left, behind the copy */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black from-0% via-black/75 via-25% to-transparent to-50%" />
+      {/* mobile: stronger left-to-right black gradient + slight overall scrim
+          so the copy stays readable over the bright staircase (staircase leans right) */}
+      <div className="pointer-events-none absolute inset-0 bg-black/25 md:hidden" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black from-0% via-black/85 via-45% to-black/30 to-100% md:hidden" />
+      {/* desktop: unchanged */}
+      <div className="pointer-events-none absolute inset-0 hidden bg-gradient-to-r from-black from-0% via-black/75 via-25% to-transparent to-50% md:block" />
 
       {/* overlay copy */}
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl items-center px-6">
@@ -55,7 +73,7 @@ export default function Hero() {
             </span>
           </h1>
 
-          <p className="mt-6 max-w-md text-lg leading-8 text-zinc-300">
+          <p className="mt-6 max-w-md text-base leading-7 text-zinc-300 md:text-lg md:leading-8">
             Join 1,200+ traders who are finally trading with a real edge. Live
             sessions, real alerts, and a community that actually shows up.
           </p>
