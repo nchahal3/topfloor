@@ -12,6 +12,7 @@ export default function AboutPage() {
         label="The Coach"
         title="About Coach Floor"
         subtitle="7 years in the markets. One mission: give everyday traders access to institutional-level strategy."
+        image="/about-banner.png"
       />
       <About />
       <BottomCTA

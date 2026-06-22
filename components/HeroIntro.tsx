@@ -40,6 +40,11 @@ export default function HeroIntro({
     };
   }, []);
 
+  const skip = () => {
+    if (videoRef.current) videoRef.current.pause();
+    setDone(true);
+  };
+
   // Nothing to overlay once we've fallen back to the static hero.
   if (autoplayBlocked) return null;
 
@@ -61,6 +66,16 @@ export default function HeroIntro({
         poster={poster}
         onEnded={() => setDone(true)}
       />
+
+      {!done && (
+        <button
+          type="button"
+          onClick={skip}
+          className="absolute bottom-6 right-6 z-40 flex items-center gap-1.5 rounded-full border border-white/20 bg-black/40 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:bg-black/60 hover:text-white"
+        >
+          Skip <span aria-hidden>&rsaquo;&rsaquo;</span>
+        </button>
+      )}
     </div>
   );
 }
