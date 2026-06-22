@@ -7,7 +7,7 @@ export const metadata = { title: "What You Get | 🔝Floor" };
 
 export default function FeaturesPage() {
   return (
-    <PageLayout>
+    <PageLayout withTopPadding={false}>
       <PageHeader
         label="Membership Benefits"
         title="What You Get"

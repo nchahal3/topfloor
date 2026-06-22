@@ -7,7 +7,7 @@ export const metadata = { title: "About | 🔝Floor" };
 
 export default function AboutPage() {
   return (
-    <PageLayout>
+    <PageLayout withTopPadding={false}>
       <PageHeader
         label="The Coach"
         title="About Coach Floor"
