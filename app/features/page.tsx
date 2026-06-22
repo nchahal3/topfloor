@@ -12,7 +12,7 @@ export default function FeaturesPage() {
         label="Membership Benefits"
         title="What You Get"
         subtitle="Everything included in your 🔝Floor membership, from day one."
-        image="/whatyouget-banner.png"
+        image="/whatyouget-banner-v3.jpg"
       />
       <WhatYouGet />
       <BottomCTA
