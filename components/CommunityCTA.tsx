@@ -59,7 +59,7 @@ export default function CommunityCTA() {
           >
             Ready to Trade from the{" "}
             <span className="glow-green" style={{ color: "#00ff88" }}>
-              🔝Floor?
+              Top Floor?
             </span>
           </h2>
           <p

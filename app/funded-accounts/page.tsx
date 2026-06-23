@@ -36,7 +36,7 @@ const FIRMS = [
 export default function FundedAccountsPage() {
   return (
     <PageLayout>
-      <PageHeader label="Coach Floor's Picks" title="Get Funded" subtitle="Coach Floor's personally vetted prop firms. Pass your eval and start trading with real capital." />
+      <PageHeader label="Our Picks" title="Get Funded" subtitle="The TopFloor team's personally vetted prop firms. Pass your eval and start trading with real capital." />
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "60px 24px" }}>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -119,7 +119,7 @@ export default function FundedAccountsPage() {
             }}
           >
             <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, margin: 0, lineHeight: 1.8 }}>
-              <strong style={{ color: "rgba(255,255,255,0.45)" }}>Disclaimer:</strong> These are affiliate partnerships. Coach Floor uses and endorses these firms personally. Passing an evaluation does not guarantee future profits. Trading involves significant risk. Past performance is not indicative of future results.
+              <strong style={{ color: "rgba(255,255,255,0.45)" }}>Disclaimer:</strong> These are affiliate partnerships. The TopFloor team uses and endorses these firms personally. Passing an evaluation does not guarantee future profits. Trading involves significant risk. Past performance is not indicative of future results.
             </p>
           </div>
         </div>

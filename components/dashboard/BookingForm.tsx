@@ -125,7 +125,7 @@ export default function BookingForm() {
         ) : null}
         <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, margin: 0, lineHeight: 1.6 }}>
           {activeBooking.status === "pending"
-            ? "Your request is pending — Coach Floor will confirm within 24 hours. You can book a new slot once this is completed or cancelled."
+            ? "Your request is pending — the TopFloor team will confirm within 24 hours. You can book a new slot once this is completed or cancelled."
             : activeBooking.zoom_link
               ? "Your call is confirmed. Use the link above to join."
               : "Confirmed — your meeting link will arrive by email shortly."}
@@ -142,7 +142,7 @@ export default function BookingForm() {
         </div>
         <p style={{ color: "#f5f5f5", fontWeight: 700, fontSize: 18, margin: "0 0 8px" }}>Request Submitted!</p>
         <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 14, margin: 0, lineHeight: 1.6 }}>
-          Coach Floor will confirm your call within 24 hours. Check your email for the meeting link.
+          The TopFloor team will confirm your call within 24 hours. Check your email for the meeting link.
         </p>
         <button
           type="button"
@@ -218,7 +218,7 @@ export default function BookingForm() {
             <div style={{ padding: "20px 16px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", textAlign: "center" }}>
               <Clock size={18} style={{ color: "rgba(255,255,255,0.2)", marginBottom: 8 }} />
               <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, margin: 0 }}>No available slots right now.</p>
-              <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 12, margin: "4px 0 0" }}>Check back soon — Coach Floor adds new slots regularly.</p>
+              <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 12, margin: "4px 0 0" }}>Check back soon — the TopFloor team adds new slots regularly.</p>
             </div>
           ) : (
             <div>

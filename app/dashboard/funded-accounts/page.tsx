@@ -41,7 +41,7 @@ export default function FundedAccountsPage() {
           Funded Accounts
         </h1>
         <p style={{ color: "rgba(255,255,255,0.4)", marginTop: 10, fontSize: 15, maxWidth: 560 }}>
-          Coach Floor's personally vetted prop firms. Pass your eval and start trading with real capital.
+          The TopFloor team's personally vetted prop firms. Pass your eval and start trading with real capital.
         </p>
       </div>
 
@@ -126,7 +126,7 @@ export default function FundedAccountsPage() {
         }}
       >
         <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, margin: 0, lineHeight: 1.7 }}>
-          <strong style={{ color: "rgba(255,255,255,0.5)" }}>Disclaimer:</strong> These are affiliate partnerships. Coach Floor uses and endorses these firms personally. Passing an evaluation does not guarantee future profits. Trading involves risk.
+          <strong style={{ color: "rgba(255,255,255,0.5)" }}>Disclaimer:</strong> These are affiliate partnerships. The TopFloor team uses and endorses these firms personally. Passing an evaluation does not guarantee future profits. Trading involves risk.
         </p>
       </div>
     </div>

@@ -31,7 +31,7 @@ export default function TermsPage() {
           </Section>
 
           <Section title="3. Not Financial Advice">
-            <strong style={{ color: "#f5f5f5" }}>IMPORTANT DISCLAIMER:</strong> All content provided by TopFloor is for <strong style={{ color: "#f5f5f5" }}>educational purposes only</strong>. Nothing on this platform constitutes financial advice, investment advice, or a recommendation to buy or sell any security. Trading involves substantial risk of loss. Past performance demonstrated by Coach Floor or community members is not indicative of future results. You are solely responsible for your own trading decisions.
+            <strong style={{ color: "#f5f5f5" }}>IMPORTANT DISCLAIMER:</strong> All content provided by TopFloor is for <strong style={{ color: "#f5f5f5" }}>educational purposes only</strong>. Nothing on this platform constitutes financial advice, investment advice, or a recommendation to buy or sell any security. Trading involves substantial risk of loss. Past performance demonstrated by the TopFloor team or community members is not indicative of future results. You are solely responsible for your own trading decisions.
           </Section>
 
           <Section title="4. Eligibility">
@@ -57,7 +57,7 @@ export default function TermsPage() {
             <ul style={{ marginTop: 12 }}>
               <li>Share, resell, or redistribute any course materials, trade alerts, or Discord content.</li>
               <li>Use our content to build competing products or services.</li>
-              <li>Impersonate Coach Floor or any TopFloor staff member.</li>
+              <li>Impersonate the TopFloor team or any TopFloor staff member.</li>
               <li>Engage in harassment, spam, or abusive behavior in community spaces.</li>
               <li>Attempt to circumvent membership access controls.</li>
             </ul>

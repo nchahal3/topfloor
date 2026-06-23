@@ -54,9 +54,9 @@ const PLANS = [
     description: "Full mentorship. Direct access. Built for serious traders.",
     features: [
       "Everything in Silver",
-      "1-on-1 mentoring with Coach Floor",
+      "1-on-1 mentoring with the TopFloor team",
       "Weekly coaching calls",
-      "Access to Coach Floor's personal number",
+      "Access to the TopFloor team's personal number",
       "Private group chats",
       "Priority trade review sessions",
     ],

@@ -104,7 +104,7 @@ export default async function StudentWins() {
         <div>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <p className="text-xs font-bold tracking-widest uppercase mb-4" style={{ color: "#00ff88" }}>
-              Verified by Coach Floor
+              Verified by the TopFloor team
             </p>
             <h2 className="display-font text-4xl sm:text-5xl lg:text-6xl text-white leading-none mb-4">
               Student Wins

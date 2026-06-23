@@ -8,7 +8,7 @@ const FEATURES = [
     icon: "🎥",
     title: "Live Trading Sessions",
     description:
-      "Watch Coach Floor trade live every morning before market open. Real setups, real entries, real exits. You see exactly what he sees and why he pulls the trigger.",
+      "Watch the TopFloor team trade live every morning before market open. Real setups, real entries, real exits. You see exactly what they see and why they pull the trigger.",
   },
   {
     icon: "💬",
@@ -26,7 +26,7 @@ const FEATURES = [
     icon: "🎯",
     title: "1-on-1 Mentorship",
     description:
-      "Book private sessions directly with Coach Floor. Get your charts reviewed, your strategy dialed in, and your mindset right.",
+      "Book private sessions directly with the TopFloor team. Get your charts reviewed, your strategy dialed in, and your mindset right.",
   },
 ];
 

@@ -18,7 +18,7 @@ export default async function BookACallPage() {
           Book a Call
         </h1>
         <p style={{ color: "rgba(255,255,255,0.4)", marginTop: 10, fontSize: 15, maxWidth: 560 }}>
-          Schedule time directly with Coach Floor. Free intro calls available for all members — subscribers get trade review sessions.
+          Schedule time directly with the TopFloor team. Free intro calls available for all members — subscribers get trade review sessions.
         </p>
       </div>
 
@@ -28,7 +28,7 @@ export default async function BookACallPage() {
           <Calendar size={18} style={{ color: "#00ff88", marginBottom: 10 }} />
           <p style={{ color: "#f5f5f5", fontWeight: 700, fontSize: 15, margin: "0 0 6px" }}>Intro Call</p>
           <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, margin: "0 0 12px", lineHeight: 1.5 }}>
-            15-min call with Coach Floor. Learn about the platform and ask any questions.
+            15-min call with the TopFloor team. Learn about the platform and ask any questions.
           </p>
           <span style={{ fontSize: 11, fontWeight: 700, color: "#00ff88", background: "rgba(0,255,136,0.1)", padding: "3px 8px", borderRadius: 5 }}>
             FREE — All Members
@@ -39,7 +39,7 @@ export default async function BookACallPage() {
           <Clock size={18} style={{ color: tier ? "#f0c040" : "rgba(255,255,255,0.3)", marginBottom: 10 }} />
           <p style={{ color: tier ? "#f5f5f5" : "rgba(255,255,255,0.4)", fontWeight: 700, fontSize: 15, margin: "0 0 6px" }}>Trade Review</p>
           <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, margin: "0 0 12px", lineHeight: 1.5 }}>
-            30-min deep dive. Coach Floor reviews your trades and gives direct feedback.
+            30-min deep dive. The TopFloor team reviews your trades and gives direct feedback.
           </p>
           <span style={{ fontSize: 11, fontWeight: 700, color: tier ? "#f0c040" : "rgba(255,255,255,0.3)", background: tier ? "rgba(240,192,64,0.1)" : "rgba(255,255,255,0.04)", padding: "3px 8px", borderRadius: 5 }}>
             {tier ? "Included in Your Plan" : "Requires Subscription"}
@@ -57,7 +57,7 @@ export default async function BookACallPage() {
             "Tell us your preferred times and we'll confirm within 24 hours",
             "You'll get a confirmation with a meeting link",
             "Come prepared with your questions or trades to review",
-            "Coach Floor shows up on time, every time",
+            "The TopFloor team shows up on time, every time",
           ].map((item) => (
             <div key={item} style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <CheckCircle size={15} style={{ color: "#00ff88", flexShrink: 0 }} />

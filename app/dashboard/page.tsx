@@ -7,7 +7,7 @@ import DiscordUsernameField from "@/components/dashboard/DiscordUsernameField";
 
 const FEATURE_CARDS = [
   { label: "Funded Accounts", desc: "Promo codes for Alpha Futures, Lucid & more", href: "/dashboard/funded-accounts", icon: TrendingUp, free: true, comingSoon: false },
-  { label: "Curriculum", desc: "Coach Floor's full trading breakdown sessions", href: "/dashboard/curriculum", icon: BookOpen, free: false, comingSoon: false },
+  { label: "Curriculum", desc: "The TopFloor team's full trading breakdown sessions", href: "/dashboard/curriculum", icon: BookOpen, free: false, comingSoon: false },
   { label: "Achievements", desc: "Upload your certificates & payout requests", href: "/dashboard/achievements", icon: Trophy, free: true, comingSoon: false },
   { label: "Book a Call", desc: "Schedule a 1-on-1 coaching or trade review", href: "/dashboard/book-a-call", icon: Calendar, free: true, comingSoon: false },
   { label: "Upcoming Classes", desc: "Live trading sessions & class schedule", href: "/dashboard/upcoming-classes", icon: Video, free: false, comingSoon: false },

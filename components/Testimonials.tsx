@@ -7,7 +7,7 @@ const TESTIMONIALS = [
     name: "Teeghan W.",
     role: "Futures Trader",
     quote:
-      "Passed my Alpha Futures evaluation after joining TopFloor. Coach Floor taught me how to manage risk properly and stick to a system. Could not have done it without this community.",
+      "Passed my Alpha Futures evaluation after joining TopFloor. The TopFloor team taught me how to manage risk properly and stick to a system. Could not have done it without this community.",
     profit: "Passed Alpha Futures",
     initials: "TW",
     color: "#1a4f3a",
@@ -25,7 +25,7 @@ const TESTIMONIALS = [
     name: "Godbless",
     role: "Futures Trader",
     quote:
-      "Became a Topstep Express Funded Trader with a 50K account. Coach Floor gave me the structure and discipline I was missing. The trade alerts kept me focused every morning.",
+      "Became a Topstep Express Funded Trader with a 50K account. The TopFloor team gave me the structure and discipline I was missing. The trade alerts kept me focused every morning.",
     profit: "Topstep 50K Funded",
     initials: "GB",
     color: "#3a1a4f",

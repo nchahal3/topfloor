@@ -26,7 +26,7 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: "TopFloor | Elite Day Trading Coaching",
   description:
-    "Join 1,200+ traders at TopFloor. Live trading sessions, real-time alerts, private Discord, and 1-on-1 mentorship with Coach Floor — a 7-year professional trader.",
+    "Join 1,200+ traders at TopFloor. Live trading sessions, real-time alerts, private Discord, and 1-on-1 mentorship with the TopFloor team of seasoned professional traders.",
   metadataBase: new URL("https://www.topfloortradesofficial.com"),
   openGraph: {
     title: "TopFloor | Elite Day Trading Coaching",

@@ -55,7 +55,7 @@ export async function POST(request: Request) {
     html: `
       <div style="font-family:sans-serif;max-width:540px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
         <h1 style="color:#00ff88;margin-top:0;font-size:26px;">Welcome to 🔝Floor.</h1>
-        <p style="color:#aaa;line-height:1.7;">${greeting}, your account is live. You now have free access to the member dashboard — funded account promo codes, the class schedule, and the ability to book a free intro call with Coach Floor.</p>
+        <p style="color:#aaa;line-height:1.7;">${greeting}, your account is live. You now have free access to the member dashboard — funded account promo codes, the class schedule, and the ability to book a free intro call with the TopFloor team.</p>
         <div style="text-align:center;margin:32px 0;">
           <a href="${baseUrl}/dashboard" style="display:inline-block;background:#00ff88;color:#000;font-weight:bold;padding:14px 32px;border-radius:999px;text-decoration:none;font-size:15px;">
             Go to My Dashboard →

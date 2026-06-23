@@ -9,9 +9,9 @@ export default function AboutPage() {
   return (
     <PageLayout withTopPadding={false}>
       <PageHeader
-        label="The Coach"
-        title="About Coach Floor"
-        subtitle="7 years in the markets. One mission: give everyday traders access to institutional-level strategy."
+        label="The Team"
+        title="Our Coaches"
+        subtitle="7+ years in the markets. One mission: give everyday traders access to institutional-level strategy."
         image="/about-banner.png"
       />
       <About />

@@ -57,7 +57,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         html: `
           <div style="font-family:sans-serif;max-width:540px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
             <h2 style="color:#00ff88;margin-top:0;">Your call is confirmed!</h2>
-            <p style="color:#aaa;">Hey ${memberName}, your <strong style="color:#f5f5f5;">${callLabel}</strong> with Coach Floor is locked in.</p>
+            <p style="color:#aaa;">Hey ${memberName}, your <strong style="color:#f5f5f5;">${callLabel}</strong> with the TopFloor team is locked in.</p>
             <div style="background:#111;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px 20px;margin:20px 0;">
               <p style="margin:0 0 6px;color:#999;font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">Scheduled For</p>
               <p style="margin:0;color:#f5f5f5;font-weight:700;font-size:16px;">${time} (EST)</p>
@@ -69,7 +69,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
               </a>
             </div>
             <p style="color:#555;font-size:12px;text-align:center;">Or copy this link: <a href="${zoomLink}" style="color:#00ff88;">${zoomLink}</a></p>
-            ` : `<p style="color:#aaa;">Coach Floor will send your meeting link shortly.</p>`}
+            ` : `<p style="color:#aaa;">The TopFloor team will send your meeting link shortly.</p>`}
             <a href="${baseUrl}/dashboard/book-a-call" style="display:inline-block;margin-top:8px;color:#00ff88;font-size:13px;">View in dashboard →</a>
             <hr style="border:none;border-top:1px solid #222;margin:24px 0;" />
             <p style="color:#444;font-size:11px;">Trading involves significant risk. 🔝Floor provides educational content only.</p>

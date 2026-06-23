@@ -7,11 +7,11 @@ import { ChevronDown } from "lucide-react";
 const FAQS = [
   {
     q: "Do I need trading experience to join?",
-    a: "Not at all. 🔝Floor has members who had never placed a trade before joining, and members who have been trading for years. Coach Floor explains every setup with full context so it actually makes sense, regardless of where you're starting from.",
+    a: "Not at all. 🔝Floor has members who had never placed a trade before joining, and members who have been trading for years. The TopFloor team explains every setup with full context so it actually makes sense, regardless of where you're starting from.",
   },
   {
     q: "What markets do you trade?",
-    a: "Mostly stocks and futures, with options setups mixed in when the conditions are right. Everything Coach Floor teaches is what he's actually trading. No hypotheticals, no paper portfolios.",
+    a: "Mostly stocks and futures, with options setups mixed in when the conditions are right. Everything the TopFloor team teaches is what they're actually trading. No hypotheticals, no paper portfolios.",
   },
   {
     q: "What time are the live sessions?",

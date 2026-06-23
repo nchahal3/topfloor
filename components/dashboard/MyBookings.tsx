@@ -106,7 +106,7 @@ export default function MyBookings() {
 
           {b.status === "pending" && !isConfirming && (
             <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 11, margin: "10px 0 0" }}>
-              Coach Floor will confirm within 24 hours — you&apos;ll get an email with your meeting link.
+              The TopFloor team will confirm within 24 hours. You&apos;ll get an email with your meeting link.
             </p>
           )}
           {b.status === "confirmed" && !b.zoom_link && !isConfirming && (
