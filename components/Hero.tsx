@@ -5,11 +5,15 @@ import HeroCopy from "@/components/HeroCopy";
 export default function Hero() {
   return (
     <section className="relative isolate min-h-screen w-full overflow-hidden bg-black text-white">
-      {/* MOBILE: portrait staircase (leans right) — video intro + matching frame */}
+      {/* MOBILE: portrait green-glass trading scene — elements top & bottom,
+          dark clear middle for the copy. Video intro + matching frame */}
       <div className="md:hidden">
-        <HeroIntro src="/hero-intro-mobile.mp4" poster="/hero-mobile.png" />
+        <HeroIntro
+          src="/hero-intro-mobile-v2.mp4"
+          poster="/hero-mobile-v2.png"
+        />
         <Image
-          src="/hero-mobile.png"
+          src="/hero-mobile-v2.png"
           alt=""
           fill
           priority
