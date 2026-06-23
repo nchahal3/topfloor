@@ -1,10 +1,14 @@
+"use client";
+
 import Image from "next/image";
+import { useRef } from "react";
+import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 
 interface PageHeaderProps {
   label: string;
   title: string;
   subtitle?: string;
-  /** Optional background image (home-page neon style). Adds a dark scrim. */
+  /** Optional background image (home-page neon style). Adds a dark scrim + parallax. */
   image?: string;
 }
 
@@ -14,8 +18,20 @@ export default function PageHeader({
   subtitle,
   image,
 }: PageHeaderProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const reduce = useReducedMotion();
+
+  // Track scroll while the header passes the top of the viewport.
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start start", "end start"],
+  });
+  // Background drifts slower than the page -> parallax. (oversized below so no gap)
+  const y = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [-60, 60]);
+
   return (
     <div
+      ref={ref}
       style={{
         position: "relative",
         overflow: "hidden",
@@ -26,14 +42,26 @@ export default function PageHeader({
     >
       {image && (
         <>
-          <Image
-            src={image}
-            alt=""
-            fill
-            priority
-            sizes="100vw"
-            style={{ objectFit: "cover", objectPosition: "center" }}
-          />
+          {/* parallax background — taller than the header so the drift never gaps */}
+          <motion.div
+            style={{
+              position: "absolute",
+              top: -90,
+              bottom: -90,
+              left: 0,
+              right: 0,
+              y,
+            }}
+          >
+            <Image
+              src={image}
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              style={{ objectFit: "cover", objectPosition: "center" }}
+            />
+          </motion.div>
           {/* scrim so the centered text stays readable */}
           <div
             style={{

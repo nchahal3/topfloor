@@ -56,15 +56,13 @@ export default function Navbar() {
   };
 
   return (
-    <nav
-      className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
-      style={{
-        background: scrolled ? "rgba(10,10,10,0.96)" : "transparent",
-        backdropFilter: scrolled ? "blur(12px)" : "none",
-        borderBottom: scrolled ? "1px solid rgba(255,255,255,0.05)" : "none",
-      }}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-4">
+      <div
+        className="mx-auto max-w-6xl rounded-full border border-white/10 px-5 shadow-lg shadow-black/30 backdrop-blur-md transition-all duration-300 sm:px-6"
+        style={{
+          background: scrolled ? "rgba(10,10,10,0.92)" : "rgba(10,10,10,0.55)",
+        }}
+      >
         <div className="flex items-center justify-between h-16">
 
           {/* Logo */}
@@ -207,7 +205,7 @@ export default function Navbar() {
 
           {/* Desktop CTAs */}
           <div className="hidden lg:flex items-center gap-3">
-            {isSignedIn ? (
+            {isSignedIn && (
               <UserButton
                 appearance={{
                   variables: {
@@ -228,22 +226,13 @@ export default function Navbar() {
                   },
                 }}
               />
-            ) : (
-              <>
-                <Link
-                  href="/sign-in"
-                  className="text-sm font-medium transition-colors duration-200"
-                  style={{ color: "rgba(255,255,255,0.5)" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
-                >
-                  Member Login
-                </Link>
-                <Link href="/sign-up" className="btn-primary px-6 py-2 text-sm">
-                  Get Started
-                </Link>
-              </>
             )}
+            <Link
+              href={isSignedIn ? "/dashboard" : "/sign-up"}
+              className="btn-primary px-6 py-2 text-sm"
+            >
+              View Dashboard
+            </Link>
           </div>
 
           {/* Mobile toggle */}
@@ -261,8 +250,8 @@ export default function Navbar() {
       {/* Mobile menu */}
       {isOpen && (
         <div
-          className="lg:hidden border-t"
-          style={{ background: "rgba(10,10,10,0.98)", backdropFilter: "blur(16px)", borderColor: "rgba(255,255,255,0.05)" }}
+          className="lg:hidden mx-auto mt-2 max-w-6xl overflow-hidden rounded-2xl border border-white/10"
+          style={{ background: "rgba(10,10,10,0.98)", backdropFilter: "blur(16px)" }}
         >
           <div className="px-4 py-5 flex flex-col gap-1">
             {/* Mobile About section */}
@@ -336,11 +325,8 @@ export default function Navbar() {
             )}
 
             <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", marginTop: 8, paddingTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
-              <Link href="/sign-in" className="py-2 text-base font-medium" style={{ color: "rgba(255,255,255,0.55)", textDecoration: "none" }}>
-                Member Login
-              </Link>
-              <Link href="/sign-up" className="btn-primary py-3 text-sm text-center">
-                Get Started
+              <Link href={isSignedIn ? "/dashboard" : "/sign-up"} className="btn-primary py-3 text-sm text-center">
+                View Dashboard
               </Link>
             </div>
           </div>

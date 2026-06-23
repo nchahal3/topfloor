@@ -1,26 +1,47 @@
-const STATS = [
-  { icon: "🏆", text: "87% Win Rate" },
-  { icon: "👥", text: "1,200+ Students Coached" },
-  { icon: "💰", text: "$4.2M+ Community Profits" },
-  { icon: "📈", text: "7 Years Trading Experience" },
-  { icon: "⚡", text: "Live Trade Alerts Daily" },
-  { icon: "🎯", text: "Futures, Options & Stocks" },
-  { icon: "🔥", text: "Top 1% Trading Strategies" },
+import {
+  Trophy,
+  Users,
+  Banknote,
+  TrendingUp,
+  Zap,
+  Target,
+  Flame,
+  type LucideIcon,
+} from "lucide-react";
+
+const STATS: { icon: LucideIcon; text: string }[] = [
+  { icon: Trophy, text: "87% Win Rate" },
+  { icon: Users, text: "1,200+ Students Coached" },
+  { icon: Banknote, text: "$4.2M+ Community Profits" },
+  { icon: TrendingUp, text: "7 Years Trading Experience" },
+  { icon: Zap, text: "Live Trade Alerts Daily" },
+  { icon: Target, text: "Futures, Options & Stocks" },
+  { icon: Flame, text: "Top 1% Trading Strategies" },
 ];
 
-function TickerItem({ icon, text }: { icon: string; text: string }) {
+function TickerItem({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
   return (
-    <span className="flex items-center gap-3 whitespace-nowrap px-8">
-      <span className="text-lg">{icon}</span>
+    <span className="flex items-center whitespace-nowrap">
+      <span className="flex items-center gap-3 px-10">
+        <Icon size={22} strokeWidth={2.25} style={{ color: "#00ff88" }} />
+        <span
+          className="text-[17px] font-semibold uppercase tracking-[0.14em]"
+          style={{ color: "rgba(255,255,255,0.85)" }}
+        >
+          {text}
+        </span>
+      </span>
+      {/* separator dot */}
       <span
-        className="text-sm font-bold tracking-widest uppercase"
-        style={{ color: "#00ff88", fontFamily: "var(--font-dm-sans, monospace)" }}
-      >
-        {text}
-      </span>
-      <span className="text-2xl font-thin" style={{ color: "rgba(0,255,136,0.25)" }}>
-        |
-      </span>
+        aria-hidden
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: 9999,
+          background: "rgba(0,255,136,0.45)",
+          flexShrink: 0,
+        }}
+      />
     </span>
   );
 }
@@ -30,10 +51,15 @@ export default function StatsTicker() {
 
   return (
     <div
-      className="w-full overflow-hidden ticker-wrapper py-4 border-y"
+      className="ticker-wrapper w-full overflow-hidden border-y py-6"
       style={{
-        background: "#0d0d0d",
-        borderColor: "rgba(0,255,136,0.1)",
+        background:
+          "linear-gradient(180deg, #0c0c0c 0%, #0e0e0e 50%, #0c0c0c 100%)",
+        borderColor: "rgba(0,255,136,0.12)",
+        WebkitMaskImage:
+          "linear-gradient(to right, transparent, #000 7%, #000 93%, transparent)",
+        maskImage:
+          "linear-gradient(to right, transparent, #000 7%, #000 93%, transparent)",
       }}
     >
       <div className="animate-marquee">
