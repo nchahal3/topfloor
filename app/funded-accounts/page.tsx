@@ -18,7 +18,7 @@ const FIRMS = [
   {
     name: "Lucid Trading",
     logo: "LT",
-    logoImg: "",
+    logoImg: "/firms/lucid.png",
     color: "#f0c040",
     description: "Lucid's evaluation accounts are built for disciplined day traders. No drawdown tricks.",
     code: "FLOOR10",
