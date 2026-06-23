@@ -170,7 +170,7 @@ export async function POST(request: Request) {
     const client = await clerkClient();
     if (clerkUserId) {
       try {
-        await client.users.updateUserMetadata(clerkUserId, { publicMetadata: { tier: null } });
+        await client.users.updateUserMetadata(clerkUserId, { publicMetadata: { tier: null, cancelAt: null } });
       } catch (err) {
         console.error("Failed to revoke Clerk tier on subscription deletion:", err);
       }
@@ -179,7 +179,7 @@ export async function POST(request: Request) {
       try {
         const users = await client.users.getUserList({ emailAddress: [memberEmail] });
         if (users.data.length > 0) {
-          await client.users.updateUserMetadata(users.data[0].id, { publicMetadata: { tier: null } });
+          await client.users.updateUserMetadata(users.data[0].id, { publicMetadata: { tier: null, cancelAt: null } });
         }
       } catch (err) {
         console.error("Failed to revoke Clerk tier by email:", err);

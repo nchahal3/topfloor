@@ -4,6 +4,7 @@ import { TrendingUp, BookOpen, Trophy, Calendar, Video, ArrowRight } from "lucid
 import type { Tier } from "@/lib/tier";
 import { TIER_LABELS, TIER_COLORS } from "@/lib/tier";
 import DiscordUsernameField from "@/components/dashboard/DiscordUsernameField";
+import CancelMembershipButton from "@/components/dashboard/CancelMembershipButton";
 
 const FEATURE_CARDS = [
   { label: "Funded Accounts", desc: "Promo codes for Alpha Futures, Lucid & more", href: "/dashboard/funded-accounts", icon: TrendingUp, free: true, comingSoon: false },
@@ -18,6 +19,8 @@ export default async function DashboardPage() {
   const tier = (user?.publicMetadata?.tier as Tier) ?? null;
   const name = user?.firstName ?? "Trader";
   const discordUsername = (user?.publicMetadata?.discordUsername as string) ?? "";
+  const cancelAt = (user?.publicMetadata?.cancelAt as string) ?? null;
+  const isMonthly = tier === "bronze" || tier === "silver" || tier === "gold";
 
   return (
     <div style={{ padding: "40px 32px", maxWidth: 900, margin: "0 auto" }}>
@@ -90,6 +93,9 @@ export default async function DashboardPage() {
 
       {/* Discord username */}
       <DiscordUsernameField initial={discordUsername} />
+
+      {/* Cancel membership */}
+      {isMonthly && <CancelMembershipButton cancelAt={cancelAt} />}
 
       {/* Feature grid — 2-col, last card spans full width if count is odd */}
       <div
