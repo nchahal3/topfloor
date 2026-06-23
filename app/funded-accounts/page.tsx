@@ -1,4 +1,5 @@
 import { ExternalLink } from "lucide-react";
+import Image from "next/image";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import BottomCTA from "@/components/BottomCTA";
@@ -7,6 +8,7 @@ const FIRMS = [
   {
     name: "Alpha Futures",
     logo: "AF",
+    logoImg: "/firms/alpha.png",
     color: "#00ff88",
     description: "Top-rated futures prop firm. Fast payouts, fair rules, great for scalpers and momentum traders.",
     code: "TOPFLOOR",
@@ -16,6 +18,7 @@ const FIRMS = [
   {
     name: "Lucid Trading",
     logo: "LT",
+    logoImg: "",
     color: "#f0c040",
     description: "Lucid's evaluation accounts are built for disciplined day traders. No drawdown tricks.",
     code: "FLOOR10",
@@ -25,6 +28,7 @@ const FIRMS = [
   {
     name: "Apex Trader Funding",
     logo: "ATF",
+    logoImg: "/firms/apex.png",
     color: "#c0c0c0",
     description: "One of the most popular prop firms. Large account sizes up to $300K.",
     code: "TOPFLOOR",
@@ -35,8 +39,8 @@ const FIRMS = [
 
 export default function FundedAccountsPage() {
   return (
-    <PageLayout>
-      <PageHeader label="Our Picks" title="Get Funded" subtitle="The TopFloor team's personally vetted prop firms. Pass your eval and start trading with real capital." />
+    <PageLayout withTopPadding={false}>
+      <PageHeader label="Our Picks" title="Get Funded" subtitle="The TopFloor team's personally vetted prop firms. Pass your eval and start trading with real capital." image="/getfunded-banner.jpg" />
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "60px 24px" }}>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -70,9 +74,20 @@ export default function FundedAccountsPage() {
                     fontSize: 12,
                     color: firm.color,
                     letterSpacing: "0.05em",
+                    overflow: "hidden",
                   }}
                 >
-                  {firm.logo}
+                  {firm.logoImg ? (
+                    <Image
+                      src={firm.logoImg}
+                      alt={firm.name}
+                      width={44}
+                      height={44}
+                      style={{ objectFit: "contain", borderRadius: 8 }}
+                    />
+                  ) : (
+                    firm.logo
+                  )}
                 </div>
 
                 <div style={{ flex: 1, minWidth: 200 }}>

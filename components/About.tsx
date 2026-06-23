@@ -4,10 +4,10 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 
 const CREDENTIALS = [
-  { img: "/about-cards/card-1.jpg", label: "7+ Years in the Markets" },
-  { img: "/about-cards/card-2.jpg", label: "Live Sessions Every Day" },
-  { img: "/about-cards/card-3.jpg", label: "87% Member Win Rate" },
-  { img: "/about-cards/card-4.jpg", label: "$4.2M+ Community Profits" },
+  { img: "/about-cards/c1.jpg", label: "7+ Years in the Markets" },
+  { img: "/about-cards/c2.jpg", label: "Live Sessions Every Day" },
+  { img: "/about-cards/c3.jpg", label: "87% Member Win Rate" },
+  { img: "/about-cards/c4.jpg", label: "$4.2M+ Community Profits" },
 ];
 
 export default function About() {
@@ -19,44 +19,37 @@ export default function About() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col-reverse items-stretch gap-10 lg:grid lg:grid-cols-2 lg:items-start lg:gap-16">
-          {/* Credential cards (sticky on desktop so they follow on scroll) */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.6 }}
-            className="flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start"
-          >
-            {CREDENTIALS.map((c) => (
+          {/* Credential cards — stack & reveal on scroll (sticky) on desktop */}
+          <div className="flex flex-col gap-4 lg:block">
+            {CREDENTIALS.map((c, i) => (
               <div
                 key={c.label}
-                className="flex items-center gap-4 rounded-2xl border p-5 transition-colors"
-                style={{
-                  background: "rgba(255,255,255,0.03)",
-                  borderColor: "rgba(0,255,136,0.18)",
-                }}
+                className="lg:sticky lg:mb-[14vh]"
+                style={{ top: 100 + i * 14 }}
               >
                 <div
-                  className="relative shrink-0 overflow-hidden rounded-xl"
-                  style={{ width: 64, height: 64 }}
+                  className="flex items-stretch gap-4 overflow-hidden rounded-2xl border shadow-2xl shadow-black/50"
+                  style={{
+                    background: "#0e120f",
+                    borderColor: "rgba(0,255,136,0.22)",
+                  }}
                 >
-                  <Image
-                    src={c.img}
-                    alt=""
-                    fill
-                    sizes="64px"
-                    className="object-cover"
-                  />
+                  <div className="relative w-28 shrink-0 sm:w-32">
+                    <Image
+                      src={c.img}
+                      alt=""
+                      fill
+                      sizes="128px"
+                      className="object-cover"
+                    />
+                  </div>
+                  <p className="self-center py-6 pr-5 text-lg font-semibold text-white">
+                    {c.label}
+                  </p>
                 </div>
-                <p
-                  className="text-lg font-semibold"
-                  style={{ color: "#f5f5f5" }}
-                >
-                  {c.label}
-                </p>
               </div>
             ))}
-          </motion.div>
+          </div>
 
           {/* Bio content */}
           <motion.div
