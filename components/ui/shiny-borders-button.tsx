@@ -41,7 +41,7 @@ const RealismButton: React.FC<RealismButtonProps> = ({
 }) => {
   const accent = ACCENTS[variant]
 
-  const shell = `group relative inline-block p-[2px] rounded-[14px] text-[0.95rem] border-none cursor-pointer bg-[radial-gradient(circle_80px_at_80%_-10%,_#ffffff,_#181b1b)] transition-all ${className}`
+  const shell = `group relative inline-block p-[2px] rounded-[14px] text-[0.8rem] sm:text-[0.95rem] border-none cursor-pointer bg-[radial-gradient(circle_80px_at_80%_-10%,_#ffffff,_#181b1b)] transition-all ${className}`
 
   const inner = (
     <>
@@ -54,7 +54,7 @@ const RealismButton: React.FC<RealismButtonProps> = ({
       />
 
       {/* Inner content */}
-      <div className="relative px-[18px] py-[9px] group-hover:scale-110 rounded-[12px] text-white bg-[radial-gradient(circle_80px_at_80%_-50%,_#777777,_#0f1111)] z-10 transition-all duration-300">
+      <div className="relative px-[13px] py-[7px] sm:px-[18px] sm:py-[9px] group-hover:scale-110 rounded-[12px] text-white bg-[radial-gradient(circle_80px_at_80%_-50%,_#777777,_#0f1111)] z-10 transition-all duration-300">
         {text}
 
         {/* Inner glow layer */}

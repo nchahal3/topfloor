@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Bebas_Neue, DM_Sans, Space_Grotesk } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
+import LoadingScreen from "@/components/LoadingScreen";
 
 const bebasNeue = Bebas_Neue({
   weight: "400",
@@ -52,7 +53,10 @@ export default function RootLayout({
         lang="en"
         className={`${bebasNeue.variable} ${dmSans.variable} ${spaceGrotesk.variable}`}
       >
-        <body className="min-h-screen antialiased">{children}</body>
+        <body className="min-h-screen antialiased">
+          <LoadingScreen />
+          {children}
+        </body>
       </html>
     </ClerkProvider>
   );
