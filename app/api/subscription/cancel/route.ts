@@ -28,9 +28,10 @@ export async function PATCH() {
   }
 
   const sub = subscriptions.data[0];
-  const updated = await stripe.subscriptions.update(sub.id, { cancel_at_period_end: true });
+  await stripe.subscriptions.update(sub.id, { cancel_at_period_end: true });
 
-  const cancelAt = new Date(updated.current_period_end * 1000).toISOString();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const cancelAt = new Date((sub as any).current_period_end * 1000).toISOString();
 
   const client = await clerkClient();
   await client.users.updateUserMetadata(userId, {
