@@ -15,14 +15,17 @@ function escapeHtml(str: string) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, email, experience, challenge } = body as {
+    const { name, email, experience, challenge, message } = body as {
       name: string;
       email: string;
-      experience: string;
-      challenge: string;
+      experience?: string;
+      challenge?: string;
+      message?: string;
     };
 
-    if (!name || !email || !experience || !challenge) {
+    const messageText = challenge ?? message ?? "";
+
+    if (!name || !email || !messageText) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
@@ -52,12 +55,12 @@ export async function POST(request: Request) {
             </tr>
             <tr>
               <td style="padding:8px 0;color:#999;vertical-align:top;">Level</td>
-              <td style="padding:8px 0;">${escapeHtml(experienceLabels[experience] ?? experience)}</td>
+              <td style="padding:8px 0;">${experience ? escapeHtml(experienceLabels[experience] ?? experience) : "Not specified"}</td>
             </tr>
           </table>
           <hr style="border:none;border-top:1px solid #222;margin:20px 0;" />
-          <p style="color:#999;margin-bottom:8px;">Biggest trading challenge</p>
-          <p style="white-space:pre-wrap;line-height:1.6;background:#111;padding:16px;border-radius:8px;border-left:3px solid #00ff88;">${escapeHtml(challenge)}</p>
+          <p style="color:#999;margin-bottom:8px;">Message</p>
+          <p style="white-space:pre-wrap;line-height:1.6;background:#111;padding:16px;border-radius:8px;border-left:3px solid #00ff88;">${escapeHtml(messageText)}</p>
         </div>
       `,
     });
@@ -67,9 +70,9 @@ export async function POST(request: Request) {
       color: 0x5865f2,
       fields: [
         { name: "Name", value: escapeHtml(name), inline: true },
-        { name: "Level", value: escapeHtml(experienceLabels[experience] ?? experience), inline: true },
+        { name: "Level", value: experience ? escapeHtml(experienceLabels[experience] ?? experience) : "Not specified", inline: true },
         { name: "Email", value: escapeHtml(email), inline: false },
-        { name: "Challenge", value: escapeHtml(challenge).slice(0, 200), inline: false },
+        { name: "Message", value: escapeHtml(messageText).slice(0, 200), inline: false },
       ],
     });
 
