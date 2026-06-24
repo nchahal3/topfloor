@@ -1,15 +1,18 @@
 import { currentUser } from "@clerk/nextjs/server";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardShell from "@/components/dashboard/DashboardShell";
+import PayNowBanner from "@/components/dashboard/PayNowBanner";
 import type { Tier } from "@/lib/tier";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await currentUser();
   const tier = (user?.publicMetadata?.tier as Tier) ?? null;
   const pendingLifetime = user?.publicMetadata?.pendingLifetime === true;
+  const suspended = !tier && !!(user?.publicMetadata?.suspendedTier);
 
   return (
     <DashboardShell>
+      {suspended && <PayNowBanner />}
       {pendingLifetime && (
         <div style={{
           position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
@@ -33,7 +36,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           </a>
         </div>
       )}
-      <div style={{ display: "flex", minHeight: "100vh", background: "#0a0a0a", paddingTop: pendingLifetime ? 48 : 0 }}>
+      <div style={{ display: "flex", minHeight: "100vh", background: "#0a0a0a", paddingTop: (pendingLifetime || suspended) ? 48 : 0 }}>
         <DashboardSidebar tier={tier} />
         <main
           style={{ flex: 1, overflowY: "auto" }}

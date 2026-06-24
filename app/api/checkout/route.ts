@@ -2,7 +2,6 @@ import Stripe from "stripe";
 import { auth, currentUser, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import type { Tier } from "@/lib/tier";
-import { PRICE_TIER } from "@/lib/tier";
 
 const PRICE_IDS: Record<string, string> = {
   bronze: process.env.STRIPE_PRICE_BRONZE ?? "price_1TiphA8U0Yle7MZgUELrqhSV",
@@ -57,7 +56,7 @@ export async function POST(request: Request) {
           if (userId) {
             const clerk = await clerkClient();
             await clerk.users.updateUserMetadata(userId, {
-              publicMetadata: { tier: plan as Tier },
+              publicMetadata: { tier: plan as Tier, suspendedTier: null },
             });
           }
         }
