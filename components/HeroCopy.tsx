@@ -35,7 +35,7 @@ export default function HeroCopy() {
 
   return (
     <motion.div
-      className="max-w-xl"
+      className="mx-auto max-w-xl text-center md:mx-0 md:text-left"
       variants={container}
       initial="hidden"
       animate="show"
@@ -75,7 +75,7 @@ export default function HeroCopy() {
 
       <motion.p
         variants={item}
-        className="mt-6 max-w-md text-sm leading-6 text-zinc-300 md:text-base md:leading-7"
+        className="mx-auto mt-6 max-w-md text-sm leading-6 text-zinc-300 md:mx-0 md:text-base md:leading-7"
       >
         Join 1,200+ traders who are finally trading with a real edge. Live
         sessions, real alerts, and a community that actually shows up.
@@ -83,7 +83,7 @@ export default function HeroCopy() {
 
       <motion.div
         variants={item}
-        className="mt-8 flex flex-wrap items-center gap-5"
+        className="mt-8 flex flex-wrap items-center justify-center gap-5 md:justify-start"
       >
         <RealismButton
           text="Join the Community"
@@ -98,7 +98,7 @@ export default function HeroCopy() {
       </motion.div>
 
       {/* social proof */}
-      <motion.div variants={item} className="mt-10 flex items-center gap-3">
+      <motion.div variants={item} className="mt-10 flex items-center justify-center gap-3 md:justify-start">
         <div className="flex -space-x-2">
           {AVATARS.map((src, i) => (
             <div

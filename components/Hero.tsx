@@ -38,8 +38,8 @@ export default function Hero() {
       {/* readability gradient on the left, behind the copy */}
       {/* mobile: stronger left-to-right black gradient + slight overall scrim
           so the copy stays readable over the bright staircase (staircase leans right) */}
-      <div className="pointer-events-none absolute inset-0 bg-black/25 md:hidden" />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black from-0% via-black/85 via-45% to-black/30 to-100% md:hidden" />
+      <div className="pointer-events-none absolute inset-0 bg-black/30 md:hidden" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/55 via-black/10 to-black/55 md:hidden" />
       {/* desktop: unchanged */}
       <div className="pointer-events-none absolute inset-0 hidden bg-gradient-to-r from-black from-0% via-black/75 via-25% to-transparent to-50% md:block" />
 

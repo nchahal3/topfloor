@@ -13,7 +13,7 @@ export default function FeaturesPage() {
         title="What You Get"
         subtitle="Everything included in your Top Floor membership, from day one."
         image="/whatyouget-banner-v3.jpg"
-        mobileImage="/whatyouget-banner-mobile.jpg"
+        mobileImage="/whatyouget-banner-mobile-v4.jpg"
       />
       <WhatYouGet />
       <BottomCTA
