@@ -123,6 +123,16 @@ export async function PATCH(request: Request) {
     await client.users.updateUserMetadata(clerkUserId, {
       publicMetadata: { tier: tier ?? null, pendingLifetime: false },
     });
+
+    // Cancel Stripe subscription when removing access
+    if (!tier && subscriptionId) {
+      try {
+        await stripe.subscriptions.cancel(subscriptionId);
+      } catch (err) {
+        console.error("Failed to cancel subscription on access removal:", err);
+      }
+    }
+
     let nextBillingDate = "your next billing date";
     if (subscriptionId && tier && tier !== "lifetime") {
       const newPriceId = TIER_PRICE[tier];
