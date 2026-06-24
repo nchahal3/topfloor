@@ -10,6 +10,8 @@ interface PageHeaderProps {
   subtitle?: string;
   /** Optional background image (home-page neon style). Adds a dark scrim + parallax. */
   image?: string;
+  /** Optional mobile-specific background (shown below md). */
+  mobileImage?: string;
 }
 
 export default function PageHeader({
@@ -17,6 +19,7 @@ export default function PageHeader({
   title,
   subtitle,
   image,
+  mobileImage,
 }: PageHeaderProps) {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
@@ -59,8 +62,20 @@ export default function PageHeader({
               fill
               priority
               sizes="100vw"
+              className={mobileImage ? "hidden md:block" : undefined}
               style={{ objectFit: "cover", objectPosition: "center" }}
             />
+            {mobileImage && (
+              <Image
+                src={mobileImage}
+                alt=""
+                fill
+                priority
+                sizes="100vw"
+                className="md:hidden"
+                style={{ objectFit: "cover", objectPosition: "center" }}
+              />
+            )}
           </motion.div>
           {/* scrim so the centered text stays readable */}
           <div
@@ -101,9 +116,9 @@ export default function PageHeader({
         {subtitle && (
           <p
             style={{
-              color: "rgba(255,255,255,0.6)",
+              color: "#ffffff",
               fontSize: 16,
-              maxWidth: 560,
+              maxWidth: 440,
               margin: "16px auto 0",
               lineHeight: 1.7,
             }}

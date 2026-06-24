@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useClerk, useUser } from "@clerk/nextjs";
 import {
@@ -47,19 +48,16 @@ export default function DashboardSidebar({ tier }: { tier: Tier }) {
     >
       {/* Logo */}
       <div style={{ padding: "24px 20px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <Link
-          href="/"
-          style={{
-            fontFamily: "var(--font-bebas), 'Bebas Neue', cursive",
-            fontSize: 24,
-            color: "#00ff88",
-            textDecoration: "none",
-            letterSpacing: "0.05em",
-          }}
-        >
-          🔝Floor
+        <Link href="/" style={{ display: "inline-block" }}>
+          <Image
+            src="/Logo.png"
+            alt="TopFloor Trades"
+            width={150}
+            height={60}
+            style={{ objectFit: "contain", width: 150, height: "auto" }}
+          />
         </Link>
-        <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, marginTop: 4 }}>Member Dashboard</p>
+        <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, marginTop: 8 }}>Member Dashboard</p>
       </div>
 
       {/* Tier badge */}
@@ -224,11 +222,14 @@ export default function DashboardSidebar({ tier }: { tier: Tier }) {
           padding: "14px 20px",
         }}
       >
-        <Link
-          href="/"
-          style={{ fontFamily: "var(--font-bebas), 'Bebas Neue', cursive", fontSize: 22, color: "#00ff88", textDecoration: "none" }}
-        >
-          🔝Floor
+        <Link href="/" style={{ display: "inline-flex" }}>
+          <Image
+            src="/Logo.png"
+            alt="TopFloor Trades"
+            width={120}
+            height={48}
+            style={{ objectFit: "contain", width: 120, height: "auto" }}
+          />
         </Link>
         <button
           type="button"

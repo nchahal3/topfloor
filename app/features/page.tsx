@@ -11,8 +11,9 @@ export default function FeaturesPage() {
       <PageHeader
         label="Membership Benefits"
         title="What You Get"
-        subtitle="Everything included in your 🔝Floor membership, from day one."
+        subtitle="Everything included in your Top Floor membership, from day one."
         image="/whatyouget-banner-v3.jpg"
+        mobileImage="/whatyouget-banner-mobile.jpg"
       />
       <WhatYouGet />
       <BottomCTA

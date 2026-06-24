@@ -23,16 +23,17 @@ export default async function DashboardPage() {
   const isMonthly = tier === "bronze" || tier === "silver" || tier === "gold";
 
   return (
-    <div style={{ padding: "40px 32px", maxWidth: 900, margin: "0 auto" }}>
+    <div style={{ background: "#ffffff", minHeight: "100%" }}>
+      <div style={{ padding: "40px 32px", maxWidth: 900, margin: "0 auto" }}>
       {/* Header */}
       <div style={{ marginBottom: 40 }}>
-        <p style={{ color: "#00ff88", fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 8px" }}>
+        <p style={{ color: "#0a8f4f", fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 8px" }}>
           Member Dashboard
         </p>
-        <h1 style={{ color: "#f5f5f5", fontSize: 30, fontWeight: 700, margin: 0, lineHeight: 1.2 }}>
+        <h1 style={{ color: "#0a0a0a", fontSize: 30, fontWeight: 700, margin: 0, lineHeight: 1.2 }}>
           Welcome back, {name}.
         </h1>
-        <p style={{ color: "rgba(255,255,255,0.4)", marginTop: 8, fontSize: 14 }}>
+        <p style={{ color: "rgba(0,0,0,0.5)", marginTop: 8, fontSize: 14 }}>
           Everything you need in one place.
         </p>
       </div>
@@ -43,7 +44,7 @@ export default async function DashboardPage() {
           padding: "20px 24px",
           borderRadius: 16,
           marginBottom: 40,
-          background: tier ? `${TIER_COLORS[tier]}0d` : "rgba(255,255,255,0.03)",
+          background: tier ? `${TIER_COLORS[tier]}0d` : "#111",
           border: `1px solid ${tier ? `${TIER_COLORS[tier]}30` : "rgba(255,255,255,0.08)"}`,
           display: "flex",
           alignItems: "center",
@@ -163,6 +164,7 @@ export default async function DashboardPage() {
             </Link>
           );
         })}
+      </div>
       </div>
     </div>
   );

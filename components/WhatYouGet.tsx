@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 const FEATURES = [
   {
@@ -51,31 +51,17 @@ function FeatureCard({ feature, style }: { feature: typeof FEATURES[0]; style?: 
 }
 
 export default function WhatYouGet() {
-  const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const scrollTo = (index: number) => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const card = el.children[index] as HTMLElement | undefined;
-    if (card) {
-      el.scrollTo({ left: card.offsetLeft - 16, behavior: "smooth" });
-    }
-    setActiveIndex(index);
-  };
-
-  const handleScroll = () => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const children = Array.from(el.children) as HTMLElement[];
-    let closest = 0;
-    let minDist = Infinity;
-    children.forEach((child, i) => {
-      const dist = Math.abs(child.offsetLeft - el.scrollLeft - 16);
-      if (dist < minDist) { minDist = dist; closest = i; }
-    });
-    setActiveIndex(closest);
-  };
+  // Auto-advance one slide at a time, looping. Keyed on activeIndex so tapping
+  // a dot restarts the timer instead of advancing immediately.
+  useEffect(() => {
+    const t = setTimeout(
+      () => setActiveIndex((i) => (i + 1) % FEATURES.length),
+      4500
+    );
+    return () => clearTimeout(t);
+  }, [activeIndex]);
 
   return (
     <section id="what-you-get" className="py-20 sm:py-28" style={{ background: "#0d0d0d" }}>
@@ -112,36 +98,25 @@ export default function WhatYouGet() {
           ))}
         </div>
 
-        {/* Mobile: sliding carousel */}
+        {/* Mobile: one-at-a-time auto-looping carousel */}
         <div className="lg:hidden">
-          <div
-            ref={scrollRef}
-            onScroll={handleScroll}
-            style={{
-              display: "flex",
-              gap: 16,
-              overflowX: "auto",
-              scrollSnapType: "x mandatory",
-              WebkitOverflowScrolling: "touch",
-              scrollbarWidth: "none",
-              padding: "4px 16px 4px",
-              margin: "0 -16px",
-            }}
-          >
-            {FEATURES.map((feature) => (
-              <div
-                key={feature.title}
-                style={{
-                  scrollSnapAlign: "start",
-                  minWidth: "calc(85vw)",
-                  flexShrink: 0,
-                }}
-              >
-                <FeatureCard feature={feature} style={{ height: "100%" }} />
-              </div>
-            ))}
-            {/* Trailing spacer so last card can snap to start */}
-            <div style={{ minWidth: 16, flexShrink: 0 }} />
+          <div style={{ overflow: "hidden" }}>
+            <div
+              style={{
+                display: "flex",
+                transform: `translateX(-${activeIndex * 100}%)`,
+                transition: "transform 0.55s cubic-bezier(0.22,1,0.36,1)",
+              }}
+            >
+              {FEATURES.map((feature) => (
+                <div
+                  key={feature.title}
+                  style={{ flex: "0 0 100%", minWidth: "100%" }}
+                >
+                  <FeatureCard feature={feature} style={{ height: "100%" }} />
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Dot indicators */}
@@ -156,7 +131,7 @@ export default function WhatYouGet() {
             {FEATURES.map((_, i) => (
               <button
                 key={i}
-                onClick={() => scrollTo(i)}
+                onClick={() => setActiveIndex(i)}
                 type="button"
                 aria-label={`Go to slide ${i + 1}`}
                 style={{

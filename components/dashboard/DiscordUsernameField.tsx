@@ -26,7 +26,7 @@ export default function DiscordUsernameField({ initial }: { initial: string }) {
       style={{
         padding: "20px 24px",
         borderRadius: 16,
-        background: "rgba(255,255,255,0.03)",
+        background: "#111",
         border: "1px solid rgba(255,255,255,0.08)",
         marginBottom: 40,
       }}
