@@ -57,8 +57,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         fields: [
           { name: "Member", value: memberName, inline: true },
           { name: "Call Type", value: callLabel, inline: true },
-          { name: "Time", value: time ?? "TBD", inline: false },
+          { name: "Time", value: time ?? "TBD", inline: true },
+          { name: "Notified", value: memberEmail, inline: false },
         ],
+        description: "Confirmation email sent to member — source: Admin Panel",
       });
       await resend.emails.send({
         from: fromEmail,
@@ -95,8 +97,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         fields: [
           { name: "Member", value: memberName, inline: true },
           { name: "Call Type", value: callLabel, inline: true },
-          { name: "Time", value: time ?? "TBD", inline: false },
+          { name: "Time", value: time ?? "TBD", inline: true },
+          { name: "Notified", value: memberEmail, inline: false },
         ],
+        description: "Cancellation email sent to member — source: Admin Panel",
       });
       await resend.emails.send({
         from: fromEmail,

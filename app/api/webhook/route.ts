@@ -149,6 +149,17 @@ export async function POST(request: Request) {
       `,
     });
 
+    sendDiscordLog({
+      title: "📧 Welcome Email Sent to Member",
+      color: 0x00cc66,
+      fields: [
+        { name: "Name", value: customerName, inline: true },
+        { name: "Plan", value: planName, inline: true },
+        { name: "Email", value: customerEmail, inline: false },
+      ],
+      description: "Member notified via welcome email — source: Stripe checkout.session.completed",
+    });
+
     await resend.emails.send({
       from: FROM_EMAIL,
       to: customerEmail,
@@ -287,7 +298,7 @@ export async function POST(request: Request) {
           { name: "Plan", value: failedPlanName, inline: true },
           { name: "Email", value: memberEmail, inline: false },
         ],
-        description: "Access not revoked yet — Stripe will retry automatically.",
+        description: "Access not revoked yet — Stripe will retry automatically. Member notified via email.",
       });
       await Promise.all([
         resend.emails.send({
