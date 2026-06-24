@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
+import FlipCards from "@/components/FlipCards";
 
 const CREDENTIALS = [
   { img: "/about-cards/c1.jpg", label: "7+ Years in the Markets" },
@@ -19,44 +19,16 @@ export default function About() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col-reverse items-stretch gap-10 lg:grid lg:grid-cols-2 lg:items-start lg:gap-16">
-          {/* Credential cards — stack & reveal on scroll (sticky) on desktop */}
-          <div className="flex flex-col gap-4 lg:block">
-            {CREDENTIALS.map((c, i) => (
-              <div
-                key={c.label}
-                className="lg:sticky lg:mb-[14vh]"
-                style={{ top: 100 + i * 14 }}
-              >
-                <div
-                  className="flex items-stretch gap-4 overflow-hidden rounded-2xl border shadow-2xl shadow-black/50"
-                  style={{
-                    background: "#0e120f",
-                    borderColor: "rgba(0,255,136,0.22)",
-                  }}
-                >
-                  <div className="relative w-28 shrink-0 sm:w-32">
-                    <Image
-                      src={c.img}
-                      alt=""
-                      fill
-                      sizes="128px"
-                      className="object-cover"
-                    />
-                  </div>
-                  <p className="self-center py-6 pr-5 text-lg font-semibold text-white">
-                    {c.label}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
+          {/* One card that flips to the next as you scroll */}
+          <FlipCards items={CREDENTIALS} />
 
-          {/* Bio content */}
+          {/* Bio content — pinned while the card flips */}
           <motion.div
             initial={{ opacity: 0, x: 40 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.6, delay: 0.1 }}
+            className="lg:sticky lg:top-32 lg:self-start"
           >
             <p
               className="text-xs font-bold tracking-widest uppercase mb-4"
