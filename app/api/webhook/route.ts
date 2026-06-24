@@ -4,6 +4,7 @@ import { clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import type { Tier } from "@/lib/tier";
 import { PRICE_TIER } from "@/lib/tier";
+import { sendDiscordLog } from "@/lib/discord";
 
 const FROM_EMAIL = "noreply@topfloortradesofficial.com";
 const DISCORD_INVITE = "https://discord.gg/yebuyWPswJ";
@@ -78,6 +79,18 @@ export async function POST(request: Request) {
       } catch (err) {
         console.error("Failed to update Clerk user tier:", err);
         clerkFailed = true;
+        sendDiscordLog({
+          title: "⚠️ URGENT: Access Grant Failed",
+          color: 0xff4444,
+          fields: [
+            { name: "Name", value: customerName, inline: true },
+            { name: "Plan", value: planName, inline: true },
+            { name: "Email", value: customerEmail, inline: false },
+            { name: "Clerk ID", value: clerkUserId ?? "missing", inline: true },
+            { name: "Error", value: err instanceof Error ? err.message : String(err), inline: false },
+          ],
+          description: "Payment received but dashboard access could not be granted. Manual action required.",
+        });
         // Alert coach so they can manually fix access
         await resend.emails.send({
           from: FROM_EMAIL,
@@ -105,6 +118,18 @@ export async function POST(request: Request) {
     if (alreadyProcessed || clerkFailed) {
       return NextResponse.json({ received: true });
     }
+
+    sendDiscordLog({
+      title: "💰 New Member",
+      color: 0x00ff88,
+      fields: [
+        { name: "Name", value: customerName, inline: true },
+        { name: "Plan", value: planName, inline: true },
+        { name: "Email", value: customerEmail, inline: false },
+        { name: "Phone", value: customerPhone, inline: true },
+        { name: "Discord", value: discordUsername, inline: true },
+      ],
+    });
 
     await resend.emails.send({
       from: FROM_EMAIL,
@@ -187,6 +212,14 @@ export async function POST(request: Request) {
     }
 
     if (memberEmail) {
+      sendDiscordLog({
+        title: "❌ Member Cancelled",
+        color: 0xff4444,
+        fields: [
+          { name: "Name", value: memberName, inline: true },
+          { name: "Email", value: memberEmail, inline: true },
+        ],
+      });
       await Promise.all([
         resend.emails.send({
           from: FROM_EMAIL,
@@ -234,6 +267,16 @@ export async function POST(request: Request) {
     const attemptCount = invoice.attempt_count ?? 1;
 
     if (memberEmail) {
+      sendDiscordLog({
+        title: "⚠️ Payment Failed",
+        color: 0xffa500,
+        fields: [
+          { name: "Name", value: memberName, inline: true },
+          { name: "Attempt", value: `#${attemptCount}`, inline: true },
+          { name: "Email", value: memberEmail, inline: false },
+        ],
+        description: "Access not revoked yet — Stripe will retry automatically.",
+      });
       await Promise.all([
         resend.emails.send({
           from: FROM_EMAIL,

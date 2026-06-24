@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { supabaseAdmin } from "@/lib/supabase";
+import { sendDiscordLog } from "@/lib/discord";
 
 async function checkAdminAuth() {
   const c = await cookies();
@@ -50,6 +51,15 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const fromEmail = "noreply@topfloortradesofficial.com";
 
     if (body.status === "confirmed") {
+      sendDiscordLog({
+        title: "✅ Booking Confirmed",
+        color: 0x00ff88,
+        fields: [
+          { name: "Member", value: memberName, inline: true },
+          { name: "Call Type", value: callLabel, inline: true },
+          { name: "Time", value: time ?? "TBD", inline: false },
+        ],
+      });
       await resend.emails.send({
         from: fromEmail,
         to: memberEmail,
@@ -79,6 +89,15 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     }
 
     if (body.status === "cancelled") {
+      sendDiscordLog({
+        title: "🚫 Booking Cancelled",
+        color: 0xff4444,
+        fields: [
+          { name: "Member", value: memberName, inline: true },
+          { name: "Call Type", value: callLabel, inline: true },
+          { name: "Time", value: time ?? "TBD", inline: false },
+        ],
+      });
       await resend.emails.send({
         from: fromEmail,
         to: memberEmail,

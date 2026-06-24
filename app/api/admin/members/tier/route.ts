@@ -5,6 +5,7 @@ import Stripe from "stripe";
 import { Resend } from "resend";
 import type { Tier } from "@/lib/tier";
 import { PRICE_TIER, TIER_LABELS } from "@/lib/tier";
+import { sendDiscordLog } from "@/lib/discord";
 
 async function isAdmin() {
   const cookieStore = await cookies();
@@ -103,6 +104,15 @@ export async function PATCH(request: Request) {
             `,
           }),
         ]).catch((e) => console.error("Email failed:", e));
+        sendDiscordLog({
+          title: "♾️ Monthly → Lifetime Upgrade",
+          color: 0xf0c040,
+          fields: [
+            { name: "Name", value: memberName, inline: true },
+            { name: "Email", value: memberEmail, inline: true },
+            { name: "Awaiting", value: "$2,000 lifetime payment", inline: false },
+          ],
+        });
       }
 
       return NextResponse.json({ success: true });
@@ -177,6 +187,15 @@ export async function PATCH(request: Request) {
           `,
         }),
       ]).catch((e) => console.error("Email failed:", e));
+      sendDiscordLog({
+        title: "⬆️ Tier Changed",
+        color: 0x00ff88,
+        fields: [
+          { name: "Name", value: memberName, inline: true },
+          { name: "New Tier", value: `${tierLabel} (${amount})`, inline: true },
+          { name: "Email", value: memberEmail, inline: false },
+        ],
+      });
     }
 
     return NextResponse.json({ success: true });

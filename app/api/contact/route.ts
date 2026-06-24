@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { NextResponse } from "next/server";
+import { sendDiscordLog } from "@/lib/discord";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -59,6 +60,17 @@ export async function POST(request: Request) {
           <p style="white-space:pre-wrap;line-height:1.6;background:#111;padding:16px;border-radius:8px;border-left:3px solid #00ff88;">${escapeHtml(challenge)}</p>
         </div>
       `,
+    });
+
+    sendDiscordLog({
+      title: "📩 Contact Form",
+      color: 0x5865f2,
+      fields: [
+        { name: "Name", value: escapeHtml(name), inline: true },
+        { name: "Level", value: escapeHtml(experienceLabels[experience] ?? experience), inline: true },
+        { name: "Email", value: escapeHtml(email), inline: false },
+        { name: "Challenge", value: escapeHtml(challenge).slice(0, 200), inline: false },
+      ],
     });
 
     return NextResponse.json({ success: true });

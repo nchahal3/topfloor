@@ -2,6 +2,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { Resend } from "resend";
+import { sendDiscordLog } from "@/lib/discord";
 
 export async function GET() {
   const { userId } = await auth();
@@ -66,6 +67,15 @@ export async function POST(request: Request) {
             <p style="color:#aaa;margin-top:16px;font-size:13px;">Review it in the admin dashboard under Achievements.</p>
           </div>
         `,
+      });
+      sendDiscordLog({
+        title: "💸 Payout Request",
+        color: 0xf0c040,
+        fields: [
+          { name: "Name", value: memberName, inline: true },
+          { name: "Email", value: memberEmail, inline: true },
+          ...(notes ? [{ name: "Notes", value: notes as string, inline: false }] : []),
+        ],
       });
     } catch {}
   }
