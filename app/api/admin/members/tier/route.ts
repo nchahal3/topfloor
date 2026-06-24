@@ -134,27 +134,52 @@ export async function PATCH(request: Request) {
     }
 
     let nextBillingDate = "your next billing date";
-    if (subscriptionId && tier && tier !== "lifetime") {
+    if (tier && tier !== "lifetime") {
       const newPriceId = TIER_PRICE[tier];
       if (newPriceId) {
         try {
-          const sub = await stripe.subscriptions.retrieve(subscriptionId);
-          const itemId = sub.items.data[0]?.id;
-          if (itemId) {
-            await stripe.subscriptions.update(subscriptionId, {
-              items: [{ id: itemId, price: newPriceId }],
-              proration_behavior: "none",
-            });
+          let needNewSub = true;
+
+          if (subscriptionId) {
+            const existingSub = await stripe.subscriptions.retrieve(subscriptionId);
+            if (existingSub.status !== "canceled") {
+              needNewSub = false;
+              const itemId = existingSub.items.data[0]?.id;
+              if (itemId) {
+                await stripe.subscriptions.update(subscriptionId, {
+                  items: [{ id: itemId, price: newPriceId }],
+                  proration_behavior: "none",
+                });
+              }
+              const periodEnd = (existingSub as unknown as { current_period_end?: number }).current_period_end
+                ?? existingSub.items.data[0]?.current_period_end;
+              if (periodEnd) {
+                nextBillingDate = new Date(periodEnd * 1000).toLocaleDateString("en-US", {
+                  month: "long", day: "numeric", year: "numeric",
+                });
+              }
+            }
           }
-          const periodEnd = (sub as unknown as { current_period_end?: number }).current_period_end
-            ?? sub.items.data[0]?.current_period_end;
-          if (periodEnd) {
-            nextBillingDate = new Date(periodEnd * 1000).toLocaleDateString("en-US", {
-              month: "long", day: "numeric", year: "numeric",
-            });
+
+          if (needNewSub && memberEmail) {
+            const customers = await stripe.customers.list({ email: memberEmail, limit: 1 });
+            if (customers.data.length > 0) {
+              const newSub = await stripe.subscriptions.create({
+                customer: customers.data[0].id,
+                items: [{ price: newPriceId }],
+                metadata: { clerkUserId },
+              });
+              const periodEnd = (newSub as unknown as { current_period_end?: number }).current_period_end
+                ?? newSub.items.data[0]?.current_period_end;
+              if (periodEnd) {
+                nextBillingDate = new Date(periodEnd * 1000).toLocaleDateString("en-US", {
+                  month: "long", day: "numeric", year: "numeric",
+                });
+              }
+            }
           }
         } catch (stripeErr) {
-          console.error("Stripe subscription update failed:", stripeErr);
+          console.error("Stripe subscription update/create failed:", stripeErr);
         }
       }
     }
