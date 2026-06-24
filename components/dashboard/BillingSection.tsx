@@ -78,11 +78,12 @@ function UpdateCardForm({ onSuccess, onCancel }: { onSuccess: () => void; onCanc
       >
         <CardElement
           options={{
+            hidePostalCode: true,
             style: {
               base: {
                 color: "#f5f5f5",
                 fontFamily: "sans-serif",
-                fontSize: "14px",
+                fontSize: "15px",
                 "::placeholder": { color: "rgba(255,255,255,0.3)" },
               },
               invalid: { color: "#ff4444" },
