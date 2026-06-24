@@ -5,6 +5,7 @@ import type { Tier } from "@/lib/tier";
 import { TIER_LABELS, TIER_COLORS } from "@/lib/tier";
 import DiscordUsernameField from "@/components/dashboard/DiscordUsernameField";
 import CancelMembershipButton from "@/components/dashboard/CancelMembershipButton";
+import BillingSection from "@/components/dashboard/BillingSection";
 
 const FEATURE_CARDS = [
   { label: "Funded Accounts", desc: "Promo codes for Alpha Futures, Lucid & more", href: "/dashboard/funded-accounts", icon: TrendingUp, free: true, comingSoon: false },
@@ -94,6 +95,9 @@ export default async function DashboardPage() {
 
       {/* Discord username */}
       <DiscordUsernameField initial={discordUsername} />
+
+      {/* Billing info + card management */}
+      {tier && <BillingSection tier={tier} />}
 
       {/* Cancel membership */}
       {isMonthly && <CancelMembershipButton cancelAt={cancelAt} />}
