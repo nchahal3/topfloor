@@ -1,6 +1,8 @@
 import Stripe from "stripe";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth, currentUser, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import type { Tier } from "@/lib/tier";
+import { PRICE_TIER } from "@/lib/tier";
 
 const PRICE_IDS: Record<string, string> = {
   bronze: process.env.STRIPE_PRICE_BRONZE ?? "price_1TiphA8U0Yle7MZgUELrqhSV",
@@ -36,6 +38,30 @@ export async function POST(request: Request) {
         if (existing.data.length > 0) {
           customerId = existing.data[0].id;
         }
+      }
+    }
+
+    // If upgrading/downgrading an existing subscription, update it in place
+    if (isRecurring && customerId) {
+      const activeSubs = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
+      if (activeSubs.data.length > 0) {
+        const sub = activeSubs.data[0];
+        const currentPriceId = sub.items.data[0]?.price?.id;
+        if (currentPriceId !== priceId) {
+          await stripe.subscriptions.update(sub.id, {
+            items: [{ id: sub.items.data[0].id, price: priceId }],
+            proration_behavior: "always_invoice",
+            metadata: userId ? { clerkUserId: userId } : {},
+          });
+          // Update Clerk tier immediately since no checkout.session.completed fires
+          if (userId) {
+            const clerk = await clerkClient();
+            await clerk.users.updateUserMetadata(userId, {
+              publicMetadata: { tier: plan as Tier },
+            });
+          }
+        }
+        return NextResponse.json({ url: `${baseUrl}/success?plan=${plan}` });
       }
     }
 
