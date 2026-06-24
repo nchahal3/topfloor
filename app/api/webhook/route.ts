@@ -266,6 +266,13 @@ export async function POST(request: Request) {
     const memberName = invoice.customer_name ?? "Member";
     const attemptCount = invoice.attempt_count ?? 1;
 
+    let failedPlanName = "Unknown";
+    try {
+      const lines = invoice.lines?.data ?? [];
+      const priceId = (lines[0] as unknown as { price?: { id?: string } })?.price?.id ?? "";
+      failedPlanName = PLAN_NAMES[priceId] ?? "Unknown";
+    } catch {}
+
     if (memberEmail) {
       sendDiscordLog({
         title: "⚠️ Payment Failed",
@@ -273,6 +280,7 @@ export async function POST(request: Request) {
         fields: [
           { name: "Name", value: memberName, inline: true },
           { name: "Attempt", value: `#${attemptCount}`, inline: true },
+          { name: "Plan", value: failedPlanName, inline: true },
           { name: "Email", value: memberEmail, inline: false },
         ],
         description: "Access not revoked yet — Stripe will retry automatically.",
