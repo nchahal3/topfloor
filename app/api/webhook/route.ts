@@ -191,6 +191,9 @@ export async function POST(request: Request) {
       memberName = customer.name ?? "Member";
     } catch {}
 
+    const cancelledPriceId = subscription.items?.data[0]?.price?.id ?? "";
+    const cancelledPlanName = PLAN_NAMES[cancelledPriceId] ?? "Unknown";
+
     // Revoke Clerk access
     const client = await clerkClient();
     if (clerkUserId) {
@@ -217,7 +220,8 @@ export async function POST(request: Request) {
         color: 0xff4444,
         fields: [
           { name: "Name", value: memberName, inline: true },
-          { name: "Email", value: memberEmail, inline: true },
+          { name: "Plan", value: cancelledPlanName, inline: true },
+          { name: "Email", value: memberEmail, inline: false },
         ],
       });
       await Promise.all([
