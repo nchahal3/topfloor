@@ -200,6 +200,11 @@ export default function TradingJournal({ userId }: { userId: string }) {
       notes: notes.trim(),
     };
     setEntries((e) => [next, ...e]);
+    // jump to the calendar at this trade's month so it visibly lands there
+    const d = new Date(next.date + "T00:00:00");
+    setCal({ y: d.getFullYear(), m: d.getMonth() });
+    setSelectedDate(next.date);
+    setView("monthly");
     setModalOpen(false);
   }
   function remove(id: string) {
