@@ -11,6 +11,10 @@ const PLAN_NAMES: Record<string, string> = {
   price_1TiphA8U0Yle7MZggKFKtsl8: "Silver ($500/mo)",
   price_1TiphA8U0Yle7MZgkmDxN3lZ: "Gold ($750/mo)",
   price_1TiphC8U0Yle7MZg1ivchT6j: "Lifetime ($2,000)",
+  price_1TiikP8sHKVNeGWtxjodurtl: "Bronze ($200/mo)",
+  price_1Tiike8sHKVNeGWtJr1gxDZx: "Silver ($500/mo)",
+  price_1Tiiku8sHKVNeGWtthSeTog0: "Gold ($750/mo)",
+  price_1Tiil68sHKVNeGWt4SFHY6P5: "Lifetime ($2,000)",
 };
 
 async function getMembers(): Promise<Member[]> {
@@ -55,7 +59,23 @@ async function getMembers(): Promise<Member[]> {
           : Promise.resolve(null),
       ]);
 
-      const sub = subResult.status === "fulfilled" ? (subResult.value as unknown as SubInfo) : null;
+      let sub = subResult.status === "fulfilled" ? (subResult.value as unknown as SubInfo) : null;
+      let activeSubId: string | null = session.subscription as string | null;
+
+      // If session subscription is cancelled, look for a newer active subscription on the customer
+      if (sub?.status === "canceled" && session.customer) {
+        try {
+          const activeSubs = await stripe.subscriptions.list({
+            customer: session.customer as string,
+            status: "active",
+            limit: 1,
+          });
+          if (activeSubs.data.length > 0) {
+            sub = activeSubs.data[0] as unknown as SubInfo;
+            activeSubId = activeSubs.data[0].id;
+          }
+        } catch {}
+      }
 
       // Prefer live subscription price (reflects admin tier changes); fall back to original checkout
       const priceId =
@@ -75,12 +95,12 @@ async function getMembers(): Promise<Member[]> {
         }
       }
 
-      return { session, planName, status, nextPayment };
+      return { session, planName, status, nextPayment, activeSubId };
     })
   );
 
   const members: Member[] = [];
-  for (const { session, planName, status, nextPayment } of enriched) {
+  for (const { session, planName, status, nextPayment, activeSubId } of enriched) {
     const email = session.customer_details?.email ?? "";
     const clerkData = clerkByEmail.get(email.toLowerCase());
     const discord =
@@ -113,7 +133,7 @@ async function getMembers(): Promise<Member[]> {
       joinedAt: new Date(session.created * 1000).toLocaleDateString("en-CA", {
         month: "short", day: "numeric", year: "numeric",
       }),
-      subscriptionId: session.mode === "payment" ? null : (session.subscription as string | null) ?? null,
+      subscriptionId: session.mode === "payment" ? null : activeSubId,
     });
   }
 

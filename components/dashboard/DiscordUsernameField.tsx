@@ -42,7 +42,7 @@ export default function DiscordUsernameField({ initial }: { initial: string }) {
           type="text"
           value={value}
           onChange={(e) => { setValue(e.target.value); setStatus("idle"); }}
-          placeholder="e.g. coachfloor"
+          placeholder="e.g. traderjohn99"
           style={{
             flex: 1,
             minWidth: 180,

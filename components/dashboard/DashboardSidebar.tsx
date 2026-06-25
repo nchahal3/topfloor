@@ -17,6 +17,7 @@ import {
   X,
   Lock,
   ChevronRight,
+  CreditCard,
 } from "lucide-react";
 import type { Tier } from "@/lib/tier";
 import { TIER_LABELS, TIER_COLORS } from "@/lib/tier";
@@ -100,7 +101,7 @@ export default function DashboardSidebar({ tier }: { tier: Tier }) {
 
       {/* Nav */}
       <nav style={{ flex: 1, padding: "12px 12px", overflowY: "auto" }}>
-        {NAV_ITEMS.map((item) => {
+        {[...NAV_ITEMS, ...(tier ? [{ label: "Billing", href: "/dashboard/billing", icon: CreditCard, badge: null }] : [])].map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
           return (

@@ -16,27 +16,36 @@ export async function PATCH() {
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-  const customers = await stripe.customers.list({ email, limit: 1 });
-  if (!customers.data.length) {
-    return NextResponse.json({ error: "No Stripe customer found" }, { status: 404 });
+  try {
+    const customers = await stripe.customers.list({ email, limit: 1 });
+    if (!customers.data.length) {
+      return NextResponse.json({ error: "No Stripe customer found" }, { status: 404 });
+    }
+
+    const customerId = customers.data[0].id;
+    const subscriptions = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
+    if (!subscriptions.data.length) {
+      return NextResponse.json({ error: "No active subscription found" }, { status: 404 });
+    }
+
+    const sub = subscriptions.data[0];
+    await stripe.subscriptions.update(sub.id, { cancel_at_period_end: true });
+
+    const periodEnd = sub.items.data[0]?.current_period_end;
+    if (!periodEnd) {
+      return NextResponse.json({ error: "Could not determine billing period end" }, { status: 500 });
+    }
+    const cancelAt = new Date(periodEnd * 1000).toISOString();
+
+    const client = await clerkClient();
+    await client.users.updateUserMetadata(userId, {
+      publicMetadata: { cancelAt },
+    });
+
+    return NextResponse.json({ cancelAt });
+  } catch (err) {
+    console.error("[cancel-subscription]", err);
+    const message = err instanceof Error ? err.message : "Stripe error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
-
-  const customerId = customers.data[0].id;
-  const subscriptions = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
-  if (!subscriptions.data.length) {
-    return NextResponse.json({ error: "No active subscription found" }, { status: 404 });
-  }
-
-  const sub = subscriptions.data[0];
-  await stripe.subscriptions.update(sub.id, { cancel_at_period_end: true });
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const cancelAt = new Date((sub as any).current_period_end * 1000).toISOString();
-
-  const client = await clerkClient();
-  await client.users.updateUserMetadata(userId, {
-    publicMetadata: { cancelAt },
-  });
-
-  return NextResponse.json({ cancelAt });
 }

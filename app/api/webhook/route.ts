@@ -14,6 +14,10 @@ const PLAN_NAMES: Record<string, string> = {
   price_1TiphA8U0Yle7MZggKFKtsl8: "Silver ($500/mo)",
   price_1TiphA8U0Yle7MZgkmDxN3lZ: "Gold ($750/mo)",
   price_1TiphC8U0Yle7MZg1ivchT6j: "Lifetime ($2,000)",
+  price_1TiikP8sHKVNeGWtxjodurtl: "Bronze ($200/mo) [test]",
+  price_1Tiike8sHKVNeGWtJr1gxDZx: "Silver ($500/mo) [test]",
+  price_1Tiiku8sHKVNeGWtthSeTog0: "Gold ($750/mo) [test]",
+  price_1Tiil68sHKVNeGWt4SFHY6P5: "Lifetime ($2,000) [test]",
 };
 
 export async function POST(request: Request) {
@@ -70,11 +74,27 @@ export async function POST(request: Request) {
           await client.users.updateUserMetadata(clerkUserId, {
             publicMetadata: {
               tier,
+              suspendedTier: null,
               pendingLifetime: false,
               phone: customerPhone !== "Not provided" ? customerPhone : undefined,
               discordUsername: discordUsername !== "Not provided" ? discordUsername : undefined,
             },
           });
+          // Cancel any active monthly subscription when self-upgrading to lifetime
+          if (tier === "lifetime" && session.customer) {
+            try {
+              const activeSubs = await stripe.subscriptions.list({
+                customer: session.customer as string,
+                status: "active",
+                limit: 10,
+              });
+              for (const sub of activeSubs.data) {
+                await stripe.subscriptions.cancel(sub.id);
+              }
+            } catch (e) {
+              console.error("Failed to cancel monthly sub on lifetime upgrade:", e);
+            }
+          }
         }
       } catch (err) {
         console.error("Failed to update Clerk user tier:", err);
@@ -205,11 +225,16 @@ export async function POST(request: Request) {
     const cancelledPriceId = subscription.items?.data[0]?.price?.id ?? "";
     const cancelledPlanName = PLAN_NAMES[cancelledPriceId] ?? "Unknown";
 
-    // Revoke Clerk access
+    // Revoke Clerk access — but skip if they've already upgraded to lifetime
     const client = await clerkClient();
+    const revokeAccess = async (userId: string) => {
+      const user = await client.users.getUser(userId);
+      if (user.publicMetadata?.tier === "lifetime") return; // don't revoke lifetime
+      await client.users.updateUserMetadata(userId, { publicMetadata: { tier: null, cancelAt: null } });
+    };
     if (clerkUserId) {
       try {
-        await client.users.updateUserMetadata(clerkUserId, { publicMetadata: { tier: null, cancelAt: null } });
+        await revokeAccess(clerkUserId);
       } catch (err) {
         console.error("Failed to revoke Clerk tier on subscription deletion:", err);
       }
@@ -218,7 +243,7 @@ export async function POST(request: Request) {
       try {
         const users = await client.users.getUserList({ emailAddress: [memberEmail] });
         if (users.data.length > 0) {
-          await client.users.updateUserMetadata(users.data[0].id, { publicMetadata: { tier: null, cancelAt: null } });
+          await revokeAccess(users.data[0].id);
         }
       } catch (err) {
         console.error("Failed to revoke Clerk tier by email:", err);
@@ -274,9 +299,9 @@ export async function POST(request: Request) {
     }
   }
 
-  // ── Payment failed (warn member, don't revoke yet — Stripe will retry) ──
+  // ── Payment failed — lock account immediately ──
   if (event.type === "invoice.payment_failed") {
-    const invoice = event.data.object as Stripe.Invoice & { customer_email?: string; customer_name?: string; attempt_count?: number };
+    const invoice = event.data.object as Stripe.Invoice & { customer_email?: string; customer_name?: string; attempt_count?: number; subscription?: string };
     const memberEmail = invoice.customer_email ?? "";
     const memberName = invoice.customer_name ?? "Member";
     const attemptCount = invoice.attempt_count ?? 1;
@@ -288,9 +313,36 @@ export async function POST(request: Request) {
       failedPlanName = PLAN_NAMES[priceId] ?? "Unknown";
     } catch {}
 
+    // Lock account immediately — save current tier so we can restore it on payment success
+    let lockedClerkId: string | null = null;
+    try {
+      const subId = typeof invoice.subscription === "string" ? invoice.subscription : null;
+      if (subId) {
+        const sub = await stripe.subscriptions.retrieve(subId);
+        lockedClerkId = sub.metadata?.clerkUserId ?? null;
+      }
+      if (!lockedClerkId && memberEmail) {
+        const clerk = await clerkClient();
+        const users = await clerk.users.getUserList({ emailAddress: [memberEmail] });
+        lockedClerkId = users.data[0]?.id ?? null;
+      }
+      if (lockedClerkId) {
+        const clerk = await clerkClient();
+        const user = await clerk.users.getUser(lockedClerkId);
+        const currentTier = user.publicMetadata?.tier ?? null;
+        if (currentTier) {
+          await clerk.users.updateUserMetadata(lockedClerkId, {
+            publicMetadata: { tier: null, suspendedTier: currentTier },
+          });
+        }
+      }
+    } catch (e) {
+      console.error("Failed to lock account on payment failure:", e);
+    }
+
     if (memberEmail) {
       sendDiscordLog({
-        title: "⚠️ Payment Failed",
+        title: "⚠️ Payment Failed — Access Locked",
         color: 0xffa500,
         fields: [
           { name: "Name", value: memberName, inline: true },
@@ -298,20 +350,20 @@ export async function POST(request: Request) {
           { name: "Plan", value: failedPlanName, inline: true },
           { name: "Email", value: memberEmail, inline: false },
         ],
-        description: "Access not revoked yet — Stripe will retry automatically. Member notified via email.",
+        description: "Account locked immediately. Access restored automatically when payment succeeds.",
       });
       await Promise.all([
         resend.emails.send({
           from: FROM_EMAIL,
           to: memberEmail,
-          subject: "⚠️ Payment failed — action required",
+          subject: "⚠️ Payment failed — your access has been paused",
           html: `
             <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;border:1px solid rgba(255,165,0,0.3);">
-              <h2 style="color:#ffa500;margin-top:0;">Payment Failed</h2>
-              <p style="color:#aaa;line-height:1.6;">Hey ${memberName}, we couldn't process your 🔝Floor subscription payment${attemptCount > 1 ? ` (attempt ${attemptCount})` : ""}.</p>
-              <p style="color:#aaa;line-height:1.6;">Please update your payment method to keep your access. If payment isn't resolved, your membership will be cancelled automatically.</p>
+              <h2 style="color:#ffa500;margin-top:0;">Payment Failed — Access Paused</h2>
+              <p style="color:#aaa;line-height:1.6;">Hey ${memberName}, we couldn't process your 🔝Floor subscription payment and your access has been temporarily paused.</p>
+              <p style="color:#aaa;line-height:1.6;">Update your payment method and your access will be restored immediately.</p>
               <div style="text-align:center;margin:32px 0;">
-                <a href="${process.env.NEXT_PUBLIC_URL}/dashboard" style="display:inline-block;background:#ffa500;color:#000;font-weight:bold;padding:14px 32px;border-radius:999px;text-decoration:none;font-size:16px;">
+                <a href="${process.env.NEXT_PUBLIC_URL}/dashboard/billing" style="display:inline-block;background:#ffa500;color:#000;font-weight:bold;padding:14px 32px;border-radius:999px;text-decoration:none;font-size:16px;">
                   Update Payment Method →
                 </a>
               </div>
@@ -323,7 +375,7 @@ export async function POST(request: Request) {
         resend.emails.send({
           from: FROM_EMAIL,
           to: process.env.COACH_EMAIL!,
-          subject: `⚠️ Payment Failed — ${memberName} (attempt ${attemptCount})`,
+          subject: `⚠️ Payment Failed — ${memberName} (attempt ${attemptCount}) — Access Locked`,
           html: `
             <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
               <h2 style="color:#ffa500;margin-top:0;">Payment Failed</h2>
@@ -331,12 +383,59 @@ export async function POST(request: Request) {
                 <tr><td style="padding:8px 0;color:#999;width:100px;">Name</td><td style="padding:8px 0;font-weight:bold;">${memberName}</td></tr>
                 <tr><td style="padding:8px 0;color:#999;">Email</td><td style="padding:8px 0;"><a href="mailto:${memberEmail}" style="color:#00ff88;">${memberEmail}</a></td></tr>
                 <tr><td style="padding:8px 0;color:#999;">Attempt</td><td style="padding:8px 0;color:#ffa500;font-weight:bold;">#${attemptCount}</td></tr>
-                <tr><td style="padding:8px 0;color:#999;">Note</td><td style="padding:8px 0;">Access not revoked yet — Stripe will retry automatically</td></tr>
+                <tr><td style="padding:8px 0;color:#999;">Status</td><td style="padding:8px 0;color:#ff4444;">Access locked — pending payment update</td></tr>
               </table>
             </div>
           `,
         }),
       ]).catch((e) => console.error("Payment failed email error:", e));
+    }
+  }
+
+  // ── Payment succeeded — restore access if it was locked ──
+  if (event.type === "invoice.paid") {
+    const invoice = event.data.object as Stripe.Invoice & { customer_email?: string; customer_name?: string; billing_reason?: string; subscription?: string };
+    // Restore for any paid invoice on a subscription (cycle, update, or manual retry)
+    const isSubscriptionPayment = invoice.billing_reason === "subscription_cycle"
+      || invoice.billing_reason === "subscription_update"
+      || invoice.billing_reason === "subscription_threshold"
+      || (typeof invoice.subscription === "string" && !!invoice.subscription);
+    if (isSubscriptionPayment) {
+      let restoredClerkId: string | null = null;
+      try {
+        const subId = typeof invoice.subscription === "string" ? invoice.subscription : null;
+        if (subId) {
+          const sub = await stripe.subscriptions.retrieve(subId);
+          restoredClerkId = sub.metadata?.clerkUserId ?? null;
+        }
+        if (!restoredClerkId && invoice.customer_email) {
+          const clerk = await clerkClient();
+          const users = await clerk.users.getUserList({ emailAddress: [invoice.customer_email] });
+          restoredClerkId = users.data[0]?.id ?? null;
+        }
+        if (restoredClerkId) {
+          const clerk = await clerkClient();
+          const user = await clerk.users.getUser(restoredClerkId);
+          const suspendedTier = user.publicMetadata?.suspendedTier as Tier | null;
+          if (suspendedTier) {
+            await clerk.users.updateUserMetadata(restoredClerkId, {
+              publicMetadata: { tier: suspendedTier, suspendedTier: null },
+            });
+            sendDiscordLog({
+              title: "✅ Access Restored",
+              color: 0x00ff88,
+              fields: [
+                { name: "Name", value: invoice.customer_name ?? "Member", inline: true },
+                { name: "Email", value: invoice.customer_email ?? "—", inline: true },
+                { name: "Tier Restored", value: suspendedTier, inline: true },
+              ],
+              description: "Payment succeeded — member access has been restored.",
+            });
+          }
+        }
+      } catch (e) {
+        console.error("Failed to restore access on payment success:", e);
+      }
     }
   }
 

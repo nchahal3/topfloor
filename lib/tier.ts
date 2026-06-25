@@ -27,10 +27,14 @@ export const TIER_COLORS: Record<string, string> = {
   lifetime: "#00ff88",
 };
 
-// Maps Stripe price IDs to tiers
+// Maps Stripe price IDs to tiers (includes both live and test/sandbox IDs)
 export const PRICE_TIER: Record<string, Tier> = {
   price_1TiphA8U0Yle7MZgUELrqhSV: "bronze",
   price_1TiphA8U0Yle7MZggKFKtsl8: "silver",
   price_1TiphA8U0Yle7MZgkmDxN3lZ: "gold",
   price_1TiphC8U0Yle7MZg1ivchT6j: "lifetime",
+  price_1TiikP8sHKVNeGWtxjodurtl: "bronze",
+  price_1Tiike8sHKVNeGWtJr1gxDZx: "silver",
+  price_1Tiiku8sHKVNeGWtthSeTog0: "gold",
+  price_1Tiil68sHKVNeGWt4SFHY6P5: "lifetime",
 };
