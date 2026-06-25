@@ -8,7 +8,9 @@ export default async function BillingPage() {
   const user = await currentUser();
   const tier = (user?.publicMetadata?.tier as Tier) ?? null;
   const cancelAt = (user?.publicMetadata?.cancelAt as string) ?? null;
+  const pendingLifetime = user?.publicMetadata?.pendingLifetime === true;
   const isMonthly = tier === "bronze" || tier === "silver" || tier === "gold";
+  const BASE_URL = process.env.NEXT_PUBLIC_URL ?? "https://topfloortradesofficial.com";
 
   return (
     <div style={{ background: "#0a0a0a", minHeight: "100%" }}>
@@ -22,7 +24,25 @@ export default async function BillingPage() {
           </h1>
         </div>
 
-        {tier === "lifetime" ? (
+        {pendingLifetime ? (
+          <div style={{ padding: "24px 28px", borderRadius: 16, background: "rgba(240,192,64,0.06)", border: "1px solid rgba(240,192,64,0.35)", marginBottom: 32 }}>
+            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", margin: "0 0 12px" }}>PENDING PAYMENT</p>
+            <p style={{ color: "#f0c040", fontSize: 16, fontWeight: 700, margin: "0 0 8px" }}>Complete your Lifetime payment</p>
+            <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 14, margin: "0 0 20px", lineHeight: 1.6 }}>
+              Your monthly subscription has been cancelled. Complete the one-time $2,000 payment to lock in permanent access.
+            </p>
+            <a
+              href={`${BASE_URL}/api/checkout/lifetime`}
+              style={{
+                display: "inline-block", padding: "10px 24px", borderRadius: 10,
+                background: "#f0c040", color: "#000", fontWeight: 700, fontSize: 14,
+                textDecoration: "none",
+              }}
+            >
+              Complete Payment →
+            </a>
+          </div>
+        ) : tier === "lifetime" ? (
           <div style={{ padding: "24px 28px", borderRadius: 16, background: "rgba(240,192,64,0.05)", border: "1px solid rgba(240,192,64,0.25)", marginBottom: 32 }}>
             <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", margin: "0 0 16px" }}>MEMBERSHIP</p>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>

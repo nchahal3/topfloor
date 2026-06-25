@@ -395,7 +395,12 @@ export async function POST(request: Request) {
   // ── Payment succeeded — restore access if it was locked ──
   if (event.type === "invoice.paid") {
     const invoice = event.data.object as Stripe.Invoice & { customer_email?: string; customer_name?: string; billing_reason?: string; subscription?: string };
-    if (invoice.billing_reason === "subscription_cycle" || invoice.billing_reason === "subscription_update") {
+    // Restore for any paid invoice on a subscription (cycle, update, or manual retry)
+    const isSubscriptionPayment = invoice.billing_reason === "subscription_cycle"
+      || invoice.billing_reason === "subscription_update"
+      || invoice.billing_reason === "subscription_threshold"
+      || (typeof invoice.subscription === "string" && !!invoice.subscription);
+    if (isSubscriptionPayment) {
       let restoredClerkId: string | null = null;
       try {
         const subId = typeof invoice.subscription === "string" ? invoice.subscription : null;
