@@ -163,7 +163,7 @@ export default function ChangePlanSection({ currentTier }: { currentTier: Tier }
         <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", margin: "0 0 16px" }}>
           CHANGE PLAN
         </p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12 }}>
           {PLANS.map(({ tier, label, price, features, lifetime: isLifetime }) => {
             const isCurrent = tier === currentTier;
             const cardBg = isCurrent ? "rgba(0,255,136,0.06)" : isLifetime ? "rgba(240,192,64,0.04)" : "rgba(255,255,255,0.03)";

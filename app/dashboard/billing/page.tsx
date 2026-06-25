@@ -14,7 +14,7 @@ export default async function BillingPage() {
 
   return (
     <div style={{ background: "#0a0a0a", minHeight: "100%" }}>
-      <div style={{ padding: "40px 32px", maxWidth: 700, margin: "0 auto" }}>
+      <div className="px-4 sm:px-8" style={{ paddingTop: 40, paddingBottom: 40, maxWidth: 700, margin: "0 auto" }}>
         <div style={{ marginBottom: 32 }}>
           <p style={{ color: "#00ff88", fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 8px" }}>
             Billing
