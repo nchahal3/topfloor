@@ -31,40 +31,43 @@ export default function FlipCards({ items }: { items: Item[] }) {
 
   return (
     <>
-      {/* Mobile: plain vertical stack. Every card occupies real scroll space, so
-          a fast flick can never skip the content the way the scroll-flip did. */}
-      <div className="flex flex-col gap-5 lg:hidden">
-        {items.map((it, i) => (
-          <motion.div
-            key={it.label}
-            initial={reduce ? { opacity: 0 } : { opacity: 0, y: 28 }}
-            whileInView={reduce ? { opacity: 1 } : { opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="relative aspect-[4/5] w-full overflow-hidden rounded-3xl border shadow-2xl shadow-black/50"
-            style={{ borderColor: "rgba(0,255,136,0.25)" }}
-          >
-            <Image
-              src={it.img}
-              alt=""
-              fill
-              sizes="90vw"
-              className="object-cover"
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(to top, rgba(0,0,0,0.92), rgba(0,0,0,0.2) 55%, transparent)",
-              }}
-            />
-            <div className="absolute inset-x-0 bottom-0 p-6">
-              <p className="display-font text-3xl leading-none text-white">
-                {it.label}
-              </p>
+      {/* Mobile: horizontal swipe carousel — cards slide to the right with the
+          next one peeking, so the content is obvious and nothing gets skipped. */}
+      <div className="lg:hidden">
+        <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {items.map((it) => (
+            <div key={it.label} className="shrink-0 basis-[85%] snap-start">
+              <div
+                className="relative aspect-[4/5] w-full overflow-hidden rounded-3xl border shadow-2xl shadow-black/50"
+                style={{ borderColor: "rgba(0,255,136,0.25)" }}
+              >
+                <Image
+                  src={it.img}
+                  alt=""
+                  fill
+                  sizes="85vw"
+                  className="object-cover"
+                />
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background:
+                      "linear-gradient(to top, rgba(0,0,0,0.92), rgba(0,0,0,0.2) 55%, transparent)",
+                  }}
+                />
+                <div className="absolute inset-x-0 bottom-0 p-6">
+                  <p className="display-font text-3xl leading-none text-white">
+                    {it.label}
+                  </p>
+                </div>
+              </div>
             </div>
-          </motion.div>
-        ))}
+          ))}
+        </div>
+        {/* swipe affordance */}
+        <p className="mt-3 text-center text-xs uppercase tracking-[0.2em] text-white/35">
+          Swipe &rarr;
+        </p>
       </div>
 
       {/* Desktop: scroll-driven flip — one sticky card that flips while the bio stays pinned. */}

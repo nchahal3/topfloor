@@ -13,7 +13,7 @@ export default function Hero() {
       {/* DESKTOP: chart scene weighted to the right, dark/empty left for the
           copy. Seamless looping background. */}
       <div className="hidden md:block">
-        <HeroVideo src="/hero-loop.mp4" poster="/hero-desktop-v3.png" />
+        <HeroVideo src="/hero-loop.mp4" poster="/hero-desktop-v4.png" />
       </div>
 
       {/* readability scrims */}
