@@ -10,19 +10,18 @@ export default function Hero() {
         <HeroVideo src="/hero-loop-mobile.mp4" poster="/hero-mobile-v2.png" />
       </div>
 
-      {/* DESKTOP: wide version of the mobile chart scene — motion top & bottom,
-          dark clear middle for the copy. Seamless looping background. */}
+      {/* DESKTOP: chart scene weighted to the right, dark/empty left for the
+          copy. Seamless looping background. */}
       <div className="hidden md:block">
-        <HeroVideo src="/hero-loop.mp4" poster="/hero-desktop-v2.png" />
+        <HeroVideo src="/hero-loop.mp4" poster="/hero-desktop-v3.png" />
       </div>
 
-      {/* readability scrims — charts live top & bottom, copy sits in the clear
-          middle. Same treatment on mobile and desktop now. */}
+      {/* readability scrims */}
       <div className="pointer-events-none absolute inset-0 bg-black/30" />
-      {/* dim the top & bottom charts, keep the middle clear */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/60 via-black/5 to-black/60" />
-      {/* desktop copy is left-aligned, so add a soft left scrim */}
-      <div className="pointer-events-none absolute inset-0 hidden bg-gradient-to-r from-black/70 via-black/15 to-transparent md:block" />
+      {/* mobile: charts top & bottom, dim them and keep the middle clear */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/60 via-black/5 to-black/60 md:hidden" />
+      {/* desktop: chart lives on the right, so darken the left for the copy */}
+      <div className="pointer-events-none absolute inset-0 hidden bg-gradient-to-r from-black/85 via-black/35 to-transparent md:block" />
 
       {/* overlay copy */}
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl items-center px-6">
