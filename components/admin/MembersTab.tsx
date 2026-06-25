@@ -403,19 +403,6 @@ export default function MembersTab({ members }: { members: Member[] }) {
                   <button type="button" onClick={() => setTierConfirm(true)} style={{ padding: "7px 16px", borderRadius: 8, background: "rgba(240,192,64,0.1)", border: "1px solid rgba(240,192,64,0.3)", color: "#f0c040", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
                     Apply Change
                   </button>
-                ) : tierValue === "lifetime" ? (
-                  <div style={{ marginTop: 4, padding: "14px 16px", borderRadius: 10, background: "rgba(240,192,64,0.07)", border: "1px solid rgba(240,192,64,0.35)" }}>
-                    <p style={{ color: "#f0c040", fontWeight: 700, fontSize: 13, margin: "0 0 6px" }}>⚠ Moving to Lifetime</p>
-                    <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, margin: "0 0 12px", lineHeight: 1.6 }}>
-                      This will <strong style={{ color: "#f5f5f5" }}>immediately cancel</strong> their monthly subscription and send them a <strong style={{ color: "#f5f5f5" }}>$2,000 payment link</strong> by email. Their access will be paused until they complete the payment.
-                    </p>
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <button type="button" onClick={() => handleTierChange(selectedMember)} disabled={tierChanging} style={{ padding: "7px 16px", borderRadius: 8, background: "#f0c040", border: "none", color: "#000", fontSize: 12, fontWeight: 700, cursor: "pointer", opacity: tierChanging ? 0.6 : 1 }}>
-                        {tierChanging ? "Processing..." : "Yes, move to Lifetime"}
-                      </button>
-                      <button type="button" onClick={() => setTierConfirm(false)} style={{ padding: "7px 12px", borderRadius: 8, background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.4)", fontSize: 12, cursor: "pointer" }}>Cancel</button>
-                    </div>
-                  </div>
                 ) : (
                   <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                     <span style={{ color: "rgba(255,255,255,0.45)", fontSize: 12 }}>
