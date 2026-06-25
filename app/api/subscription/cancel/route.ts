@@ -29,9 +29,9 @@ export async function PATCH() {
     }
 
     const sub = subscriptions.data[0];
-    const updated = await stripe.subscriptions.update(sub.id, { cancel_at_period_end: true });
+    await stripe.subscriptions.update(sub.id, { cancel_at_period_end: true });
 
-    const periodEnd = updated.current_period_end ?? sub.current_period_end;
+    const periodEnd = sub.items.data[0]?.current_period_end;
     if (!periodEnd) {
       return NextResponse.json({ error: "Could not determine billing period end" }, { status: 500 });
     }
