@@ -101,7 +101,7 @@ export default function ChangePlanSection({ currentTier }: { currentTier: Tier }
                   You&apos;ll be charged a <strong style={{ color: "#f0c040" }}>one-time $2,000 payment</strong> via Stripe checkout.
                 </p>
                 <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, margin: "0 0 20px", lineHeight: 1.6 }}>
-                  Your current monthly subscription will be <strong style={{ color: "#f5f5f5" }}>cancelled automatically</strong> once payment is complete. You&apos;ll never be charged again.
+                  Your current monthly subscription will be <strong style={{ color: "#f5f5f5" }}>cancelled automatically</strong>{" "}once payment is complete. You&apos;ll never be charged again.
                 </p>
               </>
             ) : (
