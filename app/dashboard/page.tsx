@@ -16,8 +16,14 @@ const FEATURE_CARDS = [
 export default async function DashboardPage() {
   const user = await currentUser();
   const tier = (user?.publicMetadata?.tier as Tier) ?? null;
+  const cancelAt = (user?.publicMetadata?.cancelAt as string) ?? null;
   const name = user?.firstName ?? "Trader";
   const discordUsername = (user?.publicMetadata?.discordUsername as string) ?? "";
+
+  const cancelDate = cancelAt ? new Date(cancelAt) : null;
+  const daysLeft = cancelDate
+    ? Math.ceil((cancelDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : null;
 
   return (
     <div style={{ background: "#0a0a0a", minHeight: "100%" }}>
@@ -88,6 +94,27 @@ export default async function DashboardPage() {
           </Link>
         )}
       </div>
+
+      {/* Cancellation notice */}
+      {cancelDate && daysLeft !== null && (
+        <div style={{
+          padding: "14px 20px",
+          borderRadius: 12,
+          background: "rgba(255,165,0,0.06)",
+          border: "1px solid rgba(255,165,0,0.2)",
+          marginBottom: 32,
+          fontSize: 14,
+          color: "rgba(255,255,255,0.5)",
+        }}>
+          Your membership will end on{" "}
+          <strong style={{ color: "#ffa500" }}>
+            {cancelDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+          </strong>
+          {daysLeft > 0 ? ` — ${daysLeft} day${daysLeft === 1 ? "" : "s"} remaining.` : "."}
+          {" "}
+          <a href="/dashboard/billing" style={{ color: "#ffa500", textDecoration: "underline" }}>Manage billing →</a>
+        </div>
+      )}
 
       {/* Discord username */}
       <DiscordUsernameField initial={discordUsername} />
