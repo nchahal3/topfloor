@@ -2,6 +2,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import type { Tier } from "@/lib/tier";
 import BillingSection from "@/components/dashboard/BillingSection";
 import CancelMembershipButton from "@/components/dashboard/CancelMembershipButton";
+import ChangePlanSection from "@/components/dashboard/ChangePlanSection";
 
 export default async function BillingPage() {
   const user = await currentUser();
@@ -22,6 +23,7 @@ export default async function BillingPage() {
         </div>
 
         {tier && <BillingSection tier={tier} />}
+        {isMonthly && <ChangePlanSection currentTier={tier} />}
         {isMonthly && <CancelMembershipButton cancelAt={cancelAt} />}
       </div>
     </div>
