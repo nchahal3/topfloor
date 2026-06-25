@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { Tier } from "@/lib/tier";
 
-const PLANS: { tier: Tier; label: string; price: string; features: string[] }[] = [
+const PLANS: { tier: Tier; label: string; price: string; features: string[]; lifetime?: boolean }[] = [
   {
     tier: "bronze",
     label: "Bronze",
@@ -22,12 +22,20 @@ const PLANS: { tier: Tier; label: string; price: string; features: string[] }[] 
     price: "$750/mo",
     features: ["Everything in Silver", "1-on-1 monthly mentorship call", "VIP trade setups"],
   },
+  {
+    tier: "lifetime",
+    label: "Lifetime",
+    price: "$2,000 one-time",
+    features: ["Everything in Gold", "Never pay again", "Permanent access forever"],
+    lifetime: true,
+  },
 ];
 
 const TIER_AMOUNTS: Record<string, string> = {
   bronze: "$200/mo",
   silver: "$500/mo",
   gold: "$750/mo",
+  lifetime: "$2,000 one-time",
 };
 
 export default function ChangePlanSection({ currentTier }: { currentTier: Tier }) {
@@ -86,17 +94,28 @@ export default function ChangePlanSection({ currentTier }: { currentTier: Tier }
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 style={{ color: "#f5f5f5", fontSize: 18, fontWeight: 700, margin: "0 0 8px" }}>
-              Confirm plan change
-            </h3>
-            <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, margin: "0 0 20px", lineHeight: 1.6 }}>
-              You&apos;re switching from{" "}
-              <strong style={{ color: "#f5f5f5" }}>{currentPlan?.label} ({currentTier ? TIER_AMOUNTS[currentTier] : ""})</strong>{" "}
-              to{" "}
-              <strong style={{ color: "#00ff88" }}>{confirming.label} ({confirming.price})</strong>.
-              <br />
-              <span style={{ fontSize: 13 }}>The change takes effect immediately and your billing will be prorated.</span>
-            </p>
+            {confirming.tier === "lifetime" ? (
+              <>
+                <h3 style={{ color: "#f0c040", fontSize: 18, fontWeight: 700, margin: "0 0 8px" }}>Upgrade to Lifetime</h3>
+                <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, margin: "0 0 8px", lineHeight: 1.6 }}>
+                  You&apos;ll be charged a <strong style={{ color: "#f0c040" }}>one-time $2,000 payment</strong> via Stripe checkout.
+                </p>
+                <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, margin: "0 0 20px", lineHeight: 1.6 }}>
+                  Your current monthly subscription will be <strong style={{ color: "#f5f5f5" }}>cancelled automatically</strong> once payment is complete. You&apos;ll never be charged again.
+                </p>
+              </>
+            ) : (
+              <>
+                <h3 style={{ color: "#f5f5f5", fontSize: 18, fontWeight: 700, margin: "0 0 8px" }}>Confirm plan change</h3>
+                <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, margin: "0 0 20px", lineHeight: 1.6 }}>
+                  You&apos;re switching from{" "}
+                  <strong style={{ color: "#f5f5f5" }}>{currentPlan?.label} ({currentTier ? TIER_AMOUNTS[currentTier] : ""})</strong>{" "}
+                  to <strong style={{ color: "#00ff88" }}>{confirming.label} ({confirming.price})</strong>.
+                  <br />
+                  <span style={{ fontSize: 13 }}>The change takes effect immediately and your billing will be prorated.</span>
+                </p>
+              </>
+            )}
             <div style={{ display: "flex", gap: 10 }}>
               <button
                 type="button"
@@ -106,7 +125,7 @@ export default function ChangePlanSection({ currentTier }: { currentTier: Tier }
                   flex: 1,
                   padding: "10px 0",
                   borderRadius: 10,
-                  background: "#00ff88",
+                  background: confirming.tier === "lifetime" ? "#f0c040" : "#00ff88",
                   color: "#000",
                   fontWeight: 700,
                   fontSize: 14,
@@ -115,7 +134,7 @@ export default function ChangePlanSection({ currentTier }: { currentTier: Tier }
                   opacity: loading ? 0.7 : 1,
                 }}
               >
-                {loading ? "Processing…" : "Confirm Switch"}
+                {loading ? "Processing…" : confirming.tier === "lifetime" ? "Proceed to Payment" : "Confirm Switch"}
               </button>
               <button
                 type="button"
@@ -145,25 +164,15 @@ export default function ChangePlanSection({ currentTier }: { currentTier: Tier }
           CHANGE PLAN
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
-          {PLANS.map(({ tier, label, price, features }) => {
+          {PLANS.map(({ tier, label, price, features, lifetime: isLifetime }) => {
             const isCurrent = tier === currentTier;
+            const cardBg = isCurrent ? "rgba(0,255,136,0.06)" : isLifetime ? "rgba(240,192,64,0.04)" : "rgba(255,255,255,0.03)";
+            const cardBorder = isCurrent ? "1px solid rgba(0,255,136,0.35)" : isLifetime ? "1px solid rgba(240,192,64,0.25)" : "1px solid rgba(255,255,255,0.08)";
+            const labelColor = isCurrent ? "#00ff88" : isLifetime ? "#f0c040" : "#f5f5f5";
             return (
-              <div
-                key={tier}
-                style={{
-                  padding: "18px 20px",
-                  borderRadius: 14,
-                  background: isCurrent ? "rgba(0,255,136,0.06)" : "rgba(255,255,255,0.03)",
-                  border: isCurrent ? "1px solid rgba(0,255,136,0.35)" : "1px solid rgba(255,255,255,0.08)",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 10,
-                }}
-              >
+              <div key={tier} style={{ padding: "18px 20px", borderRadius: 14, background: cardBg, border: cardBorder, display: "flex", flexDirection: "column", gap: 10 }}>
                 <div>
-                  <p style={{ color: isCurrent ? "#00ff88" : "#f5f5f5", fontSize: 15, fontWeight: 700, margin: "0 0 2px" }}>
-                    {label}
-                  </p>
+                  <p style={{ color: labelColor, fontSize: 15, fontWeight: 700, margin: "0 0 2px" }}>{label}</p>
                   <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, margin: 0 }}>{price}</p>
                 </div>
                 <ul style={{ margin: 0, padding: "0 0 0 16px", listStyle: "disc" }}>
@@ -172,19 +181,7 @@ export default function ChangePlanSection({ currentTier }: { currentTier: Tier }
                   ))}
                 </ul>
                 {isCurrent ? (
-                  <span
-                    style={{
-                      marginTop: 4,
-                      padding: "7px 14px",
-                      borderRadius: 8,
-                      background: "rgba(0,255,136,0.12)",
-                      color: "#00ff88",
-                      fontWeight: 700,
-                      fontSize: 12,
-                      textAlign: "center",
-                      letterSpacing: "0.04em",
-                    }}
-                  >
+                  <span style={{ marginTop: 4, padding: "7px 14px", borderRadius: 8, background: "rgba(0,255,136,0.12)", color: "#00ff88", fontWeight: 700, fontSize: 12, textAlign: "center", letterSpacing: "0.04em" }}>
                     Current Plan
                   </span>
                 ) : (
@@ -192,18 +189,13 @@ export default function ChangePlanSection({ currentTier }: { currentTier: Tier }
                     type="button"
                     onClick={() => setConfirming({ tier, label, price })}
                     style={{
-                      marginTop: 4,
-                      padding: "7px 14px",
-                      borderRadius: 8,
-                      background: "rgba(255,255,255,0.08)",
-                      color: "rgba(255,255,255,0.7)",
-                      fontWeight: 600,
-                      fontSize: 12,
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      cursor: "pointer",
+                      marginTop: 4, padding: "7px 14px", borderRadius: 8, fontWeight: 600, fontSize: 12, cursor: "pointer",
+                      background: isLifetime ? "rgba(240,192,64,0.12)" : "rgba(255,255,255,0.08)",
+                      color: isLifetime ? "#f0c040" : "rgba(255,255,255,0.7)",
+                      border: isLifetime ? "1px solid rgba(240,192,64,0.3)" : "1px solid rgba(255,255,255,0.1)",
                     }}
                   >
-                    Switch to {label}
+                    {isLifetime ? "Upgrade to Lifetime" : `Switch to ${label}`}
                   </button>
                 )}
               </div>

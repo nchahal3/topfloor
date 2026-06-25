@@ -80,6 +80,21 @@ export async function POST(request: Request) {
               discordUsername: discordUsername !== "Not provided" ? discordUsername : undefined,
             },
           });
+          // Cancel any active monthly subscription when self-upgrading to lifetime
+          if (tier === "lifetime" && session.customer) {
+            try {
+              const activeSubs = await stripe.subscriptions.list({
+                customer: session.customer as string,
+                status: "active",
+                limit: 10,
+              });
+              for (const sub of activeSubs.data) {
+                await stripe.subscriptions.cancel(sub.id);
+              }
+            } catch (e) {
+              console.error("Failed to cancel monthly sub on lifetime upgrade:", e);
+            }
+          }
         }
       } catch (err) {
         console.error("Failed to update Clerk user tier:", err);
@@ -210,11 +225,16 @@ export async function POST(request: Request) {
     const cancelledPriceId = subscription.items?.data[0]?.price?.id ?? "";
     const cancelledPlanName = PLAN_NAMES[cancelledPriceId] ?? "Unknown";
 
-    // Revoke Clerk access
+    // Revoke Clerk access — but skip if they've already upgraded to lifetime
     const client = await clerkClient();
+    const revokeAccess = async (userId: string) => {
+      const user = await client.users.getUser(userId);
+      if (user.publicMetadata?.tier === "lifetime") return; // don't revoke lifetime
+      await client.users.updateUserMetadata(userId, { publicMetadata: { tier: null, cancelAt: null } });
+    };
     if (clerkUserId) {
       try {
-        await client.users.updateUserMetadata(clerkUserId, { publicMetadata: { tier: null, cancelAt: null } });
+        await revokeAccess(clerkUserId);
       } catch (err) {
         console.error("Failed to revoke Clerk tier on subscription deletion:", err);
       }
@@ -223,7 +243,7 @@ export async function POST(request: Request) {
       try {
         const users = await client.users.getUserList({ emailAddress: [memberEmail] });
         if (users.data.length > 0) {
-          await client.users.updateUserMetadata(users.data[0].id, { publicMetadata: { tier: null, cancelAt: null } });
+          await revokeAccess(users.data[0].id);
         }
       } catch (err) {
         console.error("Failed to revoke Clerk tier by email:", err);
