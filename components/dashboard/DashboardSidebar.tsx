@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -17,7 +17,10 @@ import {
   X,
   Lock,
   ChevronRight,
+  ChevronDown,
   CreditCard,
+  Wrench,
+  NotebookPen,
 } from "lucide-react";
 import type { Tier } from "@/lib/tier";
 import { TIER_LABELS, TIER_COLORS } from "@/lib/tier";
@@ -31,11 +34,77 @@ const NAV_ITEMS = [
   { label: "Book a Call", href: "/dashboard/book-a-call", icon: Calendar, badge: "FREE" },
 ];
 
+// Items inside the collapsible "Tools & Events" group
+const TOOLS = [
+  { label: "Trading Journal", href: "/dashboard/trading-journal", icon: NotebookPen, badge: null },
+];
+
 export default function DashboardSidebar({ tier }: { tier: Tier }) {
   const pathname = usePathname();
   const { signOut } = useClerk();
   const { user } = useUser();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const isToolsActive = TOOLS.some((t) => pathname === t.href);
+  const [toolsOpen, setToolsOpen] = useState(isToolsActive);
+  useEffect(() => {
+    if (isToolsActive) setToolsOpen(true);
+  }, [isToolsActive]);
+
+  const renderItem = (
+    item: { label: string; href: string; icon: typeof LayoutDashboard; badge: string | null },
+    sub = false,
+  ) => {
+    const isActive = pathname === item.href;
+    const Icon = item.icon;
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        onClick={() => setMobileOpen(false)}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: sub ? "9px 12px" : "10px 12px",
+          borderRadius: 10,
+          marginBottom: 2,
+          textDecoration: "none",
+          background: isActive ? "rgba(0,255,136,0.08)" : "transparent",
+          border: isActive ? "1px solid rgba(0,255,136,0.15)" : "1px solid transparent",
+          transition: "all 0.15s",
+        }}
+      >
+        <Icon size={sub ? 15 : 17} style={{ color: isActive ? "#00ff88" : "rgba(255,255,255,0.4)", flexShrink: 0 }} />
+        <span
+          style={{
+            fontSize: sub ? 13 : 14,
+            fontWeight: isActive ? 600 : 400,
+            color: isActive ? "#f5f5f5" : "rgba(255,255,255,0.55)",
+            flex: 1,
+          }}
+        >
+          {item.label}
+        </span>
+        {item.badge === "FREE" && (
+          <span
+            style={{
+              fontSize: 9,
+              fontWeight: 700,
+              color: "#00ff88",
+              background: "rgba(0,255,136,0.1)",
+              padding: "2px 6px",
+              borderRadius: 4,
+              letterSpacing: "0.06em",
+            }}
+          >
+            FREE
+          </span>
+        )}
+        {isActive && <ChevronRight size={14} style={{ color: "#00ff88", flexShrink: 0 }} />}
+      </Link>
+    );
+  };
 
   const sidebarContent = (
     <div
@@ -101,60 +170,54 @@ export default function DashboardSidebar({ tier }: { tier: Tier }) {
 
       {/* Nav */}
       <nav style={{ flex: 1, padding: "12px 12px", overflowY: "auto" }}>
-        {[...NAV_ITEMS, ...(tier ? [{ label: "Billing", href: "/dashboard/billing", icon: CreditCard, badge: null }] : [])].map((item) => {
-          const isActive = pathname === item.href;
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setMobileOpen(false)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                padding: "10px 12px",
-                borderRadius: 10,
-                marginBottom: 2,
-                textDecoration: "none",
-                background: isActive ? "rgba(0,255,136,0.08)" : "transparent",
-                border: isActive ? "1px solid rgba(0,255,136,0.15)" : "1px solid transparent",
-                transition: "all 0.15s",
-              }}
-            >
-              <Icon
-                size={17}
-                style={{ color: isActive ? "#00ff88" : "rgba(255,255,255,0.4)", flexShrink: 0 }}
-              />
-              <span
-                style={{
-                  fontSize: 14,
-                  fontWeight: isActive ? 600 : 400,
-                  color: isActive ? "#f5f5f5" : "rgba(255,255,255,0.55)",
-                  flex: 1,
-                }}
-              >
-                {item.label}
-              </span>
-              {item.badge === "FREE" && (
-                <span
-                  style={{
-                    fontSize: 9,
-                    fontWeight: 700,
-                    color: "#00ff88",
-                    background: "rgba(0,255,136,0.1)",
-                    padding: "2px 6px",
-                    borderRadius: 4,
-                    letterSpacing: "0.06em",
-                  }}
-                >
-                  FREE
-                </span>
-              )}
-              {isActive && <ChevronRight size={14} style={{ color: "#00ff88", flexShrink: 0 }} />}
-            </Link>
-          );
-        })}
+        {NAV_ITEMS.map((item) => renderItem(item))}
+
+        {/* Tools & Events — collapsible group */}
+        <button
+          type="button"
+          onClick={() => setToolsOpen((o) => !o)}
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            padding: "10px 12px",
+            borderRadius: 10,
+            marginBottom: 2,
+            background: "transparent",
+            border: "1px solid transparent",
+            cursor: "pointer",
+          }}
+        >
+          <Wrench size={17} style={{ color: isToolsActive ? "#00ff88" : "rgba(255,255,255,0.4)", flexShrink: 0 }} />
+          <span
+            style={{
+              fontSize: 14,
+              fontWeight: isToolsActive ? 600 : 400,
+              color: isToolsActive ? "#f5f5f5" : "rgba(255,255,255,0.55)",
+              flex: 1,
+              textAlign: "left",
+            }}
+          >
+            Tools &amp; Events
+          </span>
+          <ChevronDown
+            size={15}
+            style={{
+              color: "rgba(255,255,255,0.4)",
+              flexShrink: 0,
+              transform: toolsOpen ? "rotate(180deg)" : "none",
+              transition: "transform 0.15s",
+            }}
+          />
+        </button>
+        {toolsOpen && (
+          <div style={{ marginLeft: 14, paddingLeft: 10, borderLeft: "1px solid rgba(255,255,255,0.07)", marginBottom: 4 }}>
+            {TOOLS.map((t) => renderItem(t, true))}
+          </div>
+        )}
+
+        {tier && renderItem({ label: "Billing", href: "/dashboard/billing", icon: CreditCard, badge: null })}
       </nav>
 
       {/* Upgrade CTA */}
@@ -228,8 +291,8 @@ export default function DashboardSidebar({ tier }: { tier: Tier }) {
             src="/Logo.png"
             alt="TopFloor Trades"
             width={120}
-            height={48}
-            style={{ objectFit: "contain", width: 120, height: "auto" }}
+            height={80}
+            style={{ objectFit: "contain", width: "auto", height: 42 }}
           />
         </Link>
         <button

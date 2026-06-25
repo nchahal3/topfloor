@@ -40,7 +40,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <DashboardSidebar tier={tier} />
         <main
           style={{ flex: 1, overflowY: "auto" }}
-          className="pt-[60px] lg:pt-0"
+          className="pt-[76px] lg:pt-0"
         >
           {children}
         </main>
