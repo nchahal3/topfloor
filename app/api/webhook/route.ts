@@ -81,6 +81,7 @@ export async function POST(request: Request) {
               pendingLifetime: false,
               phone: customerPhone !== "Not provided" ? customerPhone : undefined,
               discordUsername: discordUsername !== "Not provided" ? discordUsername : undefined,
+              stripeCustomerId: session.customer as string ?? undefined,
             },
           });
           // Clear grace period index if they were in one

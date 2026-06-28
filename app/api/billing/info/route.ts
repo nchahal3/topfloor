@@ -12,10 +12,19 @@ export async function GET() {
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-  const customers = await stripe.customers.list({ email, limit: 1 });
-  if (!customers.data.length) return NextResponse.json({ subscription: null, card: null });
-
-  const customer = customers.data[0];
+  let customer: Stripe.Customer | null = null;
+  const savedCustomerId = (user?.publicMetadata?.stripeCustomerId as string) ?? null;
+  if (savedCustomerId) {
+    try {
+      const c = await stripe.customers.retrieve(savedCustomerId);
+      if (!c.deleted) customer = c as Stripe.Customer;
+    } catch {}
+  }
+  if (!customer) {
+    const customers = await stripe.customers.list({ email, limit: 1 });
+    customer = customers.data[0] ?? null;
+  }
+  if (!customer) return NextResponse.json({ subscription: null, card: null });
   const customerId = customer.id;
 
   // Find the most relevant subscription (active > past_due > any non-canceled)
