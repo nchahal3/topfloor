@@ -7,9 +7,15 @@ import ChangePlanSection from "@/components/dashboard/ChangePlanSection";
 export default async function BillingPage() {
   const user = await currentUser();
   const tier = (user?.publicMetadata?.tier as Tier) ?? null;
+  const suspendedTier = (user?.publicMetadata?.suspendedTier as Tier) ?? null;
+  const gracePeriodEnd = (user?.publicMetadata?.gracePeriodEnd as string) ?? null;
   const cancelAt = (user?.publicMetadata?.cancelAt as string) ?? null;
   const pendingLifetime = user?.publicMetadata?.pendingLifetime === true;
-  const isMonthly = tier === "bronze" || tier === "silver" || tier === "gold";
+  // Recovery mode: payment failed (grace active or cron already locked them)
+  const isRecovery = !!(gracePeriodEnd || suspendedTier);
+  // For display: use the actual tier, or suspendedTier if cron already set tier to null
+  const displayTier: Tier = tier ?? suspendedTier;
+  const isMonthly = (displayTier === "bronze" || displayTier === "silver" || displayTier === "gold") && !isRecovery;
   const BASE_URL = process.env.NEXT_PUBLIC_URL ?? "https://topfloortradesofficial.com";
 
   return (
@@ -55,8 +61,8 @@ export default async function BillingPage() {
           </div>
         ) : (
           <>
-            {tier && <BillingSection tier={tier} />}
-            {isMonthly && <ChangePlanSection currentTier={tier} />}
+            {displayTier && <BillingSection tier={displayTier} retryOnSave={isRecovery} />}
+            {isMonthly && <ChangePlanSection currentTier={displayTier} />}
             {isMonthly && <CancelMembershipButton cancelAt={cancelAt} />}
           </>
         )}

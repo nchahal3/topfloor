@@ -23,7 +23,7 @@ interface BillingInfo {
   card: { brand: string; last4: string; expMonth: number; expYear: number } | null;
 }
 
-function UpdateCardForm({ onSuccess, onCancel }: { onSuccess: () => void; onCancel: () => void }) {
+function UpdateCardForm({ onSuccess, onCancel, retry }: { onSuccess: () => void; onCancel: () => void; retry?: boolean }) {
   const stripe = useStripe();
   const elements = useElements();
   const [saving, setSaving] = useState(false);
@@ -53,7 +53,7 @@ function UpdateCardForm({ onSuccess, onCancel }: { onSuccess: () => void; onCanc
       const updateRes = await fetch("/api/billing/set-default-card", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ paymentMethodId: setupIntent.payment_method }),
+        body: JSON.stringify({ paymentMethodId: setupIntent.payment_method, retry: retry ?? false }),
       });
       if (!updateRes.ok) throw new Error("Failed to set card as default");
 
@@ -132,7 +132,7 @@ function UpdateCardForm({ onSuccess, onCancel }: { onSuccess: () => void; onCanc
   );
 }
 
-export default function BillingSection({ tier }: { tier: Tier }) {
+export default function BillingSection({ tier, retryOnSave }: { tier: Tier; retryOnSave?: boolean }) {
   const [info, setInfo] = useState<BillingInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -227,7 +227,7 @@ export default function BillingSection({ tier }: { tier: Tier }) {
 
       {updating && (
         <Elements stripe={stripePromise}>
-          <UpdateCardForm onSuccess={handleSuccess} onCancel={() => setUpdating(false)} />
+          <UpdateCardForm onSuccess={handleSuccess} onCancel={() => setUpdating(false)} retry={retryOnSave} />
         </Elements>
       )}
     </div>

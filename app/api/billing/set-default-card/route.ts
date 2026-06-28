@@ -10,7 +10,7 @@ export async function PATCH(request: Request) {
   const email = user?.emailAddresses[0]?.emailAddress;
   if (!email) return NextResponse.json({ error: "No email on account" }, { status: 400 });
 
-  const { paymentMethodId } = await request.json() as { paymentMethodId: string };
+  const { paymentMethodId, retry } = await request.json() as { paymentMethodId: string; retry?: boolean };
   if (!paymentMethodId) return NextResponse.json({ error: "paymentMethodId required" }, { status: 400 });
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -39,7 +39,8 @@ export async function PATCH(request: Request) {
       default_payment_method: paymentMethodId,
     });
 
-    // Retry the latest unpaid invoice so access restores immediately
+    // Retry the latest unpaid invoice only when coming from payment recovery flow
+    if (!retry) return NextResponse.json({ success: true });
     const latestInvoiceId = typeof sub.latest_invoice === "string"
       ? sub.latest_invoice
       : (sub.latest_invoice as Stripe.Invoice | null)?.id ?? null;
