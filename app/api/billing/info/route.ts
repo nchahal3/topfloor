@@ -16,7 +16,10 @@ export async function GET() {
   if (!customers.data.length) return NextResponse.json({ subscription: null, card: null });
 
   const customerId = customers.data[0].id;
-  const subscriptions = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
+  let subscriptions = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
+  if (!subscriptions.data.length) {
+    subscriptions = await stripe.subscriptions.list({ customer: customerId, status: "past_due", limit: 1 });
+  }
   if (!subscriptions.data.length) return NextResponse.json({ subscription: null, card: null });
 
   const sub = subscriptions.data[0];
