@@ -3,7 +3,7 @@ import Link from "next/link";
 import { TrendingUp, BookOpen, Trophy, Calendar, Video, ArrowRight } from "lucide-react";
 import type { Tier } from "@/lib/tier";
 import { TIER_LABELS, TIER_COLORS } from "@/lib/tier";
-import DiscordUsernameField from "@/components/dashboard/DiscordUsernameField";
+import DiscordStatus from "@/components/dashboard/DiscordStatus";
 
 const FEATURE_CARDS = [
   { label: "Funded Accounts", desc: "Promo codes for Alpha Futures, Lucid & more", href: "/dashboard/funded-accounts", icon: TrendingUp, free: true, comingSoon: false },
@@ -18,7 +18,8 @@ export default async function DashboardPage() {
   const tier = (user?.publicMetadata?.tier as Tier) ?? null;
   const cancelAt = (user?.publicMetadata?.cancelAt as string) ?? null;
   const name = user?.firstName ?? "Trader";
-  const discordUsername = (user?.publicMetadata?.discordUsername as string) ?? "";
+  const discordUsername = (user?.publicMetadata?.discordUsername as string) ?? null;
+  const discordUserId = (user?.publicMetadata?.discordUserId as string) ?? null;
 
   const cancelDate = cancelAt ? new Date(cancelAt) : null;
   const daysLeft = cancelDate
@@ -116,8 +117,8 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* Discord username */}
-      <DiscordUsernameField initial={discordUsername} />
+      {/* Discord */}
+      <DiscordStatus discordUserId={discordUserId} discordUsername={discordUsername} />
 
       {/* Feature grid — 2-col, last card spans full width if count is odd */}
       <div

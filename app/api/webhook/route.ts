@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import type { Tier } from "@/lib/tier";
 import { PRICE_TIER } from "@/lib/tier";
 import { sendDiscordLog } from "@/lib/discord";
+import { grantProRole, revokeProRole } from "@/lib/discord-roles";
 
 const FROM_EMAIL = "noreply@topfloortradesofficial.com";
 const DISCORD_INVITE = "https://discord.gg/yebuyWPswJ";
@@ -80,6 +81,10 @@ export async function POST(request: Request) {
               discordUsername: discordUsername !== "Not provided" ? discordUsername : undefined,
             },
           });
+          // Grant Discord Pro role if user has linked their Discord
+          const updatedUser = await client.users.getUser(clerkUserId);
+          const discordUserId = updatedUser.publicMetadata?.discordUserId as string | undefined;
+          await grantProRole(discordUserId);
           // Cancel any active monthly subscription when self-upgrading to lifetime
           if (tier === "lifetime" && session.customer) {
             try {
@@ -231,6 +236,8 @@ export async function POST(request: Request) {
       const user = await client.users.getUser(userId);
       if (user.publicMetadata?.tier === "lifetime") return; // don't revoke lifetime
       await client.users.updateUserMetadata(userId, { publicMetadata: { tier: null, cancelAt: null } });
+      const discordUserId = user.publicMetadata?.discordUserId as string | undefined;
+      await revokeProRole(discordUserId);
     };
     if (clerkUserId) {
       try {
@@ -421,6 +428,9 @@ export async function POST(request: Request) {
             await clerk.users.updateUserMetadata(restoredClerkId, {
               publicMetadata: { tier: suspendedTier, suspendedTier: null },
             });
+            const restoredUser = await clerk.users.getUser(restoredClerkId);
+            const discordUserId = restoredUser.publicMetadata?.discordUserId as string | undefined;
+            await grantProRole(discordUserId);
             sendDiscordLog({
               title: "✅ Access Restored",
               color: 0x00ff88,
