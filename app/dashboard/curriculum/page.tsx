@@ -88,7 +88,10 @@ async function getCurriculumData(tier: Tier): Promise<Module[]> {
 export default async function CurriculumPage() {
   const user = await currentUser();
   const tier = (user?.publicMetadata?.tier as Tier) ?? null;
-  const modules = await getCurriculumData(tier);
+  const gracePeriodEnd = (user?.publicMetadata?.gracePeriodEnd as string) ?? null;
+  const graceExpired = gracePeriodEnd ? new Date(gracePeriodEnd) < new Date() : false;
+  const effectiveTier: Tier = graceExpired ? null : tier;
+  const modules = await getCurriculumData(effectiveTier);
 
   const totalLessons = modules.reduce((s, m) => s + m.lessons.length, 0);
   const hasLocked = modules.some((m) => !m.canAccess);
@@ -322,7 +325,7 @@ export default async function CurriculumPage() {
         )}
 
         {/* Upgrade CTA */}
-        {!tier && (
+        {!effectiveTier && (
           <div style={{
             marginTop: 48, padding: "28px 32px", borderRadius: 16,
             background: "linear-gradient(135deg, rgba(0,255,136,0.06), rgba(0,255,136,0.02))",
