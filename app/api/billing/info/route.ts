@@ -15,27 +15,42 @@ export async function GET() {
   const customers = await stripe.customers.list({ email, limit: 1 });
   if (!customers.data.length) return NextResponse.json({ subscription: null, card: null });
 
-  const customerId = customers.data[0].id;
-  let subscriptions = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
-  if (!subscriptions.data.length) {
-    subscriptions = await stripe.subscriptions.list({ customer: customerId, status: "past_due", limit: 1 });
-  }
-  if (!subscriptions.data.length) return NextResponse.json({ subscription: null, card: null });
+  const customer = customers.data[0];
+  const customerId = customer.id;
 
-  const sub = subscriptions.data[0];
-  const periodEnd = (sub as unknown as { current_period_end?: number }).current_period_end;
+  // Find the most relevant subscription (active > past_due > any non-canceled)
+  let sub: Stripe.Subscription | null = null;
+  for (const status of ["active", "past_due", "trialing", "incomplete"] as const) {
+    const result = await stripe.subscriptions.list({ customer: customerId, status, limit: 1 });
+    if (result.data.length) { sub = result.data[0]; break; }
+  }
+
+  const periodEnd = sub ? (sub as unknown as { current_period_end?: number }).current_period_end : null;
   const nextBillingDate = periodEnd
     ? new Date(periodEnd * 1000).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
     : null;
 
+  // Get card — check subscription PM first, then customer default PM, then list PMs directly
   let card = null;
   try {
-    const pmId = typeof sub.default_payment_method === "string"
-      ? sub.default_payment_method
-      : (sub.default_payment_method as Stripe.PaymentMethod | null)?.id
-        ?? (typeof customers.data[0].invoice_settings?.default_payment_method === "string"
-          ? customers.data[0].invoice_settings.default_payment_method
-          : null);
+    let pmId: string | null = null;
+
+    if (sub) {
+      pmId = typeof sub.default_payment_method === "string"
+        ? sub.default_payment_method
+        : (sub.default_payment_method as Stripe.PaymentMethod | null)?.id ?? null;
+    }
+
+    if (!pmId) {
+      pmId = typeof customer.invoice_settings?.default_payment_method === "string"
+        ? customer.invoice_settings.default_payment_method
+        : (customer.invoice_settings?.default_payment_method as Stripe.PaymentMethod | null)?.id ?? null;
+    }
+
+    if (!pmId) {
+      const pms = await stripe.paymentMethods.list({ customer: customerId, type: "card", limit: 1 });
+      pmId = pms.data[0]?.id ?? null;
+    }
 
     if (pmId) {
       const pm = await stripe.paymentMethods.retrieve(pmId);
@@ -50,5 +65,8 @@ export async function GET() {
     }
   } catch {}
 
-  return NextResponse.json({ subscription: { nextBillingDate }, card });
+  return NextResponse.json({
+    subscription: nextBillingDate ? { nextBillingDate } : null,
+    card,
+  });
 }
