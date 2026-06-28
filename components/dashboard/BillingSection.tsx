@@ -157,9 +157,8 @@ export default function BillingSection({ tier }: { tier: Tier }) {
   }
 
   if (loading) return null;
-  if (!info?.subscription && !info?.card) return null;
 
-  const brandLabel = info.card ? (CARD_BRANDS[info.card.brand] ?? info.card.brand) : null;
+  const brandLabel = info?.card ? (CARD_BRANDS[info.card.brand] ?? info.card.brand) : null;
   const tierLabel = tier ? TIER_LABELS[tier] : null;
 
   return (
@@ -183,19 +182,19 @@ export default function BillingSection({ tier }: { tier: Tier }) {
             <p style={{ color: "#f5f5f5", fontSize: 15, fontWeight: 600, margin: 0 }}>{tierLabel}</p>
           </div>
         )}
-        {info.subscription?.nextBillingDate && (
+        {info?.subscription?.nextBillingDate && (
           <div>
             <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", margin: "0 0 4px" }}>NEXT BILLING</p>
-            <p style={{ color: "#f5f5f5", fontSize: 15, fontWeight: 600, margin: 0 }}>{info.subscription.nextBillingDate}</p>
+            <p style={{ color: "#f5f5f5", fontSize: 15, fontWeight: 600, margin: 0 }}>{info?.subscription?.nextBillingDate}</p>
           </div>
         )}
-        {info.card && (
+        {info?.card && (
           <div>
             <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", margin: "0 0 4px" }}>CARD ON FILE</p>
             <p style={{ color: "#f5f5f5", fontSize: 15, fontWeight: 600, margin: 0 }}>
-              {brandLabel} •••• {info.card.last4}
+              {brandLabel} •••• {info?.card?.last4}
               <span style={{ color: "rgba(255,255,255,0.35)", fontWeight: 400, fontSize: 13 }}>
-                {" "}exp {String(info.card.expMonth).padStart(2, "0")}/{String(info.card.expYear).slice(-2)}
+                {" "}exp {String(info?.card?.expMonth).padStart(2, "0")}/{String(info?.card?.expYear).slice(-2)}
               </span>
             </p>
           </div>
