@@ -13,7 +13,7 @@ export async function GET() {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
   const customers = await stripe.customers.list({ email, limit: 1 });
-  if (!customers.data.length) return NextResponse.json({ subscription: null, card: null });
+  if (!customers.data.length) return NextResponse.json({ subscription: null, card: null, _debug: `no_customer_for_${email}` });
 
   const customer = customers.data[0];
   const customerId = customer.id;
@@ -68,5 +68,6 @@ export async function GET() {
   return NextResponse.json({
     subscription: nextBillingDate ? { nextBillingDate } : null,
     card,
+    _debug: { customerId, subStatus: sub?.status ?? null, cardFound: !!card },
   });
 }
