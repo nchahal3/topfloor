@@ -6,6 +6,7 @@ import type { Tier } from "@/lib/tier";
 import { PRICE_TIER } from "@/lib/tier";
 import { sendDiscordLog } from "@/lib/discord";
 import { grantProRole, revokeProRole } from "@/lib/discord-roles";
+import { supabaseAdmin } from "@/lib/supabase";
 
 const FROM_EMAIL = "noreply@topfloortradesofficial.com";
 const DISCORD_INVITE = "https://discord.gg/yebuyWPswJ";
@@ -76,11 +77,14 @@ export async function POST(request: Request) {
             publicMetadata: {
               tier,
               suspendedTier: null,
+              gracePeriodEnd: null,
               pendingLifetime: false,
               phone: customerPhone !== "Not provided" ? customerPhone : undefined,
               discordUsername: discordUsername !== "Not provided" ? discordUsername : undefined,
             },
           });
+          // Clear grace period index if they were in one
+          await supabaseAdmin.from("grace_periods").delete().eq("clerk_user_id", clerkUserId);
           // Grant Discord Pro role if user has linked their Discord
           const updatedUser = await client.users.getUser(clerkUserId);
           const discordUserId = updatedUser.publicMetadata?.discordUserId as string | undefined;
@@ -306,7 +310,7 @@ export async function POST(request: Request) {
     }
   }
 
-  // ── Payment failed — lock account immediately ──
+  // ── Payment failed — start 24-hour grace period ──
   if (event.type === "invoice.payment_failed") {
     const invoice = event.data.object as Stripe.Invoice & { customer_email?: string; customer_name?: string; attempt_count?: number; subscription?: string };
     const memberEmail = invoice.customer_email ?? "";
@@ -320,36 +324,41 @@ export async function POST(request: Request) {
       failedPlanName = PLAN_NAMES[priceId] ?? "Unknown";
     } catch {}
 
-    // Lock account immediately — save current tier so we can restore it on payment success
-    let lockedClerkId: string | null = null;
+    // Give member 24 hours before revoking access — cron job fires the actual lock
+    let gracedClerkId: string | null = null;
     try {
       const subId = typeof invoice.subscription === "string" ? invoice.subscription : null;
       if (subId) {
         const sub = await stripe.subscriptions.retrieve(subId);
-        lockedClerkId = sub.metadata?.clerkUserId ?? null;
+        gracedClerkId = sub.metadata?.clerkUserId ?? null;
       }
-      if (!lockedClerkId && memberEmail) {
+      if (!gracedClerkId && memberEmail) {
         const clerk = await clerkClient();
         const users = await clerk.users.getUserList({ emailAddress: [memberEmail] });
-        lockedClerkId = users.data[0]?.id ?? null;
+        gracedClerkId = users.data[0]?.id ?? null;
       }
-      if (lockedClerkId) {
+      if (gracedClerkId) {
         const clerk = await clerkClient();
-        const user = await clerk.users.getUser(lockedClerkId);
+        const user = await clerk.users.getUser(gracedClerkId);
         const currentTier = user.publicMetadata?.tier ?? null;
-        if (currentTier) {
-          await clerk.users.updateUserMetadata(lockedClerkId, {
-            publicMetadata: { tier: null, suspendedTier: currentTier },
+        if (currentTier && currentTier !== "lifetime") {
+          const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+          await clerk.users.updateUserMetadata(gracedClerkId, {
+            publicMetadata: { gracePeriodEnd: expiresAt },
+          });
+          await supabaseAdmin.from("grace_periods").upsert({
+            clerk_user_id: gracedClerkId,
+            expires_at: expiresAt,
           });
         }
       }
     } catch (e) {
-      console.error("Failed to lock account on payment failure:", e);
+      console.error("Failed to start grace period on payment failure:", e);
     }
 
     if (memberEmail) {
       sendDiscordLog({
-        title: "⚠️ Payment Failed — Access Locked",
+        title: "⚠️ Payment Failed — 24h Grace Period Started",
         color: 0xffa500,
         fields: [
           { name: "Name", value: memberName, inline: true },
@@ -357,23 +366,24 @@ export async function POST(request: Request) {
           { name: "Plan", value: failedPlanName, inline: true },
           { name: "Email", value: memberEmail, inline: false },
         ],
-        description: "Account locked immediately. Access restored automatically when payment succeeds.",
+        description: "Access stays active for 24 hours. Auto-revoked by cron if not resolved.",
       });
       await Promise.all([
         resend.emails.send({
           from: FROM_EMAIL,
           to: memberEmail,
-          subject: "⚠️ Payment failed — your access has been paused",
+          subject: "⚠️ Payment failed — update your card within 24 hours",
           html: `
             <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;border:1px solid rgba(255,165,0,0.3);">
-              <h2 style="color:#ffa500;margin-top:0;">Payment Failed — Access Paused</h2>
-              <p style="color:#aaa;line-height:1.6;">Hey ${memberName}, we couldn't process your 🔝Floor subscription payment and your access has been temporarily paused.</p>
-              <p style="color:#aaa;line-height:1.6;">Update your payment method and your access will be restored immediately.</p>
+              <h2 style="color:#ffa500;margin-top:0;">Payment Failed — Action Required</h2>
+              <p style="color:#aaa;line-height:1.6;">Hey ${memberName}, we couldn't process your 🔝Floor subscription payment.</p>
+              <p style="color:#aaa;line-height:1.6;"><strong style="color:#f5f5f5;">You still have full access for the next 24 hours.</strong> Update your payment method before then and nothing changes.</p>
               <div style="text-align:center;margin:32px 0;">
                 <a href="${process.env.NEXT_PUBLIC_URL}/dashboard/billing" style="display:inline-block;background:#ffa500;color:#000;font-weight:bold;padding:14px 32px;border-radius:999px;text-decoration:none;font-size:16px;">
                   Update Payment Method →
                 </a>
               </div>
+              <p style="color:#555;line-height:1.6;font-size:13px;">If you don't update within 24 hours, your dashboard access and Discord Pro role will be removed automatically. You can restore access at any time by updating your payment method.</p>
               <hr style="border:none;border-top:1px solid #222;margin:24px 0;" />
               <p style="color:#444;font-size:11px;">Trading involves significant risk. Past performance is not indicative of future results.</p>
             </div>
@@ -382,15 +392,15 @@ export async function POST(request: Request) {
         resend.emails.send({
           from: FROM_EMAIL,
           to: process.env.COACH_EMAIL!,
-          subject: `⚠️ Payment Failed — ${memberName} (attempt ${attemptCount}) — Access Locked`,
+          subject: `⚠️ Payment Failed — ${memberName} (attempt ${attemptCount}) — 24h Grace Period`,
           html: `
             <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
-              <h2 style="color:#ffa500;margin-top:0;">Payment Failed</h2>
+              <h2 style="color:#ffa500;margin-top:0;">Payment Failed — Grace Period Started</h2>
               <table style="width:100%;border-collapse:collapse;">
                 <tr><td style="padding:8px 0;color:#999;width:100px;">Name</td><td style="padding:8px 0;font-weight:bold;">${memberName}</td></tr>
                 <tr><td style="padding:8px 0;color:#999;">Email</td><td style="padding:8px 0;"><a href="mailto:${memberEmail}" style="color:#00ff88;">${memberEmail}</a></td></tr>
                 <tr><td style="padding:8px 0;color:#999;">Attempt</td><td style="padding:8px 0;color:#ffa500;font-weight:bold;">#${attemptCount}</td></tr>
-                <tr><td style="padding:8px 0;color:#999;">Status</td><td style="padding:8px 0;color:#ff4444;">Access locked — pending payment update</td></tr>
+                <tr><td style="padding:8px 0;color:#999;">Status</td><td style="padding:8px 0;color:#ffa500;">Access active — auto-revoked in 24h if unresolved</td></tr>
               </table>
             </div>
           `,
@@ -424,9 +434,11 @@ export async function POST(request: Request) {
           const clerk = await clerkClient();
           const user = await clerk.users.getUser(restoredClerkId);
           const suspendedTier = user.publicMetadata?.suspendedTier as Tier | null;
+          const gracePeriodEnd = user.publicMetadata?.gracePeriodEnd as string | null;
           if (suspendedTier) {
+            // Cron already locked them — restore tier + Discord + clear all flags
             await clerk.users.updateUserMetadata(restoredClerkId, {
-              publicMetadata: { tier: suspendedTier, suspendedTier: null },
+              publicMetadata: { tier: suspendedTier, suspendedTier: null, gracePeriodEnd: null },
             });
             const restoredUser = await clerk.users.getUser(restoredClerkId);
             const discordUserId = restoredUser.publicMetadata?.discordUserId as string | undefined;
@@ -441,7 +453,14 @@ export async function POST(request: Request) {
               ],
               description: "Payment succeeded — member access has been restored.",
             });
+          } else if (gracePeriodEnd) {
+            // Paid within 24h grace window — tier was never suspended, just clear the flag
+            await clerk.users.updateUserMetadata(restoredClerkId, {
+              publicMetadata: { gracePeriodEnd: null },
+            });
           }
+          // Remove from grace period index regardless (no-op if already gone)
+          await supabaseAdmin.from("grace_periods").delete().eq("clerk_user_id", restoredClerkId);
         }
       } catch (e) {
         console.error("Failed to restore access on payment success:", e);

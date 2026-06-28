@@ -20,10 +20,16 @@ export default async function DashboardPage() {
   const name = user?.firstName ?? "Trader";
   const discordUsername = (user?.publicMetadata?.discordUsername as string) ?? null;
   const discordUserId = (user?.publicMetadata?.discordUserId as string) ?? null;
+  const gracePeriodEnd = (user?.publicMetadata?.gracePeriodEnd as string) ?? null;
 
   const cancelDate = cancelAt ? new Date(cancelAt) : null;
   const daysLeft = cancelDate
     ? Math.ceil((cancelDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : null;
+
+  const graceDate = gracePeriodEnd ? new Date(gracePeriodEnd) : null;
+  const graceHoursLeft = graceDate
+    ? Math.ceil((graceDate.getTime() - Date.now()) / (1000 * 60 * 60))
     : null;
 
   return (
@@ -95,6 +101,26 @@ export default async function DashboardPage() {
           </Link>
         )}
       </div>
+
+      {/* Grace period warning — payment failed, 24h to fix */}
+      {graceDate && (
+        <div style={{
+          padding: "14px 20px",
+          borderRadius: 12,
+          background: "rgba(255,100,0,0.07)",
+          border: "1px solid rgba(255,100,0,0.3)",
+          marginBottom: 32,
+          fontSize: 14,
+          color: "rgba(255,255,255,0.6)",
+        }}>
+          <span style={{ color: "#ff6400", fontWeight: 700 }}>⚠️ Payment failed.</span>{" "}
+          {graceHoursLeft !== null && graceHoursLeft > 0
+            ? <>You have <strong style={{ color: "#f5f5f5" }}>{graceHoursLeft} hour{graceHoursLeft === 1 ? "" : "s"}</strong> to update your card before your access and Discord role are removed.</>
+            : <>Your grace period has expired — access will be removed shortly.</>
+          }{" "}
+          <a href="/dashboard/billing" style={{ color: "#ff6400", textDecoration: "underline" }}>Update payment →</a>
+        </div>
+      )}
 
       {/* Cancellation notice */}
       {cancelDate && daysLeft !== null && (
