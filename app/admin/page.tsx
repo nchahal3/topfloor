@@ -6,6 +6,14 @@ import AdminDashboard from "@/components/admin/AdminDashboard";
 import type { Member } from "@/components/admin/MembersTab";
 import { getAdminToken } from "@/lib/admin-auth";
 
+// Maps Clerk tier → display name (used when admin manually changes a member's tier)
+const TIER_PLAN_NAMES: Record<string, string> = {
+  bronze: "Bronze ($200/mo)",
+  silver: "Silver ($500/mo)",
+  gold: "Gold ($750/mo)",
+  lifetime: "Lifetime ($2,000)",
+};
+
 const PLAN_NAMES: Record<string, string> = {
   price_1TiphA8U0Yle7MZgUELrqhSV: "Bronze ($200/mo)",
   price_1TiphA8U0Yle7MZggKFKtsl8: "Silver ($500/mo)",
@@ -30,7 +38,7 @@ async function getMembers(): Promise<Member[]> {
         clerkTier: (u.publicMetadata?.tier as string | null) ?? null,
         clerkUserId: u.id,
         phone: u.phoneNumbers[0]?.phoneNumber ?? "—",
-        discord: (u.publicMetadata?.discordUsername as string) ?? (u.publicMetadata?.discord as string) ?? "—",
+        discord: (u.publicMetadata?.discordUsername as string) ?? null,
         joinedAt: new Date(u.createdAt).toLocaleDateString("en-CA", { month: "short", day: "numeric", year: "numeric" }),
         fullName: [u.firstName, u.lastName].filter(Boolean).join(" ") || "—",
       },
@@ -103,11 +111,11 @@ async function getMembers(): Promise<Member[]> {
   for (const { session, planName, status, nextPayment, activeSubId } of enriched) {
     const email = session.customer_details?.email ?? "";
     const clerkData = clerkByEmail.get(email.toLowerCase());
-    const discord =
-      session.custom_fields?.find((f) => f.key === "discord_username")?.text?.value
-      ?? clerkData?.discord
-      ?? "—";
+    // Always prefer OAuth-verified Clerk username; falls to "—" when disconnected
+    const discord = clerkData?.discord ?? "—";
     const clerkTier = clerkData?.clerkTier ?? null;
+    // Use clerkTier as source of truth for plan name (reflects admin tier changes)
+    const displayPlan = clerkTier ? (TIER_PLAN_NAMES[clerkTier] ?? planName) : planName;
 
     // Derive effective status from Clerk (source of truth for access)
     // Keep Stripe failure states (canceled/past_due) regardless of Clerk
@@ -127,7 +135,7 @@ async function getMembers(): Promise<Member[]> {
       email,
       phone: session.customer_details?.phone ?? "—",
       discord,
-      plan: planName,
+      plan: displayPlan,
       status: effectiveStatus,
       nextPayment,
       joinedAt: new Date(session.created * 1000).toLocaleDateString("en-CA", {
