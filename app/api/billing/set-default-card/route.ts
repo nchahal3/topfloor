@@ -27,12 +27,33 @@ export async function PATCH(request: Request) {
     invoice_settings: { default_payment_method: paymentMethodId },
   });
 
-  // Also set on active subscription if exists
-  const subscriptions = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
-  if (subscriptions.data.length) {
-    await stripe.subscriptions.update(subscriptions.data[0].id, {
+  // Find active OR past_due subscription and update its default PM
+  let sub: Stripe.Subscription | null = null;
+  for (const status of ["active", "past_due"] as const) {
+    const result = await stripe.subscriptions.list({ customer: customerId, status, limit: 1 });
+    if (result.data.length) { sub = result.data[0]; break; }
+  }
+
+  if (sub) {
+    await stripe.subscriptions.update(sub.id, {
       default_payment_method: paymentMethodId,
     });
+
+    // Retry the latest unpaid invoice so access restores immediately
+    const latestInvoiceId = typeof sub.latest_invoice === "string"
+      ? sub.latest_invoice
+      : (sub.latest_invoice as Stripe.Invoice | null)?.id ?? null;
+
+    if (latestInvoiceId) {
+      try {
+        const invoice = await stripe.invoices.retrieve(latestInvoiceId);
+        if (invoice.status === "open") {
+          await stripe.invoices.pay(latestInvoiceId, { payment_method: paymentMethodId });
+        }
+      } catch {
+        // Charge declined — still return success so the card saves; banner stays visible
+      }
+    }
   }
 
   return NextResponse.json({ success: true });
