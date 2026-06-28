@@ -129,7 +129,7 @@ async function getMembers(): Promise<Member[]> {
 
     members.push({
       id: session.id,
-      clerkUserId: session.metadata?.clerkUserId ?? clerkData?.clerkUserId ?? null,
+      clerkUserId: clerkData?.clerkUserId ?? session.metadata?.clerkUserId ?? null,
       clerkTier,
       name: session.customer_details?.name ?? "—",
       email,
