@@ -7,6 +7,9 @@ import MyBookings from "@/components/dashboard/MyBookings";
 export default async function BookACallPage() {
   const user = await currentUser();
   const tier = (user?.publicMetadata?.tier as Tier) ?? null;
+  const gracePeriodEnd = (user?.publicMetadata?.gracePeriodEnd as string) ?? null;
+  const graceExpired = gracePeriodEnd ? new Date(gracePeriodEnd) < new Date() : false;
+  const effectiveTier: Tier = graceExpired ? null : tier;
 
   return (
     <div style={{ padding: "40px 32px", maxWidth: 900, margin: "0 auto" }}>
@@ -35,14 +38,14 @@ export default async function BookACallPage() {
           </span>
         </div>
 
-        <div style={{ padding: "20px", borderRadius: 14, background: tier ? "rgba(240,192,64,0.05)" : "rgba(255,255,255,0.02)", border: `1px solid ${tier ? "rgba(240,192,64,0.2)" : "rgba(255,255,255,0.06)"}`, opacity: tier ? 1 : 0.5 }}>
-          <Clock size={18} style={{ color: tier ? "#f0c040" : "rgba(255,255,255,0.3)", marginBottom: 10 }} />
-          <p style={{ color: tier ? "#f5f5f5" : "rgba(255,255,255,0.4)", fontWeight: 700, fontSize: 15, margin: "0 0 6px" }}>Trade Review</p>
+        <div style={{ padding: "20px", borderRadius: 14, background: effectiveTier ? "rgba(240,192,64,0.05)" : "rgba(255,255,255,0.02)", border: `1px solid ${effectiveTier ? "rgba(240,192,64,0.2)" : "rgba(255,255,255,0.06)"}`, opacity: effectiveTier ? 1 : 0.5 }}>
+          <Clock size={18} style={{ color: effectiveTier ? "#f0c040" : "rgba(255,255,255,0.3)", marginBottom: 10 }} />
+          <p style={{ color: effectiveTier ? "#f5f5f5" : "rgba(255,255,255,0.4)", fontWeight: 700, fontSize: 15, margin: "0 0 6px" }}>Trade Review</p>
           <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, margin: "0 0 12px", lineHeight: 1.5 }}>
             30-min deep dive. The TopFloor team reviews your trades and gives direct feedback.
           </p>
-          <span style={{ fontSize: 11, fontWeight: 700, color: tier ? "#f0c040" : "rgba(255,255,255,0.3)", background: tier ? "rgba(240,192,64,0.1)" : "rgba(255,255,255,0.04)", padding: "3px 8px", borderRadius: 5 }}>
-            {tier ? "Included in Your Plan" : "Requires Subscription"}
+          <span style={{ fontSize: 11, fontWeight: 700, color: effectiveTier ? "#f0c040" : "rgba(255,255,255,0.3)", background: effectiveTier ? "rgba(240,192,64,0.1)" : "rgba(255,255,255,0.04)", padding: "3px 8px", borderRadius: 5 }}>
+            {effectiveTier ? "Included in Your Plan" : "Requires Subscription"}
           </span>
         </div>
       </div>
