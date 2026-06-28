@@ -17,9 +17,9 @@ export default function DiscordStatus({
 }) {
   const [disconnecting, setDisconnecting] = useState(false);
   const [disconnected, setDisconnected] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
   async function handleDisconnect() {
-    if (!confirm("Disconnect your Discord account? You'll lose access to Pro channels until you reconnect.")) return;
     setDisconnecting(true);
     try {
       await fetch("/api/discord/disconnect", { method: "POST" });
@@ -28,6 +28,7 @@ export default function DiscordStatus({
       // silent — page reload will reflect truth
     } finally {
       setDisconnecting(false);
+      setConfirming(false);
     }
   }
 
@@ -83,33 +84,82 @@ export default function DiscordStatus({
         </div>
 
         {isConnected ? (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-            <div>
-              <p style={{ color: "#f5f5f5", fontSize: 16, fontWeight: 700, margin: "0 0 3px" }}>
-                @{discordUsername ?? "connected"}
-              </p>
-              <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, margin: 0 }}>
-                Verified — has access to Floor Pro channels
-              </p>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+              <div>
+                <p style={{ color: "#f5f5f5", fontSize: 16, fontWeight: 700, margin: "0 0 3px" }}>
+                  @{discordUsername ?? "connected"}
+                </p>
+                <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, margin: 0 }}>
+                  Verified — has access to Floor Pro channels
+                </p>
+              </div>
+              {!confirming && (
+                <button
+                  type="button"
+                  onClick={() => setConfirming(true)}
+                  style={{
+                    padding: "8px 18px", borderRadius: 9,
+                    background: "rgba(255,255,255,0.05)",
+                    color: "rgba(255,255,255,0.45)",
+                    fontWeight: 600, fontSize: 12,
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    transition: "all 0.15s",
+                  }}
+                >
+                  Disconnect
+                </button>
+              )}
             </div>
-            <button
-              type="button"
-              onClick={handleDisconnect}
-              disabled={disconnecting}
-              style={{
-                padding: "8px 18px", borderRadius: 9,
-                background: "rgba(255,255,255,0.05)",
-                color: "rgba(255,255,255,0.45)",
-                fontWeight: 600, fontSize: 12,
-                border: "1px solid rgba(255,255,255,0.1)",
-                cursor: disconnecting ? "not-allowed" : "pointer",
-                opacity: disconnecting ? 0.5 : 1,
-                whiteSpace: "nowrap",
-                transition: "all 0.15s",
-              }}
-            >
-              {disconnecting ? "Disconnecting…" : "Disconnect"}
-            </button>
+            {confirming && (
+              <div style={{
+                marginTop: 14,
+                padding: "14px 16px",
+                borderRadius: 10,
+                background: "rgba(255,60,60,0.07)",
+                border: "1px solid rgba(255,60,60,0.2)",
+              }}>
+                <p style={{ color: "#f5f5f5", fontSize: 13, fontWeight: 600, margin: "0 0 4px" }}>
+                  Remove Discord access?
+                </p>
+                <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, margin: "0 0 12px" }}>
+                  You'll lose the Pro Memer role and Floor Pro channels until you reconnect.
+                </p>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    type="button"
+                    onClick={() => setConfirming(false)}
+                    style={{
+                      padding: "7px 16px", borderRadius: 8,
+                      background: "rgba(255,255,255,0.06)",
+                      color: "rgba(255,255,255,0.5)",
+                      fontWeight: 600, fontSize: 12,
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDisconnect}
+                    disabled={disconnecting}
+                    style={{
+                      padding: "7px 16px", borderRadius: 8,
+                      background: disconnecting ? "rgba(255,60,60,0.2)" : "rgba(255,60,60,0.15)",
+                      color: disconnecting ? "rgba(255,80,80,0.5)" : "#ff4444",
+                      fontWeight: 700, fontSize: 12,
+                      border: "1px solid rgba(255,60,60,0.3)",
+                      cursor: disconnecting ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    {disconnecting ? "Disconnecting…" : "Yes, disconnect"}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 14 }}>
