@@ -146,8 +146,32 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* Discord */}
-      <DiscordStatus discordUserId={discordUserId} discordUsername={discordUsername} />
+      {/* Discord — paid members only */}
+      {effectiveTier ? (
+        <DiscordStatus discordUserId={discordUserId} discordUsername={discordUsername} />
+      ) : (
+        <div style={{
+          borderRadius: 16, marginBottom: 40, overflow: "hidden",
+          border: "1px solid rgba(255,255,255,0.06)", background: "#111",
+          opacity: 0.55,
+        }}>
+          <div style={{ height: 3, background: "rgba(255,255,255,0.06)" }} />
+          <div style={{ padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 14 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.2)" }}>
+                <svg width="16" height="12" viewBox="0 0 71 55" fill="none" aria-hidden="true"><path d="M60.1 4.9A58.6 58.6 0 0 0 45.6.7a40.7 40.7 0 0 0-1.8 3.7 54.2 54.2 0 0 0-16.3 0A40.6 40.6 0 0 0 25.7.7 58.5 58.5 0 0 0 11.1 5C1.6 19.4-1 33.4.3 47.2a59 59 0 0 0 18 9.1 43.5 43.5 0 0 0 3.8-6.1 38.4 38.4 0 0 1-6-2.9l1.5-1.1a42 42 0 0 0 35.9 0l1.5 1.1a38.5 38.5 0 0 1-6 2.9 43.3 43.3 0 0 0 3.8 6.1 58.8 58.8 0 0 0 18-9.1c1.5-15.6-2.6-29.5-10.7-42.3ZM23.7 38.7c-3.5 0-6.4-3.2-6.4-7.2s2.8-7.2 6.4-7.2c3.5 0 6.4 3.2 6.3 7.2 0 4-2.8 7.2-6.3 7.2Zm23.6 0c-3.5 0-6.4-3.2-6.4-7.2s2.8-7.2 6.4-7.2c3.5 0 6.4 3.2 6.3 7.2 0 4-2.8 7.2-6.3 7.2Z" fill="currentColor"/></svg>
+              </div>
+              <div>
+                <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, fontWeight: 600, margin: "0 0 2px" }}>Discord — Floor Pro Channels</p>
+                <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 12, margin: 0 }}>Active subscription required to connect</p>
+              </div>
+            </div>
+            <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.04)", padding: "3px 10px", borderRadius: 999, border: "1px solid rgba(255,255,255,0.06)", letterSpacing: "0.06em" }}>
+              LOCKED
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Feature grid — 2-col, last card spans full width if count is odd */}
       <div

@@ -33,7 +33,13 @@ export async function GET(req: Request) {
       if (currentTier) {
         if (discordUserId) await revokeProRole(discordUserId);
         await clerk.users.updateUserMetadata(clerk_user_id, {
-          publicMetadata: { tier: null, suspendedTier: currentTier, gracePeriodEnd: null },
+          publicMetadata: {
+            tier: null,
+            suspendedTier: currentTier,
+            gracePeriodEnd: null,
+            discordUserId: null,
+            discordUsername: null,
+          },
         });
       }
 
