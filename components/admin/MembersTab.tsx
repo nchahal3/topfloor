@@ -108,7 +108,7 @@ export default function MembersTab({ members }: { members: Member[] }) {
       const res = await fetch("/api/admin/users", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: member.email }),
+        body: JSON.stringify({ clerkUserId: member.clerkUserId ?? undefined, email: member.email }),
       });
       if (!res.ok) {
         const d = await res.json();

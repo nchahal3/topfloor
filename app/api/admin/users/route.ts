@@ -10,17 +10,21 @@ async function isAdmin() {
 export async function DELETE(request: Request) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { email } = await request.json() as { email: string };
-  if (!email) return NextResponse.json({ error: "Email required" }, { status: 400 });
+  const { clerkUserId, email } = await request.json() as { clerkUserId?: string; email?: string };
 
   try {
     const clerk = await clerkClient();
-    const users = await clerk.users.getUserList({ emailAddress: [email] });
-    const user = users.data[0];
+    let userId = clerkUserId ?? null;
 
-    if (!user) return NextResponse.json({ error: "User not found in Clerk" }, { status: 404 });
+    if (!userId) {
+      if (!email) return NextResponse.json({ error: "clerkUserId or email required" }, { status: 400 });
+      const users = await clerk.users.getUserList({ emailAddress: [email] });
+      userId = users.data[0]?.id ?? null;
+    }
 
-    await clerk.users.deleteUser(user.id);
+    if (!userId) return NextResponse.json({ error: "User not found in Clerk" }, { status: 404 });
+
+    await clerk.users.deleteUser(userId);
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("Delete user error:", err);
