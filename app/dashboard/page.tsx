@@ -31,6 +31,9 @@ export default async function DashboardPage() {
   const graceHoursLeft = graceDate
     ? Math.ceil((graceDate.getTime() - Date.now()) / (1000 * 60 * 60))
     : null;
+  // If grace period has expired, treat tier as null immediately (cron handles Clerk/Discord cleanup)
+  const graceExpired = graceDate ? graceDate < new Date() : false;
+  const effectiveTier = graceExpired ? null : tier;
 
   return (
     <div style={{ background: "#0a0a0a", minHeight: "100%" }}>
@@ -54,8 +57,8 @@ export default async function DashboardPage() {
           padding: "20px 24px",
           borderRadius: 16,
           marginBottom: 40,
-          background: tier ? `${TIER_COLORS[tier]}0d` : "#111",
-          border: `1px solid ${tier ? `${TIER_COLORS[tier]}30` : "rgba(255,255,255,0.08)"}`,
+          background: effectiveTier ? `${TIER_COLORS[effectiveTier]}0d` : "#111",
+          border: `1px solid ${effectiveTier ? `${TIER_COLORS[effectiveTier]}30` : "rgba(255,255,255,0.08)"}`,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -69,21 +72,21 @@ export default async function DashboardPage() {
           </p>
           <p
             style={{
-              color: tier ? TIER_COLORS[tier] : "#f5f5f5",
+              color: effectiveTier ? TIER_COLORS[effectiveTier] : "#f5f5f5",
               fontSize: 20,
               fontWeight: 700,
               margin: "6px 0 0",
             }}
           >
-            {tier ? `${TIER_LABELS[tier]} Member` : "Free Account"}
+            {effectiveTier ? `${TIER_LABELS[effectiveTier]} Member` : "Free Account"}
           </p>
-          {!tier && (
+          {!effectiveTier && (
             <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 13, margin: "4px 0 0" }}>
               Upgrade to unlock live trades, curriculum, and more.
             </p>
           )}
         </div>
-        {!tier && (
+        {!effectiveTier && (
           <Link
             href="/pricing"
             style={{
@@ -153,7 +156,7 @@ export default async function DashboardPage() {
       >
         {FEATURE_CARDS.map((card, i) => {
           const Icon = card.icon;
-          const locked = !card.free && !tier;
+          const locked = !card.free && !effectiveTier;
           const isLastOdd = i === FEATURE_CARDS.length - 1 && FEATURE_CARDS.length % 2 !== 0;
           return (
             <Link
