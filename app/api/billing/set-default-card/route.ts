@@ -50,12 +50,16 @@ export async function PATCH(request: Request) {
         const invoice = await stripe.invoices.retrieve(latestInvoiceId);
         if (invoice.status === "open") {
           await stripe.invoices.pay(latestInvoiceId, { payment_method: paymentMethodId });
+          return NextResponse.json({ success: true, charged: true });
         }
-      } catch {
-        // Charge declined — still return success so the card saves; banner stays visible
+      } catch (err) {
+        const message = err instanceof Stripe.errors.StripeError
+          ? err.message
+          : "Payment declined. Please try a different card.";
+        return NextResponse.json({ success: true, charged: false, chargeError: message });
       }
     }
   }
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, charged: false });
 }

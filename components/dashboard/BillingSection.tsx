@@ -23,7 +23,7 @@ interface BillingInfo {
   card: { brand: string; last4: string; expMonth: number; expYear: number } | null;
 }
 
-function UpdateCardForm({ onSuccess, onCancel, retry }: { onSuccess: () => void; onCancel: () => void; retry?: boolean }) {
+function UpdateCardForm({ onSuccess, onCancel, retry }: { onSuccess: (charged: boolean) => void; onCancel: () => void; retry?: boolean }) {
   const stripe = useStripe();
   const elements = useElements();
   const [saving, setSaving] = useState(false);
@@ -57,7 +57,12 @@ function UpdateCardForm({ onSuccess, onCancel, retry }: { onSuccess: () => void;
       });
       if (!updateRes.ok) throw new Error("Failed to set card as default");
 
-      onSuccess();
+      const result = await updateRes.json() as { success: boolean; charged?: boolean; chargeError?: string };
+      if (retry && result.charged === false) {
+        throw new Error(result.chargeError ?? "Payment declined. Please try a different card.");
+      }
+
+      onSuccess(result.charged ?? false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -137,6 +142,7 @@ export default function BillingSection({ tier, retryOnSave }: { tier: Tier; retr
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [chargeSuccess, setChargeSuccess] = useState(false);
 
   async function load() {
     try {
@@ -149,11 +155,12 @@ export default function BillingSection({ tier, retryOnSave }: { tier: Tier; retr
 
   useEffect(() => { load(); }, []);
 
-  function handleSuccess() {
+  function handleSuccess(charged: boolean) {
     setUpdating(false);
     setSaved(true);
+    setChargeSuccess(charged);
     load();
-    setTimeout(() => setSaved(false), 3000);
+    setTimeout(() => { setSaved(false); setChargeSuccess(false); }, 4000);
   }
 
   if (loading) return null;
@@ -202,7 +209,9 @@ export default function BillingSection({ tier, retryOnSave }: { tier: Tier; retr
       </div>
 
       {saved && (
-        <p style={{ color: "#00ff88", fontSize: 13, margin: "12px 0 0" }}>Card updated successfully.</p>
+        <p style={{ color: "#00ff88", fontSize: 13, margin: "12px 0 0" }}>
+          {chargeSuccess ? "Payment successful — your access has been restored." : "Card updated successfully."}
+        </p>
       )}
 
       {!updating && !saved && (
