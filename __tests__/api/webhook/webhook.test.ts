@@ -524,3 +524,91 @@ describe("webhook: signature verification", () => {
     expect(res.status).toBe(400);
   });
 });
+
+// ── payment receipts & recovery emails ────────────────────────────────────────
+
+describe("webhook: payment receipts & recovery emails", () => {
+  const paidInvoice = (overrides: object = {}) => ({
+    billing_reason: "subscription_cycle",
+    customer_email: "member@test.com",
+    customer_name: "Test Member",
+    subscription: "sub_123",
+    amount_paid: 75000,
+    currency: "usd",
+    hosted_invoice_url: "https://stripe.test/inv_1",
+    lines: { data: [{ price: { id: "price_1Tiiku8sHKVNeGWtthSeTog0" }, description: "Gold" }] },
+    ...overrides,
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.resetModules();
+    mockSupabaseChain();
+    mockResendSend.mockResolvedValue({ id: "ok" });
+    mockStripeInstance.subscriptions.retrieve.mockResolvedValue({ metadata: { clerkUserId: "user_abc" } });
+    mockGrantProRole.mockResolvedValue(undefined);
+    mockUpdateUserMetadata.mockResolvedValue({});
+  });
+
+  it("emails the member a receipt on a normal subscription payment (no recovery)", async () => {
+    mockGetUser.mockResolvedValue({ publicMetadata: { tier: "gold", suspendedTier: null, gracePeriodEnd: null } });
+
+    await callWebhook("invoice.paid", paidInvoice({ billing_reason: "subscription_create" }));
+
+    const calls = mockResendSend.mock.calls.map((c) => c[0]);
+    const receipt = calls.find((c) => c.to === "member@test.com");
+    expect(receipt).toBeDefined();
+    expect(receipt!.subject).toMatch(/receipt/i);
+    // no coach "recovered" email on a normal payment
+    expect(calls.find((c) => c.to === "coach@test.com")).toBeUndefined();
+  });
+
+  it("sends 'access restored' email to member + 'recovered' email to coach after a lock", async () => {
+    mockGetUser
+      .mockResolvedValueOnce({ publicMetadata: { tier: null, suspendedTier: "gold", discordUserId: "d1" } })
+      .mockResolvedValueOnce({ publicMetadata: { tier: "gold", discordUserId: "d1" } });
+
+    await callWebhook("invoice.paid", paidInvoice());
+
+    const calls = mockResendSend.mock.calls.map((c) => c[0]);
+    const member = calls.find((c) => c.to === "member@test.com");
+    const coach = calls.find((c) => c.to === "coach@test.com");
+    expect(member?.subject).toMatch(/restored/i);
+    expect(coach?.subject).toMatch(/recovered/i);
+  });
+
+  it("treats a within-grace recovery as recovery (restored email + coach notice)", async () => {
+    mockGetUser.mockResolvedValue({
+      publicMetadata: { tier: "gold", suspendedTier: null, gracePeriodEnd: new Date(Date.now() + 60000).toISOString() },
+    });
+
+    await callWebhook("invoice.paid", paidInvoice());
+
+    const calls = mockResendSend.mock.calls.map((c) => c[0]);
+    expect(calls.find((c) => c.to === "member@test.com")?.subject).toMatch(/restored/i);
+    expect(calls.find((c) => c.to === "coach@test.com")).toBeDefined();
+  });
+
+  it("sends a receipt for a lifetime one-time purchase (no invoice.paid fires for these)", async () => {
+    mockStripeInstance.checkout.sessions.listLineItems.mockResolvedValue({
+      data: [{ price: { id: "price_1Tiil68sHKVNeGWt4SFHY6P5" } }], // lifetime test price
+    });
+    mockGetUser.mockResolvedValue({ publicMetadata: { tier: null } });
+    mockStripeInstance.subscriptions.list.mockResolvedValue({ data: [] });
+
+    await callWebhook("checkout.session.completed", {
+      id: "cs_test",
+      mode: "payment",
+      amount_total: 200000,
+      currency: "usd",
+      metadata: { clerkUserId: "user_abc" },
+      customer: "cus_new",
+      customer_details: { email: "lifer@test.com", name: "Life Time" },
+      custom_fields: [],
+    });
+
+    const calls = mockResendSend.mock.calls.map((c) => c[0]);
+    const receipt = calls.find((c) => c.to === "lifer@test.com" && /receipt/i.test(c.subject));
+    expect(receipt).toBeDefined();
+  });
+});
