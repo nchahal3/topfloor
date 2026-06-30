@@ -49,20 +49,19 @@ export async function PATCH(request: Request) {
       try {
         const invoice = await stripe.invoices.retrieve(latestInvoiceId);
         if (invoice.status === "open") {
-          const paid = await stripe.invoices.pay(latestInvoiceId, { payment_method: paymentMethodId });
-          // If the invoice's payment intent requires 3DS, return the client_secret so
-          // the browser can present the authentication challenge.
-          const pi = paid.payment_intent;
-          if (pi && typeof pi === "object" && pi.status === "requires_action") {
-            return NextResponse.json({ success: true, charged: false, requiresAction: true, clientSecret: pi.client_secret });
-          }
+          await stripe.invoices.pay(latestInvoiceId, { payment_method: paymentMethodId });
           return NextResponse.json({ success: true, charged: true });
         }
       } catch (err) {
-        const message = err instanceof Stripe.errors.StripeError
-          ? err.message
-          : "Payment declined. Please try a different card.";
-        return NextResponse.json({ success: true, charged: false, chargeError: message });
+        if (err instanceof Stripe.errors.StripeError) {
+          // In Stripe v22, 3DS throws a StripeError with payment_intent.client_secret attached
+          const pi = (err as { payment_intent?: { client_secret: string | null; status: string } }).payment_intent;
+          if (pi?.client_secret && pi.status === "requires_action") {
+            return NextResponse.json({ success: true, charged: false, requiresAction: true, clientSecret: pi.client_secret });
+          }
+          return NextResponse.json({ success: true, charged: false, chargeError: err.message });
+        }
+        return NextResponse.json({ success: true, charged: false, chargeError: "Payment declined. Please try a different card." });
       }
     }
   }
