@@ -2,7 +2,6 @@ import { Webhook } from "svix";
 import { Resend } from "resend";
 import { NextResponse } from "next/server";
 
-const DISCORD_INVITE = "https://discord.gg/yebuyWPswJ";
 
 export async function POST(request: Request) {
   const secret = process.env.CLERK_WEBHOOK_SECRET;
@@ -64,7 +63,7 @@ export async function POST(request: Request) {
         <p style="color:#aaa;line-height:1.7;">When you're ready to unlock live trade sessions, the full curriculum, and 1-on-1 coaching — upgrade your membership from inside the dashboard.</p>
         <p style="color:#aaa;line-height:1.7;">You can also join the Discord to connect with the community right now:</p>
         <div style="text-align:center;margin:20px 0 28px;">
-          <a href="${DISCORD_INVITE}" style="display:inline-block;background:#5865F2;color:#fff;font-weight:bold;padding:12px 28px;border-radius:999px;text-decoration:none;font-size:14px;">
+          <a href="${baseUrl}/discord" style="display:inline-block;background:#5865F2;color:#fff;font-weight:bold;padding:12px 28px;border-radius:999px;text-decoration:none;font-size:14px;">
             Join the Discord →
           </a>
         </div>
