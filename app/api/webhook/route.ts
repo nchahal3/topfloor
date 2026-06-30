@@ -23,6 +23,36 @@ const PLAN_NAMES: Record<string, string> = {
   price_1Tiil68sHKVNeGWt4SFHY6P5: "Lifetime ($2,000) [test]",
 };
 
+// Receipt / payment-confirmation email body. Used for new plan purchases, monthly
+// renewals, lifetime one-time payments, and recovery after a failed payment.
+function paymentReceiptHtml(opts: {
+  name: string;
+  planName: string;
+  amount: string;
+  currency: string;
+  invoiceUrl?: string | null;
+  restored?: boolean;
+}): string {
+  const { name, planName, amount, currency, invoiceUrl, restored } = opts;
+  const dateStr = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  return `
+    <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
+      <h2 style="color:#00ff88;margin-top:0;">${restored ? "Payment received — you're back in 🔝" : "Payment received ✅"}</h2>
+      <p style="color:#aaa;line-height:1.6;">Hey ${name}, ${restored
+        ? "your payment went through and your 🔝Floor access has been restored."
+        : "thanks for your payment — here's your receipt."}</p>
+      <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+        <tr><td style="padding:8px 0;color:#999;width:120px;">Plan</td><td style="padding:8px 0;color:#f0c040;font-weight:bold;">${planName}</td></tr>
+        <tr><td style="padding:8px 0;color:#999;">Amount</td><td style="padding:8px 0;font-weight:bold;">$${amount} ${currency}</td></tr>
+        <tr><td style="padding:8px 0;color:#999;">Date</td><td style="padding:8px 0;">${dateStr}</td></tr>
+      </table>
+      ${invoiceUrl ? `<div style="text-align:center;margin:24px 0;"><a href="${invoiceUrl}" style="display:inline-block;background:#00ff88;color:#000;font-weight:bold;padding:12px 28px;border-radius:999px;text-decoration:none;">View / Download Invoice →</a></div>` : ""}
+      ${restored ? `<p style="color:#aaa;line-height:1.6;">If your Discord Pro role doesn't come back automatically, just reconnect Discord from your dashboard.</p>` : ""}
+      <hr style="border:none;border-top:1px solid #222;margin:24px 0;" />
+      <p style="color:#444;font-size:11px;">Trading involves significant risk. Past performance is not indicative of future results. 🔝Floor provides educational content only.</p>
+    </div>`;
+}
+
 export async function POST(request: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
   const resend = new Resend(process.env.RESEND_API_KEY);
@@ -223,6 +253,23 @@ export async function POST(request: Request) {
         </div>
       `,
     });
+
+    // Lifetime / one-time purchases don't generate a subscription invoice, so invoice.paid
+    // never fires for them — send their receipt here. Monthly plans get theirs from invoice.paid.
+    if (session.mode === "payment" && session.amount_total != null) {
+      await resend.emails.send({
+        from: FROM_EMAIL,
+        to: customerEmail,
+        subject: "Your 🔝Floor payment receipt",
+        html: paymentReceiptHtml({
+          name: customerName,
+          planName,
+          amount: (session.amount_total / 100).toFixed(2),
+          currency: (session.currency ?? "usd").toUpperCase(),
+          invoiceUrl: null,
+        }),
+      }).catch((e) => console.error("Lifetime receipt email failed:", e));
+    }
   }
 
   // ── Subscription cancelled (all retries exhausted or manually cancelled) ──
@@ -436,11 +483,13 @@ export async function POST(request: Request) {
     const invoice = event.data.object as Stripe.Invoice & { customer_email?: string; customer_name?: string; billing_reason?: string; subscription?: string };
     // Restore for any paid invoice on a subscription (cycle, update, or manual retry)
     const isSubscriptionPayment = invoice.billing_reason === "subscription_cycle"
+      || invoice.billing_reason === "subscription_create"
       || invoice.billing_reason === "subscription_update"
       || invoice.billing_reason === "subscription_threshold"
       || (typeof invoice.subscription === "string" && !!invoice.subscription);
     if (isSubscriptionPayment) {
       let restoredClerkId: string | null = null;
+      let wasRecovery = false;
       try {
         const subId = typeof invoice.subscription === "string" ? invoice.subscription : null;
         if (subId) {
@@ -457,6 +506,7 @@ export async function POST(request: Request) {
           const user = await clerk.users.getUser(restoredClerkId);
           const suspendedTier = user.publicMetadata?.suspendedTier as Tier | null;
           const gracePeriodEnd = user.publicMetadata?.gracePeriodEnd as string | null;
+          wasRecovery = !!(suspendedTier || gracePeriodEnd);
           if (suspendedTier) {
             // Cron already locked them — restore tier + Discord + clear all flags
             await clerk.users.updateUserMetadata(restoredClerkId, {
@@ -486,6 +536,59 @@ export async function POST(request: Request) {
         }
       } catch (e) {
         console.error("Failed to restore access on payment success:", e);
+      }
+
+      // Send the member a receipt for this payment (first month, renewal, or recovery),
+      // and notify the coach when it's a recovery from a failed payment.
+      try {
+        const memberEmail = invoice.customer_email ?? "";
+        if (memberEmail) {
+          const memberName = invoice.customer_name ?? "there";
+          const amount = ((invoice.amount_paid ?? 0) / 100).toFixed(2);
+          const currency = (invoice.currency ?? "usd").toUpperCase();
+          const priceId = (invoice.lines?.data?.[0] as unknown as { price?: { id?: string } })?.price?.id ?? "";
+          const planName = PLAN_NAMES[priceId] ?? invoice.lines?.data?.[0]?.description ?? "🔝Floor Membership";
+          const invoiceUrl = invoice.hosted_invoice_url ?? null;
+
+          await resend.emails.send({
+            from: FROM_EMAIL,
+            to: memberEmail,
+            subject: wasRecovery ? "Payment received — your 🔝Floor access is restored" : "Your 🔝Floor payment receipt",
+            html: paymentReceiptHtml({ name: memberName, planName, amount, currency, invoiceUrl, restored: wasRecovery }),
+          });
+
+          if (wasRecovery) {
+            sendDiscordLog({
+              title: "✅ Member Recovered",
+              color: 0x00ff88,
+              fields: [
+                { name: "Name", value: memberName, inline: true },
+                { name: "Plan", value: planName, inline: true },
+                { name: "Email", value: memberEmail, inline: false },
+              ],
+              description: "Payment succeeded after a failed payment — access restored.",
+            });
+            await resend.emails.send({
+              from: FROM_EMAIL,
+              to: process.env.COACH_EMAIL!,
+              subject: `✅ Member Recovered — ${memberName}`,
+              html: `
+                <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
+                  <h2 style="color:#00ff88;margin-top:0;">Member Recovered 🎉</h2>
+                  <p style="color:#aaa;">A member who had a failed payment just paid and had their access restored.</p>
+                  <table style="width:100%;border-collapse:collapse;">
+                    <tr><td style="padding:8px 0;color:#999;width:100px;">Name</td><td style="padding:8px 0;font-weight:bold;">${memberName}</td></tr>
+                    <tr><td style="padding:8px 0;color:#999;">Email</td><td style="padding:8px 0;"><a href="mailto:${memberEmail}" style="color:#00ff88;">${memberEmail}</a></td></tr>
+                    <tr><td style="padding:8px 0;color:#999;">Plan</td><td style="padding:8px 0;color:#f0c040;font-weight:bold;">${planName}</td></tr>
+                    <tr><td style="padding:8px 0;color:#999;">Amount</td><td style="padding:8px 0;font-weight:bold;">$${amount} ${currency}</td></tr>
+                  </table>
+                </div>
+              `,
+            });
+          }
+        }
+      } catch (e) {
+        console.error("Failed to send payment receipt:", e);
       }
     }
   }
