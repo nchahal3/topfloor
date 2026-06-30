@@ -29,11 +29,21 @@ const PLAN_NAMES: Record<string, string> = {
 async function getMembers(): Promise<Member[]> {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-  // Members deleted by an admin — filtered out below. The list is built from immutable
-  // Stripe checkout sessions, so this blocklist is what keeps a deleted member from
-  // reappearing on reload. Re-subscribing clears their entry (see the checkout webhook).
-  const { data: deletedRows } = await supabaseAdmin.from("deleted_members").select("email");
-  const deletedEmails = new Set((deletedRows ?? []).map((r) => (r.email as string).toLowerCase()));
+  // Members deleted by an admin, keyed by email → deletion time. The list is built from
+  // immutable Stripe checkout sessions, so this is what keeps a deleted member from
+  // reappearing on reload. It's time-aware: we only hide records that existed BEFORE the
+  // deletion, so if the same person signs up again (free OR paid) that newer account shows
+  // up normally as a brand-new member.
+  const { data: deletedRows } = await supabaseAdmin.from("deleted_members").select("email, deleted_at");
+  const deletedAtByEmail = new Map(
+    (deletedRows ?? []).map((r) => [(r.email as string).toLowerCase(), new Date(r.deleted_at as string).getTime()]),
+  );
+  // True if this email was deleted AND the given record predates that deletion (so it's the
+  // stale record we should hide, not a fresh re-signup).
+  const isStaleDeleted = (email: string, recordMs: number) => {
+    const delAt = deletedAtByEmail.get(email.toLowerCase());
+    return delAt !== undefined && recordMs <= delAt;
+  };
 
   // Fetch all Clerk users first so we can cross-reference current tier for every member
   const clerk = await clerkClient();
@@ -46,6 +56,7 @@ async function getMembers(): Promise<Member[]> {
         clerkUserId: u.id,
         phone: u.phoneNumbers[0]?.phoneNumber ?? "—",
         discord: (u.publicMetadata?.discordUsername as string) ?? null,
+        createdAtMs: u.createdAt,
         joinedAt: new Date(u.createdAt).toLocaleDateString("en-CA", { month: "short", day: "numeric", year: "numeric" }),
         fullName: [u.firstName, u.lastName].filter(Boolean).join(" ") || "—",
       },
@@ -117,6 +128,9 @@ async function getMembers(): Promise<Member[]> {
   const members: Member[] = [];
   for (const { session, planName, status, nextPayment, activeSubId } of enriched) {
     const email = session.customer_details?.email ?? "";
+    // Hide a checkout session that predates an admin deletion (stale record). A newer
+    // session for the same email (re-subscribe) survives and shows up.
+    if (isStaleDeleted(email, session.created * 1000)) continue;
     const clerkData = clerkByEmail.get(email.toLowerCase());
     // Always prefer OAuth-verified Clerk username; falls to "—" when disconnected
     const discord = clerkData?.discord ?? "—";
@@ -155,7 +169,10 @@ async function getMembers(): Promise<Member[]> {
   // Add free Clerk users (signed up but never paid)
   const paidEmails = new Set(members.map((m) => m.email.toLowerCase()));
   for (const [email, data] of clerkByEmail) {
-    if (!email || paidEmails.has(email) || deletedEmails.has(email)) continue;
+    // Skip if already listed via Stripe, or if this is the stale Clerk account that existed
+    // before an admin deletion. A re-signup creates a newer account → createdAtMs is after
+    // the deletion → shown as a brand-new free member.
+    if (!email || paidEmails.has(email) || isStaleDeleted(email, data.createdAtMs)) continue;
     members.push({
       id: data.clerkUserId,
       clerkUserId: data.clerkUserId,
@@ -172,7 +189,7 @@ async function getMembers(): Promise<Member[]> {
     });
   }
 
-  return members.filter((m) => !deletedEmails.has(m.email.toLowerCase()));
+  return members;
 }
 
 export default async function AdminPage() {
