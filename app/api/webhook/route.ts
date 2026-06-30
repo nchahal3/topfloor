@@ -7,6 +7,7 @@ import { PRICE_TIER } from "@/lib/tier";
 import { sendDiscordLog } from "@/lib/discord";
 import { grantProRole, revokeProRole } from "@/lib/discord-roles";
 import { supabaseAdmin } from "@/lib/supabase";
+import { scheduleGraceRevoke } from "@/lib/qstash";
 
 const FROM_EMAIL = "noreply@topfloortradesofficial.com";
 const DISCORD_INVITE = "https://discord.gg/yebuyWPswJ";
@@ -363,6 +364,8 @@ export async function POST(request: Request) {
             clerk_user_id: gracedClerkId,
             expires_at: expiresAt,
           });
+          // Schedule a precise lock at grace + 24h (QStash). The hourly cron is the backstop.
+          await scheduleGraceRevoke(gracedClerkId);
         }
       }
     } catch (e) {

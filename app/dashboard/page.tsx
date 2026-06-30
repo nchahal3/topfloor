@@ -16,6 +16,7 @@ const FEATURE_CARDS = [
 export default async function DashboardPage() {
   const user = await currentUser();
   const tier = (user?.publicMetadata?.tier as Tier) ?? null;
+  const suspendedTier = (user?.publicMetadata?.suspendedTier as Tier) ?? null;
   const cancelAt = (user?.publicMetadata?.cancelAt as string) ?? null;
   const name = user?.firstName ?? "Trader";
   const discordUsername = (user?.publicMetadata?.discordUsername as string) ?? null;
@@ -34,6 +35,13 @@ export default async function DashboardPage() {
   // If grace period has expired, treat tier as null immediately (cron handles Clerk/Discord cleanup)
   const graceExpired = graceDate ? graceDate < new Date() : false;
   const effectiveTier = graceExpired ? null : tier;
+
+  // Recovery: payment failed and access is now locked (grace expired pre-lock, or the
+  // job already suspended their tier). Distinct from a never-subscribed free account —
+  // these members must UPDATE THEIR CARD on the billing page, not buy a new plan.
+  const isLocked = !effectiveTier;
+  const isRecovery = !!suspendedTier || (graceExpired && !!tier);
+  const recoveryTier = (tier ?? suspendedTier) as Tier;
 
   return (
     <div style={{ background: "#0a0a0a", minHeight: "100%" }}>
@@ -57,8 +65,8 @@ export default async function DashboardPage() {
           padding: "20px 24px",
           borderRadius: 16,
           marginBottom: 40,
-          background: effectiveTier ? `${TIER_COLORS[effectiveTier]}0d` : "#111",
-          border: `1px solid ${effectiveTier ? `${TIER_COLORS[effectiveTier]}30` : "rgba(255,255,255,0.08)"}`,
+          background: effectiveTier ? `${TIER_COLORS[effectiveTier]}0d` : isRecovery ? "rgba(255,68,68,0.05)" : "#111",
+          border: `1px solid ${effectiveTier ? `${TIER_COLORS[effectiveTier]}30` : isRecovery ? "rgba(255,68,68,0.25)" : "rgba(255,255,255,0.08)"}`,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -72,41 +80,43 @@ export default async function DashboardPage() {
           </p>
           <p
             style={{
-              color: effectiveTier ? TIER_COLORS[effectiveTier] : "#f5f5f5",
+              color: effectiveTier ? TIER_COLORS[effectiveTier] : isRecovery ? "#ff4444" : "#f5f5f5",
               fontSize: 20,
               fontWeight: 700,
               margin: "6px 0 0",
             }}
           >
-            {effectiveTier ? `${TIER_LABELS[effectiveTier]} Member` : "Free Account"}
+            {effectiveTier ? `${TIER_LABELS[effectiveTier]} Member` : isRecovery ? "Access Locked" : "Free Account"}
           </p>
-          {!effectiveTier && (
+          {isLocked && (
             <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 13, margin: "4px 0 0" }}>
-              Upgrade to unlock live trades, curriculum, and more.
+              {isRecovery
+                ? `Your payment failed. Update your card to restore your ${recoveryTier ? TIER_LABELS[recoveryTier] : ""} access.`
+                : "Upgrade to unlock live trades, curriculum, and more."}
             </p>
           )}
         </div>
-        {!effectiveTier && (
+        {isLocked && (
           <Link
-            href="/pricing"
+            href={isRecovery ? "/dashboard/billing" : "/pricing"}
             style={{
               padding: "10px 24px",
               borderRadius: 999,
-              background: "#00ff88",
-              color: "#000",
+              background: isRecovery ? "#ff4444" : "#00ff88",
+              color: isRecovery ? "#fff" : "#000",
               fontWeight: 700,
               fontSize: 13,
               textDecoration: "none",
               whiteSpace: "nowrap",
             }}
           >
-            View Plans →
+            {isRecovery ? "Restore Access →" : "View Plans →"}
           </Link>
         )}
       </div>
 
-      {/* Grace period warning — payment failed, 24h to fix */}
-      {graceDate && (
+      {/* Grace period warning — payment failed, still within the 24h window */}
+      {graceDate && !graceExpired && (
         <div style={{
           padding: "14px 20px",
           borderRadius: 12,
@@ -117,11 +127,25 @@ export default async function DashboardPage() {
           color: "rgba(255,255,255,0.6)",
         }}>
           <span style={{ color: "#ff6400", fontWeight: 700 }}>⚠️ Payment failed.</span>{" "}
-          {graceHoursLeft !== null && graceHoursLeft > 0
-            ? <>You have <strong style={{ color: "#f5f5f5" }}>{graceHoursLeft} hour{graceHoursLeft === 1 ? "" : "s"}</strong> to update your card before your access and Discord role are removed.</>
-            : <>Your grace period has expired — access will be removed shortly.</>
-          }{" "}
+          You have <strong style={{ color: "#f5f5f5" }}>{graceHoursLeft} hour{graceHoursLeft === 1 ? "" : "s"}</strong> to update your card before your access and Discord role are removed.{" "}
           <a href="/dashboard/billing" style={{ color: "#ff6400", textDecoration: "underline" }}>Update payment →</a>
+        </div>
+      )}
+
+      {/* Locked after a failed payment — access removed, recoverable by updating the card */}
+      {isRecovery && isLocked && (
+        <div style={{
+          padding: "14px 20px",
+          borderRadius: 12,
+          background: "rgba(255,68,68,0.07)",
+          border: "1px solid rgba(255,68,68,0.3)",
+          marginBottom: 32,
+          fontSize: 14,
+          color: "rgba(255,255,255,0.6)",
+        }}>
+          <span style={{ color: "#ff4444", fontWeight: 700 }}>🔒 Your access is locked.</span>{" "}
+          Your payment failed and your membership{recoveryTier ? ` (${TIER_LABELS[recoveryTier]})` : ""} is paused. Update your card to restore full access and your Discord Pro role.{" "}
+          <a href="/dashboard/billing" style={{ color: "#ff4444", textDecoration: "underline" }}>Update payment →</a>
         </div>
       )}
 
