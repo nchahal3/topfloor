@@ -8,7 +8,7 @@ const GRACE_SECONDS = 24 * 60 * 60;
  * time, which re-checks the grace row and revokes Discord + access if still unpaid.
  *
  * No-ops if QStash isn't configured (QSTASH_TOKEN / NEXT_PUBLIC_URL missing); the
- * hourly cron is the backstop in that case. Never throws — a scheduling failure
+ * daily cron is the backstop in that case. Never throws — a scheduling failure
  * must not break the payment_failed webhook.
  */
 export async function scheduleGraceRevoke(clerkUserId: string): Promise<void> {

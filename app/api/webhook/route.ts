@@ -364,7 +364,7 @@ export async function POST(request: Request) {
             clerk_user_id: gracedClerkId,
             expires_at: expiresAt,
           });
-          // Schedule a precise lock at grace + 24h (QStash). The hourly cron is the backstop.
+          // Schedule a precise lock at grace + 24h (QStash). The daily cron is the backstop.
           await scheduleGraceRevoke(gracedClerkId);
         }
       }
