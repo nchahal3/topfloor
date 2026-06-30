@@ -57,12 +57,28 @@ function UpdateCardForm({ onSuccess, onCancel, retry }: { onSuccess: (charged: b
       });
       if (!updateRes.ok) throw new Error("Failed to set card as default");
 
-      const result = await updateRes.json() as { success: boolean; charged?: boolean; chargeError?: string };
-      if (retry && result.charged === false) {
-        throw new Error(result.chargeError ?? "Payment declined. Please try a different card.");
+      const result = await updateRes.json() as {
+        success: boolean;
+        charged?: boolean;
+        chargeError?: string;
+        requiresAction?: boolean;
+        clientSecret?: string;
+      };
+
+      // Only surface a charge error when one is explicitly returned — charged:false with no
+      // chargeError means the invoice was already paid or there was nothing open to retry.
+      if (result.chargeError) {
+        throw new Error(result.chargeError);
       }
 
-      onSuccess(result.charged ?? false);
+      // 3DS authentication required — complete the challenge in the browser then confirm
+      if (result.requiresAction && result.clientSecret) {
+        const { error: actionError, paymentIntent } = await stripe.handleCardAction(result.clientSecret);
+        if (actionError) throw new Error(actionError.message);
+        if (paymentIntent?.status !== "succeeded") throw new Error("Payment authentication failed. Please try again.");
+      }
+
+      onSuccess(result.requiresAction ? true : (result.charged ?? false));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -210,7 +226,7 @@ export default function BillingSection({ tier, retryOnSave }: { tier: Tier; retr
 
       {saved && (
         <p style={{ color: "#00ff88", fontSize: 13, margin: "12px 0 0" }}>
-          {chargeSuccess ? "Payment successful — your access has been restored." : "Card updated successfully."}
+          {chargeSuccess ? "Payment successful — your access is restoring. Refresh in a moment." : "Card updated successfully."}
         </p>
       )}
 

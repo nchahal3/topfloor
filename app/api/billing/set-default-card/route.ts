@@ -49,7 +49,13 @@ export async function PATCH(request: Request) {
       try {
         const invoice = await stripe.invoices.retrieve(latestInvoiceId);
         if (invoice.status === "open") {
-          await stripe.invoices.pay(latestInvoiceId, { payment_method: paymentMethodId });
+          const paid = await stripe.invoices.pay(latestInvoiceId, { payment_method: paymentMethodId });
+          // If the invoice's payment intent requires 3DS, return the client_secret so
+          // the browser can present the authentication challenge.
+          const pi = paid.payment_intent;
+          if (pi && typeof pi === "object" && pi.status === "requires_action") {
+            return NextResponse.json({ success: true, charged: false, requiresAction: true, clientSecret: pi.client_secret });
+          }
           return NextResponse.json({ success: true, charged: true });
         }
       } catch (err) {

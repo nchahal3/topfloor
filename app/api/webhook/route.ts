@@ -240,9 +240,21 @@ export async function POST(request: Request) {
     const revokeAccess = async (userId: string) => {
       const user = await client.users.getUser(userId);
       if (user.publicMetadata?.tier === "lifetime") return; // don't revoke lifetime
-      await client.users.updateUserMetadata(userId, { publicMetadata: { tier: null, cancelAt: null } });
+      // Clear all payment-failure state so billing page doesn't show stale recovery UI
+      await client.users.updateUserMetadata(userId, {
+        publicMetadata: {
+          tier: null,
+          cancelAt: null,
+          suspendedTier: null,
+          gracePeriodEnd: null,
+          discordUserId: null,
+          discordUsername: null,
+        },
+      });
       const discordUserId = user.publicMetadata?.discordUserId as string | undefined;
       await revokeProRole(discordUserId);
+      // Remove from grace_periods so cron doesn't try to re-process a cancelled subscription
+      await supabaseAdmin.from("grace_periods").delete().eq("clerk_user_id", userId);
     };
     if (clerkUserId) {
       try {
