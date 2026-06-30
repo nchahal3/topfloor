@@ -17,11 +17,11 @@ export default function Hero() {
       </div>
 
       {/* readability scrims */}
-      <div className="pointer-events-none absolute inset-0 bg-black/60" />
+      <div className="pointer-events-none absolute inset-0 bg-black/65" />
       {/* mobile: charts top & bottom, dim them and keep the middle clear */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/90 via-black/35 to-black/90 md:hidden" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/95 via-black/40 to-black/95 md:hidden" />
       {/* desktop: chart lives on the right, so darken the left for the copy */}
-      <div className="pointer-events-none absolute inset-0 hidden bg-gradient-to-r from-black/100 via-black/65 to-transparent md:block" />
+      <div className="pointer-events-none absolute inset-0 hidden bg-gradient-to-r from-black/95 via-black/70 to-transparent md:block" />
 
       {/* overlay copy */}
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl items-center px-6">
