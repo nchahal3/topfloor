@@ -13,13 +13,15 @@ const GRACE_SECONDS = 24 * 60 * 60;
  */
 export async function scheduleGraceRevoke(clerkUserId: string): Promise<void> {
   const token = process.env.QSTASH_TOKEN;
-  const baseUrl = process.env.NEXT_PUBLIC_URL;
-  if (!token || !baseUrl) return;
+  const appUrl = process.env.NEXT_PUBLIC_URL;
+  if (!token || !appUrl) return;
 
   try {
-    const qstash = new Client({ token });
+    // QSTASH_URL is region-specific (e.g. https://qstash-eu-central-1.upstash.io).
+    // Falls back to the SDK default if unset.
+    const qstash = new Client({ token, baseUrl: process.env.QSTASH_URL });
     await qstash.publishJSON({
-      url: `${baseUrl}/api/revoke-access`,
+      url: `${appUrl}/api/revoke-access`,
       body: { clerkUserId },
       delay: GRACE_SECONDS,
     });
