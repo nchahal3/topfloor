@@ -50,6 +50,12 @@ export async function POST(request: Request) {
     const session = event.data.object as Stripe.Checkout.Session;
     const customerEmail = session.customer_details?.email ?? "Unknown";
     const customerName = session.customer_details?.name ?? "New Member";
+
+    // If this email was previously deleted by an admin, clear the blocklist so they
+    // reappear in the admin list now that they've signed up again.
+    if (customerEmail !== "Unknown") {
+      await supabaseAdmin.from("deleted_members").delete().eq("email", customerEmail.toLowerCase());
+    }
     const customerPhone = session.customer_details?.phone ?? "Not provided";
     const discordUsername =
       session.custom_fields?.find((f) => f.key === "discord_username")?.text?.value ?? "Not provided";

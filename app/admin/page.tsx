@@ -5,6 +5,7 @@ import LoginForm from "./LoginForm";
 import AdminDashboard from "@/components/admin/AdminDashboard";
 import type { Member } from "@/components/admin/MembersTab";
 import { getAdminToken } from "@/lib/admin-auth";
+import { supabaseAdmin } from "@/lib/supabase";
 
 // Maps Clerk tier → display name (used when admin manually changes a member's tier)
 const TIER_PLAN_NAMES: Record<string, string> = {
@@ -27,6 +28,12 @@ const PLAN_NAMES: Record<string, string> = {
 
 async function getMembers(): Promise<Member[]> {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+  // Members deleted by an admin — filtered out below. The list is built from immutable
+  // Stripe checkout sessions, so this blocklist is what keeps a deleted member from
+  // reappearing on reload. Re-subscribing clears their entry (see the checkout webhook).
+  const { data: deletedRows } = await supabaseAdmin.from("deleted_members").select("email");
+  const deletedEmails = new Set((deletedRows ?? []).map((r) => (r.email as string).toLowerCase()));
 
   // Fetch all Clerk users first so we can cross-reference current tier for every member
   const clerk = await clerkClient();
@@ -148,7 +155,7 @@ async function getMembers(): Promise<Member[]> {
   // Add free Clerk users (signed up but never paid)
   const paidEmails = new Set(members.map((m) => m.email.toLowerCase()));
   for (const [email, data] of clerkByEmail) {
-    if (!email || paidEmails.has(email)) continue;
+    if (!email || paidEmails.has(email) || deletedEmails.has(email)) continue;
     members.push({
       id: data.clerkUserId,
       clerkUserId: data.clerkUserId,
@@ -165,7 +172,7 @@ async function getMembers(): Promise<Member[]> {
     });
   }
 
-  return members;
+  return members.filter((m) => !deletedEmails.has(m.email.toLowerCase()));
 }
 
 export default async function AdminPage() {

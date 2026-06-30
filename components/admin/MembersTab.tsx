@@ -454,27 +454,11 @@ export default function MembersTab({ members, onDelete }: { members: Member[]; o
 
             {/* Delete user */}
             {!deletedEmails.has(selectedMember.email) && (() => {
-              const hasActiveSub = (
-                !cancelledIds.has(selectedMember.id) &&
-                selectedMember.status !== "canceled" &&
-                selectedMember.status !== "free" &&
-                selectedMember.status !== "lifetime" &&
-                !!selectedMember.subscriptionId
-              );
               return (
-                <div style={{ marginBottom: 20, padding: "14px 16px", borderRadius: 12, background: "rgba(255,68,68,0.03)", border: `1px solid ${hasActiveSub ? "rgba(255,165,0,0.2)" : "rgba(255,68,68,0.1)"}` }}>
+                <div style={{ marginBottom: 20, padding: "14px 16px", borderRadius: 12, background: "rgba(255,68,68,0.03)", border: "1px solid rgba(255,68,68,0.1)" }}>
                   <p style={{ color: "#ff4444", fontWeight: 700, fontSize: 13, margin: "0 0 4px" }}>Delete Account</p>
-                  <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, margin: "0 0 12px" }}>Permanently removes this user from Clerk. This cannot be undone.</p>
-                  {hasActiveSub ? (
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <button type="button" disabled style={{ padding: "7px 16px", borderRadius: 8, background: "transparent", border: "1px solid rgba(255,68,68,0.15)", color: "rgba(255,68,68,0.3)", fontSize: 12, fontWeight: 700, cursor: "not-allowed" }}>
-                        Delete User
-                      </button>
-                      <p style={{ color: "#ffa500", fontSize: 12, margin: 0 }}>
-                        ⚠ Cancel their subscription first
-                      </p>
-                    </div>
-                  ) : deleteConfirm === 0 ? (
+                  <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, margin: "0 0 12px" }}>Cancels their Stripe subscription, deletes their account, and removes them from this list. This cannot be undone.</p>
+                  {deleteConfirm === 0 ? (
                     <button type="button" onClick={() => setDeleteConfirm(1)} style={{ padding: "7px 16px", borderRadius: 8, background: "transparent", border: "1px solid rgba(255,68,68,0.35)", color: "#ff4444", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
                       Delete User
                     </button>
