@@ -61,6 +61,11 @@ export default async function BillingPage() {
           </div>
         ) : (
           <>
+            {isRecovery && (
+              <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 13, marginBottom: 20, lineHeight: 1.6 }}>
+                Update your card below and we&apos;ll automatically attempt to charge it and restore your access immediately.
+              </p>
+            )}
             {displayTier && <BillingSection tier={displayTier} retryOnSave={isRecovery} />}
             {isMonthly && <ChangePlanSection currentTier={displayTier} />}
             {isMonthly && <CancelMembershipButton cancelAt={cancelAt} />}
