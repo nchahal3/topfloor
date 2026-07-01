@@ -25,6 +25,18 @@ const PLAN_NAMES: Record<string, string> = {
 
 // Receipt / payment-confirmation email body. Used for new plan purchases, monthly
 // renewals, lifetime one-time payments, and recovery after a failed payment.
+// Stripe dahlia API (v22+) removed the top-level invoice.subscription field and moved it to
+// invoice.parent.subscription_details.subscription. Read the new location, fall back to the old.
+function getInvoiceSubscriptionId(invoice: Stripe.Invoice & { subscription?: string }): string | null {
+  const parent = (invoice as unknown as {
+    parent?: { subscription_details?: { subscription?: string | { id?: string } } };
+  }).parent;
+  const fromParent = parent?.subscription_details?.subscription;
+  if (typeof fromParent === "string") return fromParent;
+  if (fromParent && typeof fromParent === "object" && fromParent.id) return fromParent.id;
+  return typeof invoice.subscription === "string" ? invoice.subscription : null;
+}
+
 function paymentReceiptHtml(opts: {
   name: string;
   planName: string;
@@ -394,7 +406,7 @@ export async function POST(request: Request) {
     // Give member 24 hours before revoking access - cron job fires the actual lock
     let gracedClerkId: string | null = null;
     try {
-      const subId = typeof invoice.subscription === "string" ? invoice.subscription : null;
+      const subId = getInvoiceSubscriptionId(invoice);
       if (subId) {
         const sub = await stripe.subscriptions.retrieve(subId);
         gracedClerkId = sub.metadata?.clerkUserId ?? null;
@@ -483,16 +495,17 @@ export async function POST(request: Request) {
   if (event.type === "invoice.paid") {
     const invoice = event.data.object as Stripe.Invoice & { customer_email?: string; customer_name?: string; billing_reason?: string; subscription?: string };
     // Restore for any paid invoice on a subscription (cycle, update, or manual retry)
+    const subscriptionId = getInvoiceSubscriptionId(invoice);
     const isSubscriptionPayment = invoice.billing_reason === "subscription_cycle"
       || invoice.billing_reason === "subscription_create"
       || invoice.billing_reason === "subscription_update"
       || invoice.billing_reason === "subscription_threshold"
-      || (typeof invoice.subscription === "string" && !!invoice.subscription);
+      || !!subscriptionId;
     if (isSubscriptionPayment) {
       let restoredClerkId: string | null = null;
       let wasRecovery = false;
       try {
-        const subId = typeof invoice.subscription === "string" ? invoice.subscription : null;
+        const subId = subscriptionId;
         if (subId) {
           const sub = await stripe.subscriptions.retrieve(subId);
           restoredClerkId = sub.metadata?.clerkUserId ?? null;
