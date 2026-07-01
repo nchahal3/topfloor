@@ -62,19 +62,22 @@ export async function PATCH(request: Request) {
           }
         }
 
-        // PI is in a payable state — attempt the charge now.
+        // PI is canceled or in a state we can't directly confirm — attempt the charge without
+        // specifying payment_method so Stripe uses the default (already set above) and creates
+        // a fresh PI if the old one was canceled.
         try {
-          await stripe.invoices.pay(latestInvoiceId, { payment_method: paymentMethodId });
+          await stripe.invoices.pay(latestInvoiceId);
           return NextResponse.json({ success: true, charged: true });
         } catch (err) {
           if (err instanceof Stripe.errors.StripeError) {
-            // After invoices.pay() throws, re-fetch the PI to get its updated state.
+            // After invoices.pay() throws, re-fetch the invoice to get the new PI.
             try {
-              const freshPiId = (invoice as unknown as { payment_intent?: string | null }).payment_intent;
-              if (freshPiId) {
-                const freshPi = await stripe.paymentIntents.retrieve(freshPiId);
-                if (freshPi.client_secret && (freshPi.status === "requires_action" || freshPi.status === "requires_payment_method")) {
-                  return NextResponse.json({ success: true, charged: false, requiresAction: true, clientSecret: freshPi.client_secret });
+              const refreshedInvoice = await stripe.invoices.retrieve(latestInvoiceId);
+              const newPiId = (refreshedInvoice as unknown as { payment_intent?: string | null }).payment_intent;
+              if (newPiId) {
+                const newPi = await stripe.paymentIntents.retrieve(newPiId);
+                if (newPi.client_secret && (newPi.status === "requires_action" || newPi.status === "requires_payment_method")) {
+                  return NextResponse.json({ success: true, charged: false, requiresAction: true, clientSecret: newPi.client_secret });
                 }
               }
             } catch { /* fall through */ }
