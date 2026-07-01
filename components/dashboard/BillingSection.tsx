@@ -71,10 +71,17 @@ function UpdateCardForm({ onSuccess, onCancel, retry }: { onSuccess: (charged: b
         throw new Error(result.chargeError);
       }
 
-      // 3DS authentication required - confirmCardPayment handles both the 3DS popup
-      // and the final charge in one call, returning status: 'succeeded' when done.
+      // 3DS authentication required. After an off-session renewal failure the PI is in
+      // requires_payment_method state, so we must pass the payment_method explicitly.
+      // confirmCardPayment handles 3DS + charge in one call and returns status: 'succeeded'.
       if (result.requiresAction && result.clientSecret) {
-        const { error: actionError, paymentIntent } = await stripe.confirmCardPayment(result.clientSecret);
+        const pmId = typeof setupIntent.payment_method === "string"
+          ? setupIntent.payment_method
+          : setupIntent.payment_method?.id;
+        const { error: actionError, paymentIntent } = await stripe.confirmCardPayment(
+          result.clientSecret,
+          pmId ? { payment_method: pmId } : undefined,
+        );
         if (actionError) throw new Error(actionError.message);
         if (paymentIntent?.status !== "succeeded") throw new Error("Payment authentication failed. Please try again.");
       }

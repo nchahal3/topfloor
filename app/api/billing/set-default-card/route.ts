@@ -56,9 +56,10 @@ export async function PATCH(request: Request) {
         const piField = (invoice as unknown as InvoiceWithPi).payment_intent;
         const piObj = piField && typeof piField === "object" ? (piField as Stripe.PaymentIntent) : null;
 
-        // PaymentIntent already in requires_action (off-session charge failed, awaiting 3DS).
-        // Return the client_secret so the frontend can present the challenge without re-charging.
-        if (piObj?.status === "requires_action" && piObj.client_secret) {
+        // After an off-session renewal fails with authentication_required, Stripe puts the PI
+        // into requires_payment_method (not requires_action). Both states mean the customer
+        // must complete 3DS on-session - return the client_secret so the frontend handles it.
+        if (piObj?.client_secret && (piObj.status === "requires_action" || piObj.status === "requires_payment_method")) {
           return NextResponse.json({ success: true, charged: false, requiresAction: true, clientSecret: piObj.client_secret });
         }
 
@@ -73,7 +74,7 @@ export async function PATCH(request: Request) {
               const refreshed = await stripe.invoices.retrieve(latestInvoiceId, { expand: ["payment_intent"] });
               const rPi = (refreshed as unknown as InvoiceWithPi).payment_intent;
               const rPiObj = rPi && typeof rPi === "object" ? (rPi as Stripe.PaymentIntent) : null;
-              if (rPiObj?.status === "requires_action" && rPiObj.client_secret) {
+              if (rPiObj?.client_secret && (rPiObj.status === "requires_action" || rPiObj.status === "requires_payment_method")) {
                 return NextResponse.json({ success: true, charged: false, requiresAction: true, clientSecret: rPiObj.client_secret });
               }
             } catch { /* fall through */ }
