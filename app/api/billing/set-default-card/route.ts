@@ -49,38 +49,37 @@ export async function PATCH(request: Request) {
       const invoice = await stripe.invoices.retrieve(latestInvoiceId);
 
       if (invoice.status === "open") {
-        // invoice.payment_intent is a string ID in Stripe v22 types — retrieve it directly.
-        const piId = (invoice as unknown as { payment_intent?: string | null }).payment_intent;
+        // Stripe dahlia API (v22+) removed payment_intent from Invoice. The PaymentIntent is
+        // now accessed via the invoicePayments sub-resource.
+        const pi = await getOpenPaymentIntent(stripe, latestInvoiceId);
 
-        if (piId) {
-          const pi = await stripe.paymentIntents.retrieve(piId);
-          // After an off-session renewal fails with authentication_required, Stripe puts the PI
-          // into requires_payment_method. requires_action means a previous on-session attempt
-          // also needs 3DS. Both need the customer to complete a challenge in-browser.
-          if (pi.client_secret && (pi.status === "requires_action" || pi.status === "requires_payment_method")) {
-            return NextResponse.json({ success: true, charged: false, requiresAction: true, clientSecret: pi.client_secret });
-          }
+        // PI is waiting for 3DS or needs a payment method confirmed on-session.
+        if (pi?.client_secret && (pi.status === "requires_action" || pi.status === "requires_payment_method")) {
+          return NextResponse.json({ success: true, charged: false, requiresAction: true, clientSecret: pi.client_secret });
         }
 
-        // PI is canceled or in a state we can't directly confirm — attempt the charge without
-        // specifying payment_method so Stripe uses the default (already set above) and creates
-        // a fresh PI if the old one was canceled.
+        // PI is in a payable or canceled state — attempt charge with off_session:false so
+        // Stripe can present a 3DS challenge if the new card requires it.
         try {
-          await stripe.invoices.pay(latestInvoiceId);
+          await stripe.invoices.pay(latestInvoiceId, {
+            payment_method: paymentMethodId,
+            off_session: false,
+          });
           return NextResponse.json({ success: true, charged: true });
         } catch (err) {
           if (err instanceof Stripe.errors.StripeError) {
-            // After invoices.pay() throws, re-fetch the invoice to get the new PI.
-            try {
-              const refreshedInvoice = await stripe.invoices.retrieve(latestInvoiceId);
-              const newPiId = (refreshedInvoice as unknown as { payment_intent?: string | null }).payment_intent;
-              if (newPiId) {
-                const newPi = await stripe.paymentIntents.retrieve(newPiId);
-                if (newPi.client_secret && (newPi.status === "requires_action" || newPi.status === "requires_payment_method")) {
-                  return NextResponse.json({ success: true, charged: false, requiresAction: true, clientSecret: newPi.client_secret });
-                }
+            // err.payment_intent is set by Stripe when the error is requires_action
+            if (err.payment_intent) {
+              const errPi = err.payment_intent as Stripe.PaymentIntent;
+              if (errPi.client_secret && (errPi.status === "requires_action" || errPi.status === "requires_payment_method")) {
+                return NextResponse.json({ success: true, charged: false, requiresAction: true, clientSecret: errPi.client_secret });
               }
-            } catch { /* fall through */ }
+            }
+            // Re-fetch via invoicePayments to get the updated PI state after the attempt.
+            const refreshedPi = await getOpenPaymentIntent(stripe, latestInvoiceId);
+            if (refreshedPi?.client_secret && (refreshedPi.status === "requires_action" || refreshedPi.status === "requires_payment_method")) {
+              return NextResponse.json({ success: true, charged: false, requiresAction: true, clientSecret: refreshedPi.client_secret });
+            }
             return NextResponse.json({ success: true, charged: false, chargeError: err.message });
           }
           return NextResponse.json({ success: true, charged: false, chargeError: "Payment declined. Please try a different card." });
@@ -90,4 +89,22 @@ export async function PATCH(request: Request) {
   }
 
   return NextResponse.json({ success: true, charged: false });
+}
+
+async function getOpenPaymentIntent(stripe: Stripe, invoiceId: string): Promise<Stripe.PaymentIntent | null> {
+  try {
+    const ipList = await stripe.invoicePayments.list({
+      invoice: invoiceId,
+      status: "open",
+      expand: ["data.payment.payment_intent"],
+    });
+    const ipPayment = ipList.data[0]?.payment;
+    if (ipPayment?.type !== "payment_intent" || !ipPayment.payment_intent) return null;
+    if (typeof ipPayment.payment_intent === "string") {
+      return await stripe.paymentIntents.retrieve(ipPayment.payment_intent);
+    }
+    return ipPayment.payment_intent as Stripe.PaymentIntent;
+  } catch {
+    return null;
+  }
 }
