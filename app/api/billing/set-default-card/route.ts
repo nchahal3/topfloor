@@ -46,37 +46,41 @@ export async function PATCH(request: Request) {
       : (sub.latest_invoice as Stripe.Invoice | null)?.id ?? null;
 
     if (latestInvoiceId) {
-      try {
-        const invoice = await stripe.invoices.retrieve(latestInvoiceId);
-        if (invoice.status === "open") {
+      // Always expand the PaymentIntent so we can inspect its status directly.
+      const invoice = await stripe.invoices.retrieve(latestInvoiceId, {
+        expand: ["payment_intent"],
+      });
+
+      if (invoice.status === "open") {
+        type InvoiceWithPi = { payment_intent?: Stripe.PaymentIntent | string | null };
+        const piField = (invoice as unknown as InvoiceWithPi).payment_intent;
+        const piObj = piField && typeof piField === "object" ? (piField as Stripe.PaymentIntent) : null;
+
+        // PaymentIntent already in requires_action (off-session charge failed, awaiting 3DS).
+        // Return the client_secret so the frontend can present the challenge without re-charging.
+        if (piObj?.status === "requires_action" && piObj.client_secret) {
+          return NextResponse.json({ success: true, charged: false, requiresAction: true, clientSecret: piObj.client_secret });
+        }
+
+        // PI is in a payable state - attempt the charge now.
+        try {
           await stripe.invoices.pay(latestInvoiceId, { payment_method: paymentMethodId });
           return NextResponse.json({ success: true, charged: true });
-        }
-      } catch (err) {
-        if (err instanceof Stripe.errors.StripeError) {
-          // For invoice_payment_intent_requires_action, Stripe does NOT attach the PaymentIntent
-          // to the error - we must expand the invoice to get the client_secret.
-          if (err.code === "invoice_payment_intent_requires_action") {
+        } catch (err) {
+          if (err instanceof Stripe.errors.StripeError) {
+            // Re-fetch invoice to get the PI state after the pay attempt.
             try {
-              const fullInvoice = await stripe.invoices.retrieve(latestInvoiceId, {
-                expand: ["payment_intent"],
-              });
-              const invoicePi = (fullInvoice as unknown as { payment_intent?: Stripe.PaymentIntent | null }).payment_intent ?? null;
-              if (invoicePi?.client_secret) {
-                return NextResponse.json({ success: true, charged: false, requiresAction: true, clientSecret: invoicePi.client_secret });
+              const refreshed = await stripe.invoices.retrieve(latestInvoiceId, { expand: ["payment_intent"] });
+              const rPi = (refreshed as unknown as InvoiceWithPi).payment_intent;
+              const rPiObj = rPi && typeof rPi === "object" ? (rPi as Stripe.PaymentIntent) : null;
+              if (rPiObj?.status === "requires_action" && rPiObj.client_secret) {
+                return NextResponse.json({ success: true, charged: false, requiresAction: true, clientSecret: rPiObj.client_secret });
               }
-            } catch {
-              // fall through to generic error below
-            }
+            } catch { /* fall through */ }
+            return NextResponse.json({ success: true, charged: false, chargeError: err.message });
           }
-          // Fallback: PaymentIntent attached directly on the error (card_declined / other codes)
-          const pi = err.payment_intent;
-          if (pi?.client_secret && pi.status === "requires_action") {
-            return NextResponse.json({ success: true, charged: false, requiresAction: true, clientSecret: pi.client_secret });
-          }
-          return NextResponse.json({ success: true, charged: false, chargeError: err.message });
+          return NextResponse.json({ success: true, charged: false, chargeError: "Payment declined. Please try a different card." });
         }
-        return NextResponse.json({ success: true, charged: false, chargeError: "Payment declined. Please try a different card." });
       }
     }
   }
