@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import IntroVideo from "@/components/IntroVideo";
 
 export default function About() {
   return (
@@ -11,24 +12,8 @@ export default function About() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col-reverse items-stretch gap-10 lg:grid lg:grid-cols-2 lg:items-start lg:gap-16">
-          {/* Intro video — 4:5 framed card */}
-          <div className="lg:sticky lg:top-32 lg:self-start">
-            <div
-              className="relative aspect-[4/5] w-full overflow-hidden rounded-3xl border shadow-2xl shadow-black/50"
-              style={{ borderColor: "rgba(0,255,136,0.25)" }}
-            >
-              <video
-                src="/about-cards/intro.mp4"
-                poster="/about-cards/intro-poster.jpg"
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-            </div>
-          </div>
+          {/* Intro video — 4:5 framed card with play-with-sound button */}
+          <IntroVideo />
 
           {/* Bio content — pinned while the card flips */}
           <motion.div
