@@ -54,8 +54,23 @@ export async function PATCH(request: Request) {
         }
       } catch (err) {
         if (err instanceof Stripe.errors.StripeError) {
-          // In Stripe v22, 3DS throws a StripeError with payment_intent.client_secret attached
-          const pi = (err as { payment_intent?: { client_secret: string | null; status: string } }).payment_intent;
+          // For invoice_payment_intent_requires_action, Stripe does NOT attach the PaymentIntent
+          // to the error - we must expand the invoice to get the client_secret.
+          if (err.code === "invoice_payment_intent_requires_action") {
+            try {
+              const fullInvoice = await stripe.invoices.retrieve(latestInvoiceId, {
+                expand: ["payment_intent"],
+              });
+              const invoicePi = fullInvoice.payment_intent as Stripe.PaymentIntent | null;
+              if (invoicePi?.client_secret) {
+                return NextResponse.json({ success: true, charged: false, requiresAction: true, clientSecret: invoicePi.client_secret });
+              }
+            } catch {
+              // fall through to generic error below
+            }
+          }
+          // Fallback: PaymentIntent attached directly on the error (card_declined / other codes)
+          const pi = err.payment_intent;
           if (pi?.client_secret && pi.status === "requires_action") {
             return NextResponse.json({ success: true, charged: false, requiresAction: true, clientSecret: pi.client_secret });
           }
