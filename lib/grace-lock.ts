@@ -58,7 +58,7 @@ export async function lockUser(clerkUserId: string): Promise<"locked" | "skipped
 
   if (memberEmail) {
     const resend = new Resend(process.env.RESEND_API_KEY);
-    await resend.emails.send({
+    await Promise.all([resend.emails.send({
       from: "TopFloor <noreply@topfloortradesofficial.com>",
       to: memberEmail,
       subject: "Your TopFloor access has been paused",
@@ -77,7 +77,24 @@ export async function lockUser(clerkUserId: string): Promise<"locked" | "skipped
           <p style="color:#444;font-size:11px;">Trading involves significant risk. Past performance is not indicative of future results.</p>
         </div>
       `,
-    }).catch(() => {});
+    }),
+    resend.emails.send({
+      from: "TopFloor <noreply@topfloortradesofficial.com>",
+      to: process.env.COACH_EMAIL!,
+      subject: `🔒 Member Access Locked — ${memberName}`,
+      html: `
+        <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
+          <h2 style="color:#ff4444;margin-top:0;">Member Access Locked</h2>
+          <table style="width:100%;border-collapse:collapse;">
+            <tr><td style="padding:8px 0;color:#999;width:100px;">Name</td><td style="padding:8px 0;font-weight:bold;">${memberName}</td></tr>
+            <tr><td style="padding:8px 0;color:#999;">Email</td><td style="padding:8px 0;"><a href="mailto:${memberEmail}" style="color:#00ff88;">${memberEmail}</a></td></tr>
+            <tr><td style="padding:8px 0;color:#999;">Plan</td><td style="padding:8px 0;color:#ffa500;">${planLabel}</td></tr>
+            <tr><td style="padding:8px 0;color:#999;">Status</td><td style="padding:8px 0;color:#ff4444;">Access removed — grace period expired</td></tr>
+          </table>
+        </div>
+      `,
+    }),
+    ]).catch(() => {});
   }
 
   return "locked";
