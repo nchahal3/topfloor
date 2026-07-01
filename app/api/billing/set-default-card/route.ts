@@ -51,11 +51,14 @@ export async function PATCH(request: Request) {
         expand: ["payment_intent"],
       });
 
-      if (invoice.status === "open") {
-        type InvoiceWithPi = { payment_intent?: Stripe.PaymentIntent | string | null };
-        const piField = (invoice as unknown as InvoiceWithPi).payment_intent;
-        const piObj = piField && typeof piField === "object" ? (piField as Stripe.PaymentIntent) : null;
+      type InvoiceWithPi = { payment_intent?: Stripe.PaymentIntent | string | null };
+      const piField = (invoice as unknown as InvoiceWithPi).payment_intent;
+      const piObj = piField && typeof piField === "object" ? (piField as Stripe.PaymentIntent) : null;
 
+      // DEBUG - remove after diagnosis
+      console.log("[set-default-card] invoiceStatus:", invoice.status, "piFieldType:", typeof piField, "piStatus:", piObj?.status, "hasClientSecret:", !!piObj?.client_secret);
+
+      if (invoice.status === "open") {
         // After an off-session renewal fails with authentication_required, Stripe puts the PI
         // into requires_payment_method (not requires_action). Both states mean the customer
         // must complete 3DS on-session - return the client_secret so the frontend handles it.
@@ -74,15 +77,20 @@ export async function PATCH(request: Request) {
               const refreshed = await stripe.invoices.retrieve(latestInvoiceId, { expand: ["payment_intent"] });
               const rPi = (refreshed as unknown as InvoiceWithPi).payment_intent;
               const rPiObj = rPi && typeof rPi === "object" ? (rPi as Stripe.PaymentIntent) : null;
+              console.log("[set-default-card] post-pay refresh piStatus:", rPiObj?.status);
               if (rPiObj?.client_secret && (rPiObj.status === "requires_action" || rPiObj.status === "requires_payment_method")) {
                 return NextResponse.json({ success: true, charged: false, requiresAction: true, clientSecret: rPiObj.client_secret });
               }
             } catch { /* fall through */ }
-            return NextResponse.json({ success: true, charged: false, chargeError: err.message });
+            // DEBUG: include actual error code in response so we can see it
+            return NextResponse.json({ success: true, charged: false, chargeError: `[${(err as Stripe.errors.StripeError).code}] ${err.message}` });
           }
           return NextResponse.json({ success: true, charged: false, chargeError: "Payment declined. Please try a different card." });
         }
       }
+
+      // DEBUG: invoice not open
+      return NextResponse.json({ success: true, charged: false, chargeError: `[DEBUG] invoice.status=${invoice.status} piType=${typeof piField} piStatus=${piObj?.status ?? "null"}` });
     }
   }
 
