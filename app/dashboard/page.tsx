@@ -59,6 +59,46 @@ export default async function DashboardPage() {
         </p>
       </div>
 
+      {/* Lifetime upsell - monthly members only */}
+      {effectiveTier && effectiveTier !== "lifetime" && !gracePeriodEnd && !cancelAt && (
+        <Link
+          href="/dashboard/billing"
+          style={{
+            display: "block",
+            textDecoration: "none",
+            marginBottom: 24,
+            padding: "20px 24px",
+            borderRadius: 16,
+            background: "linear-gradient(135deg, rgba(240,192,64,0.07) 0%, rgba(240,192,64,0.03) 100%)",
+            border: "1px solid rgba(240,192,64,0.25)",
+            transition: "border-color 0.2s",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+            <div>
+              <p style={{ color: "#f0c040", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 6px" }}>
+                ♾ LIFETIME ACCESS
+              </p>
+              <p style={{ color: "#f5f5f5", fontSize: 16, fontWeight: 700, margin: "0 0 4px" }}>
+                One payment. Never pay again.
+              </p>
+              <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, margin: 0 }}>
+                Lock in permanent access to everything - $2,000 one-time, no renewals.
+              </p>
+            </div>
+            <span style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              background: "#f0c040", color: "#000",
+              fontWeight: 700, fontSize: 13,
+              padding: "9px 20px", borderRadius: 999,
+              whiteSpace: "nowrap",
+            }}>
+              Upgrade to Lifetime <ArrowRight size={13} />
+            </span>
+          </div>
+        </Link>
+      )}
+
       {/* Plan status */}
       <div
         style={{
@@ -195,46 +235,6 @@ export default async function DashboardPage() {
             </span>
           </div>
         </div>
-      )}
-
-      {/* Lifetime upsell - monthly members only */}
-      {effectiveTier && effectiveTier !== "lifetime" && !gracePeriodEnd && !cancelAt && (
-        <Link
-          href="/dashboard/billing"
-          style={{
-            display: "block",
-            textDecoration: "none",
-            marginBottom: 24,
-            padding: "20px 24px",
-            borderRadius: 16,
-            background: "linear-gradient(135deg, rgba(240,192,64,0.07) 0%, rgba(240,192,64,0.03) 100%)",
-            border: "1px solid rgba(240,192,64,0.25)",
-            transition: "border-color 0.2s",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
-            <div>
-              <p style={{ color: "#f0c040", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 6px" }}>
-                ♾ LIFETIME ACCESS
-              </p>
-              <p style={{ color: "#f5f5f5", fontSize: 16, fontWeight: 700, margin: "0 0 4px" }}>
-                One payment. Never pay again.
-              </p>
-              <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, margin: 0 }}>
-                Lock in permanent access to everything - $2,000 one-time, no renewals.
-              </p>
-            </div>
-            <span style={{
-              display: "inline-flex", alignItems: "center", gap: 6,
-              background: "#f0c040", color: "#000",
-              fontWeight: 700, fontSize: 13,
-              padding: "9px 20px", borderRadius: 999,
-              whiteSpace: "nowrap",
-            }}>
-              Upgrade to Lifetime <ArrowRight size={13} />
-            </span>
-          </div>
-        </Link>
       )}
 
       {/* Feature grid - 2-col, last card spans full width if count is odd */}
