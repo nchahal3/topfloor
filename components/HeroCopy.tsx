@@ -5,11 +5,11 @@ import { motion, useReducedMotion, type Variants } from "framer-motion";
 import RealismButton from "@/components/ui/shiny-borders-button";
 
 const AVATARS = [
-  "/avatars/avatar-1.jpg",
-  "/avatars/avatar-2.jpg",
-  "/avatars/avatar-3.jpg",
-  "/avatars/avatar-4.jpg",
-  "/avatars/avatar-5.jpg",
+  "/avatars/avatar-1-v2.jpg",
+  "/avatars/avatar-2-v2.jpg",
+  "/avatars/avatar-3-v2.jpg",
+  "/avatars/avatar-4-v2.jpg",
+  "/avatars/avatar-5-v2.jpg",
 ];
 
 export default function HeroCopy() {
