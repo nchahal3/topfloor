@@ -12,7 +12,7 @@ export default function PayNowBanner() {
       flexWrap: "wrap",
     }}>
       <span style={{ color: "#fff", fontWeight: 700, fontSize: 14 }}>
-        ⚠️ Your access is paused — a payment failed on your account.
+        ⚠️ Your access is paused - a payment failed on your account.
       </span>
       <Link
         href="/dashboard/billing"

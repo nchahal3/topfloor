@@ -21,7 +21,7 @@ export default async function BookACallPage() {
           Book a Call
         </h1>
         <p style={{ color: "rgba(255,255,255,0.4)", marginTop: 10, fontSize: 15, maxWidth: 560 }}>
-          Schedule time directly with the TopFloor team. Free intro calls available for all members — subscribers get trade review sessions.
+          Schedule time directly with the TopFloor team. Free intro calls available for all members - subscribers get trade review sessions.
         </p>
       </div>
 
@@ -34,7 +34,7 @@ export default async function BookACallPage() {
             15-min call with the TopFloor team. Learn about the platform and ask any questions.
           </p>
           <span style={{ fontSize: 11, fontWeight: 700, color: "#00ff88", background: "rgba(0,255,136,0.1)", padding: "3px 8px", borderRadius: 5 }}>
-            FREE — All Members
+            FREE - All Members
           </span>
         </div>
 

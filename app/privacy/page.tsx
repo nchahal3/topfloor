@@ -29,10 +29,10 @@ export default function PrivacyPage() {
           <Section title="2. Information We Collect">
             <p>We collect information you provide directly:</p>
             <ul>
-              <li><strong>Account information</strong> — name, email address, and password when you sign up via Clerk.</li>
-              <li><strong>Payment information</strong> — billing details processed securely by Stripe. We never store raw card data.</li>
-              <li><strong>Contact form submissions</strong> — name, email, and message content.</li>
-              <li><strong>Discord username</strong> — provided optionally during checkout to grant server access.</li>
+              <li><strong>Account information</strong> - name, email address, and password when you sign up via Clerk.</li>
+              <li><strong>Payment information</strong> - billing details processed securely by Stripe. We never store raw card data.</li>
+              <li><strong>Contact form submissions</strong> - name, email, and message content.</li>
+              <li><strong>Discord username</strong> - provided optionally during checkout to grant server access.</li>
             </ul>
             <p style={{ marginTop: 12 }}>We also collect automatically:</p>
             <ul>
@@ -55,11 +55,11 @@ export default function PrivacyPage() {
           <Section title="4. Third-Party Services">
             We use the following trusted services which may process your data:
             <ul style={{ marginTop: 12 }}>
-              <li><strong>Clerk</strong> — authentication and user management.</li>
-              <li><strong>Stripe</strong> — payment processing.</li>
-              <li><strong>Resend</strong> — transactional email delivery.</li>
-              <li><strong>Supabase</strong> — database storage.</li>
-              <li><strong>Vercel</strong> — website hosting and infrastructure.</li>
+              <li><strong>Clerk</strong> - authentication and user management.</li>
+              <li><strong>Stripe</strong> - payment processing.</li>
+              <li><strong>Resend</strong> - transactional email delivery.</li>
+              <li><strong>Supabase</strong> - database storage.</li>
+              <li><strong>Vercel</strong> - website hosting and infrastructure.</li>
             </ul>
             Each of these providers has their own privacy policy governing how they handle your data.
           </Section>

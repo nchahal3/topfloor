@@ -62,12 +62,12 @@ export async function lockUser(clerkUserId: string): Promise<"locked" | "skipped
       from: "TopFloor <noreply@topfloortradesofficial.com>",
       to: memberEmail,
       subject: "Your TopFloor access has been paused",
-      text: `Hey ${memberName},\n\nYour TopFloor ${planLabel} membership access has been paused because your payment couldn't be processed.\n\nYou can restore access immediately by updating your payment method:\n${baseUrl}/dashboard/billing\n\nYour membership history is saved — once you update your card, everything is restored instantly.\n\n---\nTrading involves significant risk. Past performance is not indicative of future results.`,
+      text: `Hey ${memberName},\n\nYour TopFloor ${planLabel} membership access has been paused because your payment couldn't be processed.\n\nYou can restore access immediately by updating your payment method:\n${baseUrl}/dashboard/billing\n\nYour membership history is saved - once you update your card, everything is restored instantly.\n\n---\nTrading involves significant risk. Past performance is not indicative of future results.`,
       html: `
         <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;border:1px solid rgba(255,68,68,0.3);">
           <h2 style="color:#ff4444;margin-top:0;">Your access has been paused</h2>
           <p style="color:#aaa;line-height:1.6;">Hey ${memberName}, your TopFloor <strong style="color:#f5f5f5;">${planLabel}</strong> membership has been paused because your payment couldn't be processed within the grace period.</p>
-          <p style="color:#aaa;line-height:1.6;">Your membership history is saved — update your payment method and everything is restored instantly.</p>
+          <p style="color:#aaa;line-height:1.6;">Your membership history is saved - update your payment method and everything is restored instantly.</p>
           <div style="text-align:center;margin:32px 0;">
             <a href="${baseUrl}/dashboard/billing" style="display:inline-block;background:#00ff88;color:#000;font-weight:bold;padding:14px 32px;border-radius:999px;text-decoration:none;font-size:16px;">
               Restore Access Now
@@ -81,7 +81,7 @@ export async function lockUser(clerkUserId: string): Promise<"locked" | "skipped
     resend.emails.send({
       from: "TopFloor <noreply@topfloortradesofficial.com>",
       to: process.env.COACH_EMAIL!,
-      subject: `🔒 Member Access Locked — ${memberName}`,
+      subject: `🔒 Member Access Locked - ${memberName}`,
       html: `
         <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
           <h2 style="color:#ff4444;margin-top:0;">Member Access Locked</h2>
@@ -89,7 +89,7 @@ export async function lockUser(clerkUserId: string): Promise<"locked" | "skipped
             <tr><td style="padding:8px 0;color:#999;width:100px;">Name</td><td style="padding:8px 0;font-weight:bold;">${memberName}</td></tr>
             <tr><td style="padding:8px 0;color:#999;">Email</td><td style="padding:8px 0;"><a href="mailto:${memberEmail}" style="color:#00ff88;">${memberEmail}</a></td></tr>
             <tr><td style="padding:8px 0;color:#999;">Plan</td><td style="padding:8px 0;color:#ffa500;">${planLabel}</td></tr>
-            <tr><td style="padding:8px 0;color:#999;">Status</td><td style="padding:8px 0;color:#ff4444;">Access removed — grace period expired</td></tr>
+            <tr><td style="padding:8px 0;color:#999;">Status</td><td style="padding:8px 0;color:#ff4444;">Access removed - grace period expired</td></tr>
           </table>
         </div>
       `,

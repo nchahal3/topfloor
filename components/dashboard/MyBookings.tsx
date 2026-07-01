@@ -111,7 +111,7 @@ export default function MyBookings() {
           )}
           {b.status === "confirmed" && !b.zoom_link && !isConfirming && (
             <p style={{ color: "rgba(240,192,64,0.5)", fontSize: 11, margin: "10px 0 0" }}>
-              Confirmed — meeting link coming soon.
+              Confirmed - meeting link coming soon.
             </p>
           )}
         </div>

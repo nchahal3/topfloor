@@ -31,7 +31,7 @@ export default function FlipCards({ items }: { items: Item[] }) {
 
   return (
     <>
-      {/* Mobile: horizontal swipe carousel — cards slide to the right with the
+      {/* Mobile: horizontal swipe carousel - cards slide to the right with the
           next one peeking, so the content is obvious and nothing gets skipped. */}
       <div className="lg:hidden">
         <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -70,7 +70,7 @@ export default function FlipCards({ items }: { items: Item[] }) {
         </p>
       </div>
 
-      {/* Desktop: scroll-driven flip — one sticky card that flips while the bio stays pinned. */}
+      {/* Desktop: scroll-driven flip - one sticky card that flips while the bio stays pinned. */}
       <div
         ref={ref}
         className="hidden lg:block"

@@ -42,7 +42,7 @@ export default async function UpcomingClassesPage() {
           Upcoming Classes
         </h1>
         <p style={{ color: "rgba(255,255,255,0.4)", marginTop: 10, fontSize: 15, maxWidth: 560 }}>
-          All sessions run inside the private Discord. Free members can see the schedule — subscribe to join.
+          All sessions run inside the private Discord. Free members can see the schedule - subscribe to join.
         </p>
       </div>
 

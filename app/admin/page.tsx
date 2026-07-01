@@ -54,11 +54,11 @@ async function getMembers(): Promise<Member[]> {
       {
         clerkTier: (u.publicMetadata?.tier as string | null) ?? null,
         clerkUserId: u.id,
-        phone: u.phoneNumbers[0]?.phoneNumber ?? "—",
+        phone: u.phoneNumbers[0]?.phoneNumber ?? "-",
         discord: (u.publicMetadata?.discordUsername as string) ?? null,
         createdAtMs: u.createdAt,
         joinedAt: new Date(u.createdAt).toLocaleDateString("en-CA", { month: "short", day: "numeric", year: "numeric" }),
-        fullName: [u.firstName, u.lastName].filter(Boolean).join(" ") || "—",
+        fullName: [u.firstName, u.lastName].filter(Boolean).join(" ") || "-",
       },
     ])
   );
@@ -112,7 +112,7 @@ async function getMembers(): Promise<Member[]> {
       const planName = PLAN_NAMES[priceId] ?? "Unknown";
 
       const status = sub?.status ?? "paid";
-      let nextPayment = "—";
+      let nextPayment = "-";
       const periodEnd = sub?.current_period_end ?? sub?.items?.data?.[0]?.current_period_end;
       if (periodEnd) {
         const d = new Date(Number(periodEnd) * 1000);
@@ -132,8 +132,8 @@ async function getMembers(): Promise<Member[]> {
     // session for the same email (re-subscribe) survives and shows up.
     if (isStaleDeleted(email, session.created * 1000)) continue;
     const clerkData = clerkByEmail.get(email.toLowerCase());
-    // Always prefer OAuth-verified Clerk username; falls to "—" when disconnected
-    const discord = clerkData?.discord ?? "—";
+    // Always prefer OAuth-verified Clerk username; falls to "-" when disconnected
+    const discord = clerkData?.discord ?? "-";
     const clerkTier = clerkData?.clerkTier ?? null;
     // Use clerkTier as source of truth for plan name (reflects admin tier changes)
     const displayPlan = clerkTier ? (TIER_PLAN_NAMES[clerkTier] ?? planName) : planName;
@@ -152,9 +152,9 @@ async function getMembers(): Promise<Member[]> {
       id: session.id,
       clerkUserId: clerkData?.clerkUserId ?? session.metadata?.clerkUserId ?? null,
       clerkTier,
-      name: session.customer_details?.name ?? "—",
+      name: session.customer_details?.name ?? "-",
       email,
-      phone: session.customer_details?.phone ?? "—",
+      phone: session.customer_details?.phone ?? "-",
       discord,
       plan: displayPlan,
       status: effectiveStatus,
@@ -183,7 +183,7 @@ async function getMembers(): Promise<Member[]> {
       discord: data.discord,
       plan: data.clerkTier ? (data.clerkTier.charAt(0).toUpperCase() + data.clerkTier.slice(1)) : "Free",
       status: data.clerkTier === "lifetime" ? "lifetime" : data.clerkTier ? "active" : "free",
-      nextPayment: "—",
+      nextPayment: "-",
       joinedAt: data.joinedAt,
       subscriptionId: null,
     });

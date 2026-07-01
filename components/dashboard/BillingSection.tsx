@@ -65,13 +65,13 @@ function UpdateCardForm({ onSuccess, onCancel, retry }: { onSuccess: (charged: b
         clientSecret?: string;
       };
 
-      // Only surface a charge error when one is explicitly returned — charged:false with no
+      // Only surface a charge error when one is explicitly returned - charged:false with no
       // chargeError means the invoice was already paid or there was nothing open to retry.
       if (result.chargeError) {
         throw new Error(result.chargeError);
       }
 
-      // 3DS authentication required — complete the challenge in the browser then confirm
+      // 3DS authentication required - complete the challenge in the browser then confirm
       if (result.requiresAction && result.clientSecret) {
         const { error: actionError, paymentIntent } = await stripe.handleCardAction(result.clientSecret);
         if (actionError) throw new Error(actionError.message);
@@ -226,7 +226,7 @@ export default function BillingSection({ tier, retryOnSave }: { tier: Tier; retr
 
       {saved && (
         <p style={{ color: "#00ff88", fontSize: 13, margin: "12px 0 0" }}>
-          {chargeSuccess ? "Payment successful — your access is restoring. Refresh in a moment." : "Card updated successfully."}
+          {chargeSuccess ? "Payment successful - your access is restoring. Refresh in a moment." : "Card updated successfully."}
         </p>
       )}
 

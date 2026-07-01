@@ -37,10 +37,10 @@ function paymentReceiptHtml(opts: {
   const dateStr = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
   return `
     <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
-      <h2 style="color:#00ff88;margin-top:0;">${restored ? "Payment received — you're back in 🔝" : "Payment received ✅"}</h2>
+      <h2 style="color:#00ff88;margin-top:0;">${restored ? "Payment received - you're back in 🔝" : "Payment received ✅"}</h2>
       <p style="color:#aaa;line-height:1.6;">Hey ${name}, ${restored
         ? "your payment went through and your 🔝Floor access has been restored."
-        : "thanks for your payment — here's your receipt."}</p>
+        : "thanks for your payment - here's your receipt."}</p>
       <table style="width:100%;border-collapse:collapse;margin:16px 0;">
         <tr><td style="padding:8px 0;color:#999;width:120px;">Plan</td><td style="padding:8px 0;color:#f0c040;font-weight:bold;">${planName}</td></tr>
         <tr><td style="padding:8px 0;color:#999;">Amount</td><td style="padding:8px 0;font-weight:bold;">$${amount} ${currency}</td></tr>
@@ -162,7 +162,7 @@ export async function POST(request: Request) {
         await resend.emails.send({
           from: FROM_EMAIL,
           to: process.env.COACH_EMAIL!,
-          subject: `⚠️ URGENT: Failed to grant dashboard access — ${customerName}`,
+          subject: `⚠️ URGENT: Failed to grant dashboard access - ${customerName}`,
           html: `
             <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#1a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;border:2px solid #ff4444;">
               <h2 style="color:#ff4444;margin-top:0;">⚠️ Access Grant Failed</h2>
@@ -201,7 +201,7 @@ export async function POST(request: Request) {
     await resend.emails.send({
       from: FROM_EMAIL,
       to: process.env.COACH_EMAIL!,
-      subject: `💰 New 🔝Floor Member — ${customerName}`,
+      subject: `💰 New 🔝Floor Member - ${customerName}`,
       html: `
         <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
           <h2 style="color:#00ff88;margin-top:0;">New Member Just Signed Up 🔥</h2>
@@ -224,13 +224,13 @@ export async function POST(request: Request) {
         { name: "Plan", value: planName, inline: true },
         { name: "Email", value: customerEmail, inline: false },
       ],
-      description: "Member notified via welcome email — source: Stripe checkout.session.completed",
+      description: "Member notified via welcome email - source: Stripe checkout.session.completed",
     });
 
     await resend.emails.send({
       from: FROM_EMAIL,
       to: customerEmail,
-      subject: `Welcome to 🔝Floor — You're in.`,
+      subject: `Welcome to 🔝Floor - You're in.`,
       html: `
         <div style="font-family:sans-serif;max-width:540px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
           <h1 style="color:#00ff88;margin-top:0;font-size:28px;">You're officially a 🔝Floor member.</h1>
@@ -242,7 +242,7 @@ export async function POST(request: Request) {
               Go to My Dashboard →
             </a>
           </div>
-          <p style="color:#aaa;line-height:1.6;">Then join the private Discord — that's where live trades, alerts, and coaching sessions happen.</p>
+          <p style="color:#aaa;line-height:1.6;">Then join the private Discord - that's where live trades, alerts, and coaching sessions happen.</p>
           <div style="text-align:center;margin:24px 0;">
             <a href="${DISCORD_INVITE}" style="display:inline-block;background:#5865F2;color:#fff;font-weight:bold;padding:12px 28px;border-radius:999px;text-decoration:none;font-size:15px;">
               Join the Discord →
@@ -255,7 +255,7 @@ export async function POST(request: Request) {
     });
 
     // Lifetime / one-time purchases don't generate a subscription invoice, so invoice.paid
-    // never fires for them — send their receipt here. Monthly plans get theirs from invoice.paid.
+    // never fires for them - send their receipt here. Monthly plans get theirs from invoice.paid.
     if (session.mode === "payment" && session.amount_total != null) {
       await resend.emails.send({
         from: FROM_EMAIL,
@@ -289,7 +289,7 @@ export async function POST(request: Request) {
     const cancelledPriceId = subscription.items?.data[0]?.price?.id ?? "";
     const cancelledPlanName = PLAN_NAMES[cancelledPriceId] ?? "Unknown";
 
-    // Revoke Clerk access — but skip if they've already upgraded to lifetime
+    // Revoke Clerk access - but skip if they've already upgraded to lifetime
     const client = await clerkClient();
     const revokeAccess = async (userId: string) => {
       const user = await client.users.getUser(userId);
@@ -361,7 +361,7 @@ export async function POST(request: Request) {
         resend.emails.send({
           from: FROM_EMAIL,
           to: process.env.COACH_EMAIL!,
-          subject: `❌ Member Cancelled — ${memberName}`,
+          subject: `❌ Member Cancelled - ${memberName}`,
           html: `
             <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
               <h2 style="color:#ff4444;margin-top:0;">Member Cancelled</h2>
@@ -377,7 +377,7 @@ export async function POST(request: Request) {
     }
   }
 
-  // ── Payment failed — start 24-hour grace period ──
+  // ── Payment failed - start 24-hour grace period ──
   if (event.type === "invoice.payment_failed") {
     const invoice = event.data.object as Stripe.Invoice & { customer_email?: string; customer_name?: string; attempt_count?: number; subscription?: string };
     const memberEmail = invoice.customer_email ?? "";
@@ -391,7 +391,7 @@ export async function POST(request: Request) {
       failedPlanName = PLAN_NAMES[priceId] ?? "Unknown";
     } catch {}
 
-    // Give member 24 hours before revoking access — cron job fires the actual lock
+    // Give member 24 hours before revoking access - cron job fires the actual lock
     let gracedClerkId: string | null = null;
     try {
       const subId = typeof invoice.subscription === "string" ? invoice.subscription : null;
@@ -427,7 +427,7 @@ export async function POST(request: Request) {
 
     if (memberEmail) {
       sendDiscordLog({
-        title: "⚠️ Payment Failed — 24h Grace Period Started",
+        title: "⚠️ Payment Failed - 24h Grace Period Started",
         color: 0xffa500,
         fields: [
           { name: "Name", value: memberName, inline: true },
@@ -441,11 +441,11 @@ export async function POST(request: Request) {
         resend.emails.send({
           from: FROM_EMAIL,
           to: memberEmail,
-          subject: "Payment failed — update your card within 24 hours",
+          subject: "Payment failed - update your card within 24 hours",
           text: `Hey ${memberName},\n\nWe couldn't process your TopFloor subscription payment.\n\nYou still have full access for the next 24 hours. Update your payment method before then and nothing changes.\n\nUpdate payment: ${process.env.NEXT_PUBLIC_URL}/dashboard/billing\n\nIf you don't update within 24 hours, your dashboard access and Discord Pro role will be removed automatically.\n\n---\nTrading involves significant risk. Past performance is not indicative of future results.`,
           html: `
             <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;border:1px solid rgba(255,165,0,0.3);">
-              <h2 style="color:#ffa500;margin-top:0;">Payment Failed — Action Required</h2>
+              <h2 style="color:#ffa500;margin-top:0;">Payment Failed - Action Required</h2>
               <p style="color:#aaa;line-height:1.6;">Hey ${memberName}, we couldn't process your 🔝Floor subscription payment.</p>
               <p style="color:#aaa;line-height:1.6;"><strong style="color:#f5f5f5;">You still have full access for the next 24 hours.</strong> Update your payment method before then and nothing changes.</p>
               <div style="text-align:center;margin:32px 0;">
@@ -462,15 +462,15 @@ export async function POST(request: Request) {
         resend.emails.send({
           from: FROM_EMAIL,
           to: process.env.COACH_EMAIL!,
-          subject: `⚠️ Payment Failed — ${memberName} (attempt ${attemptCount}) — 24h Grace Period`,
+          subject: `⚠️ Payment Failed - ${memberName} (attempt ${attemptCount}) - 24h Grace Period`,
           html: `
             <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
-              <h2 style="color:#ffa500;margin-top:0;">Payment Failed — Grace Period Started</h2>
+              <h2 style="color:#ffa500;margin-top:0;">Payment Failed - Grace Period Started</h2>
               <table style="width:100%;border-collapse:collapse;">
                 <tr><td style="padding:8px 0;color:#999;width:100px;">Name</td><td style="padding:8px 0;font-weight:bold;">${memberName}</td></tr>
                 <tr><td style="padding:8px 0;color:#999;">Email</td><td style="padding:8px 0;"><a href="mailto:${memberEmail}" style="color:#00ff88;">${memberEmail}</a></td></tr>
                 <tr><td style="padding:8px 0;color:#999;">Attempt</td><td style="padding:8px 0;color:#ffa500;font-weight:bold;">#${attemptCount}</td></tr>
-                <tr><td style="padding:8px 0;color:#999;">Status</td><td style="padding:8px 0;color:#ffa500;">Access active — auto-revoked in 24h if unresolved</td></tr>
+                <tr><td style="padding:8px 0;color:#999;">Status</td><td style="padding:8px 0;color:#ffa500;">Access active - auto-revoked in 24h if unresolved</td></tr>
               </table>
             </div>
           `,
@@ -479,7 +479,7 @@ export async function POST(request: Request) {
     }
   }
 
-  // ── Payment succeeded — restore access if it was locked ──
+  // ── Payment succeeded - restore access if it was locked ──
   if (event.type === "invoice.paid") {
     const invoice = event.data.object as Stripe.Invoice & { customer_email?: string; customer_name?: string; billing_reason?: string; subscription?: string };
     // Restore for any paid invoice on a subscription (cycle, update, or manual retry)
@@ -509,7 +509,7 @@ export async function POST(request: Request) {
           const gracePeriodEnd = user.publicMetadata?.gracePeriodEnd as string | null;
           wasRecovery = !!(suspendedTier || gracePeriodEnd);
           if (suspendedTier) {
-            // Cron already locked them — restore tier + Discord + clear all flags
+            // Cron already locked them - restore tier + Discord + clear all flags
             await clerk.users.updateUserMetadata(restoredClerkId, {
               publicMetadata: { tier: suspendedTier, suspendedTier: null, gracePeriodEnd: null },
             });
@@ -521,13 +521,13 @@ export async function POST(request: Request) {
               color: 0x00ff88,
               fields: [
                 { name: "Name", value: invoice.customer_name ?? "Member", inline: true },
-                { name: "Email", value: invoice.customer_email ?? "—", inline: true },
+                { name: "Email", value: invoice.customer_email ?? "-", inline: true },
                 { name: "Tier Restored", value: suspendedTier, inline: true },
               ],
-              description: "Payment succeeded — member access has been restored.",
+              description: "Payment succeeded - member access has been restored.",
             });
           } else if (gracePeriodEnd) {
-            // Paid within 24h grace window — tier was never suspended, just clear the flag
+            // Paid within 24h grace window - tier was never suspended, just clear the flag
             await clerk.users.updateUserMetadata(restoredClerkId, {
               publicMetadata: { gracePeriodEnd: null },
             });
@@ -554,7 +554,7 @@ export async function POST(request: Request) {
           await resend.emails.send({
             from: FROM_EMAIL,
             to: memberEmail,
-            subject: wasRecovery ? "Payment received — your 🔝Floor access is restored" : "Your 🔝Floor payment receipt",
+            subject: wasRecovery ? "Payment received - your 🔝Floor access is restored" : "Your 🔝Floor payment receipt",
             html: paymentReceiptHtml({ name: memberName, planName, amount, currency, invoiceUrl, restored: wasRecovery }),
           });
 
@@ -567,12 +567,12 @@ export async function POST(request: Request) {
                 { name: "Plan", value: planName, inline: true },
                 { name: "Email", value: memberEmail, inline: false },
               ],
-              description: "Payment succeeded after a failed payment — access restored.",
+              description: "Payment succeeded after a failed payment - access restored.",
             });
             await resend.emails.send({
               from: FROM_EMAIL,
               to: process.env.COACH_EMAIL!,
-              subject: `✅ Member Recovered — ${memberName}`,
+              subject: `✅ Member Recovered - ${memberName}`,
               html: `
                 <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
                   <h2 style="color:#00ff88;margin-top:0;">Member Recovered 🎉</h2>

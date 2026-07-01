@@ -58,7 +58,7 @@ async function alertFailure(action: string, discordUserId: string, err: unknown)
   await resend.emails.send({
     from: "noreply@topfloortradesofficial.com",
     to: process.env.COACH_EMAIL!,
-    subject: `⚠️ Discord role ${action} failed — manual fix needed`,
+    subject: `⚠️ Discord role ${action} failed - manual fix needed`,
     html: `<p>Failed to ${action} Pro Memer role for Discord user <strong>${discordUserId}</strong>.</p><p>Error: ${message}</p><p>Go to the Floor Discord server and manually ${action === "grant" ? "add" : "remove"} the Pro Memer role.</p>`,
   }).catch(() => {});
 }

@@ -30,8 +30,8 @@ export async function POST(request: Request) {
     }
 
     const experienceLabels: Record<string, string> = {
-      beginner: "Complete beginner — never traded before",
-      some: "Some experience — still figuring it out",
+      beginner: "Complete beginner - never traded before",
+      some: "Some experience - still figuring it out",
       struggling: "Experienced but struggling to be consistent",
       mentorship: "Looking for 1-on-1 mentorship specifically",
     };
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
       from: "noreply@topfloortradesofficial.com",
       to: process.env.COACH_EMAIL!,
       replyTo: email,
-      subject: `New lead from ${escapeHtml(name)} — 🔝Floor`,
+      subject: `New lead from ${escapeHtml(name)} - 🔝Floor`,
       html: `
         <div style="font-family:sans-serif;max-width:540px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
           <h2 style="color:#00ff88;margin-top:0;">New 🔝Floor Lead</h2>

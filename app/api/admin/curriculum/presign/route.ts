@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error?.message ?? "Failed to create upload URL" }, { status: 500 });
   }
 
-  // Pre-update DB with the path — upload goes directly to Supabase so no confirm step needed
+  // Pre-update DB with the path - upload goes directly to Supabase so no confirm step needed
   await supabaseAdmin
     .from("curriculum_lessons")
     .update({ pdf_path: path })

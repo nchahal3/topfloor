@@ -53,7 +53,7 @@ export async function POST(request: Request) {
   let scheduledAt: string | null = null;
 
   if (slot_id) {
-    // Atomically claim the slot — only succeeds if still available (race-condition safe)
+    // Atomically claim the slot - only succeeds if still available (race-condition safe)
     const { data: claimed, error: claimError } = await supabaseAdmin
       .from("availability_slots")
       .update({ is_booked: true })

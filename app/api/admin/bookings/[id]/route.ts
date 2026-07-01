@@ -60,12 +60,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
           { name: "Time", value: time ?? "TBD", inline: true },
           { name: "Notified", value: memberEmail, inline: false },
         ],
-        description: "Confirmation email sent to member — source: Admin Panel",
+        description: "Confirmation email sent to member - source: Admin Panel",
       });
       await resend.emails.send({
         from: fromEmail,
         to: memberEmail,
-        subject: `✅ Your 🔝Floor Call is Confirmed — ${time}`,
+        subject: `✅ Your 🔝Floor Call is Confirmed - ${time}`,
         html: `
           <div style="font-family:sans-serif;max-width:540px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
             <h2 style="color:#00ff88;margin-top:0;">Your call is confirmed!</h2>
@@ -100,7 +100,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
           { name: "Time", value: time ?? "TBD", inline: true },
           { name: "Notified", value: memberEmail, inline: false },
         ],
-        description: "Cancellation email sent to member — source: Admin Panel",
+        description: "Cancellation email sent to member - source: Admin Panel",
       });
       await resend.emails.send({
         from: fromEmail,

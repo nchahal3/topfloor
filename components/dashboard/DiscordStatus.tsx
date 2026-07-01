@@ -25,7 +25,7 @@ export default function DiscordStatus({
       await fetch("/api/discord/disconnect", { method: "POST" });
       setDisconnected(true);
     } catch {
-      // silent — page reload will reflect truth
+      // silent - page reload will reflect truth
     } finally {
       setDisconnecting(false);
       setConfirming(false);
@@ -91,7 +91,7 @@ export default function DiscordStatus({
                   @{discordUsername ?? "connected"}
                 </p>
                 <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, margin: 0 }}>
-                  Verified — has access to Floor Pro channels
+                  Verified - has access to Floor Pro channels
                 </p>
               </div>
               {!confirming && (

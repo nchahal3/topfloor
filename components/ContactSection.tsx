@@ -192,7 +192,7 @@ export default function ContactSection() {
                       }}
                     >
                       <option value="" disabled style={{ color: "rgba(255,255,255,0.3)" }}>
-                        — Pick your level —
+                        - Pick your level -
                       </option>
                       {EXPERIENCE_OPTIONS.filter(o => o.value !== "").map((opt) => (
                         <option key={opt.value} value={opt.value} style={{ background: "#111", color: "#f5f5f5" }}>

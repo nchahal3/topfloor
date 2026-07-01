@@ -22,7 +22,7 @@ export default function About() {
           {/* One card that flips to the next as you scroll */}
           <FlipCards items={CREDENTIALS} />
 
-          {/* Bio content — pinned while the card flips */}
+          {/* Bio content - pinned while the card flips */}
           <motion.div
             initial={{ opacity: 0, x: 40 }}
             whileInView={{ opacity: 1, x: 0 }}

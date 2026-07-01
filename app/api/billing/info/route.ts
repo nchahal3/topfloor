@@ -39,7 +39,7 @@ export async function GET() {
     ? new Date(periodEnd * 1000).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
     : null;
 
-  // Get card — check subscription PM first, then customer default PM, then list PMs directly
+  // Get card - check subscription PM first, then customer default PM, then list PMs directly
   let card = null;
   try {
     let pmId: string | null = null;

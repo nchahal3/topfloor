@@ -51,17 +51,17 @@ export async function POST(request: Request) {
     from: "TopFloor <noreply@topfloortradesofficial.com>",
     to: email,
     subject: "Your TopFloor account is ready",
-    text: `${greeting},\n\nYour TopFloor account is live. You now have free access to the member dashboard — funded account promo codes, the class schedule, and the ability to book a free intro call with the team.\n\nDashboard: ${baseUrl}/dashboard\n\nWhen you're ready to unlock live trade sessions, the full curriculum, and 1-on-1 coaching — upgrade from inside the dashboard.\n\nJoin the community: ${baseUrl}/discord\n\n---\nTrading involves significant risk. Past performance is not indicative of future results. TopFloor provides educational content only.`,
+    text: `${greeting},\n\nYour TopFloor account is live. You now have free access to the member dashboard - funded account promo codes, the class schedule, and the ability to book a free intro call with the team.\n\nDashboard: ${baseUrl}/dashboard\n\nWhen you're ready to unlock live trade sessions, the full curriculum, and 1-on-1 coaching - upgrade from inside the dashboard.\n\nJoin the community: ${baseUrl}/discord\n\n---\nTrading involves significant risk. Past performance is not indicative of future results. TopFloor provides educational content only.`,
     html: `
       <div style="font-family:sans-serif;max-width:540px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
         <h1 style="color:#00ff88;margin-top:0;font-size:26px;">Welcome to TopFloor.</h1>
-        <p style="color:#aaa;line-height:1.7;">${greeting}, your account is live. You now have free access to the member dashboard — funded account promo codes, the class schedule, and the ability to book a free intro call with the TopFloor team.</p>
+        <p style="color:#aaa;line-height:1.7;">${greeting}, your account is live. You now have free access to the member dashboard - funded account promo codes, the class schedule, and the ability to book a free intro call with the TopFloor team.</p>
         <div style="text-align:center;margin:32px 0;">
           <a href="${baseUrl}/dashboard" style="display:inline-block;background:#00ff88;color:#000;font-weight:bold;padding:14px 32px;border-radius:999px;text-decoration:none;font-size:15px;">
             Go to My Dashboard
           </a>
         </div>
-        <p style="color:#aaa;line-height:1.7;">When you're ready to unlock live trade sessions, the full curriculum, and 1-on-1 coaching — upgrade your membership from inside the dashboard.</p>
+        <p style="color:#aaa;line-height:1.7;">When you're ready to unlock live trade sessions, the full curriculum, and 1-on-1 coaching - upgrade your membership from inside the dashboard.</p>
         <p style="color:#aaa;line-height:1.7;">You can also join the community Discord:</p>
         <div style="text-align:center;margin:20px 0 28px;">
           <a href="${baseUrl}/discord" style="display:inline-block;background:#5865F2;color:#fff;font-weight:bold;padding:12px 28px;border-radius:999px;text-decoration:none;font-size:14px;">

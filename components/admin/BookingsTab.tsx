@@ -249,7 +249,7 @@ function AvailabilityPanel() {
       {upcomingBookings.length > 0 && (
         <div style={{ marginBottom: 24 }}>
           <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", margin: "0 0 10px" }}>
-            Upcoming Sessions — {upcomingBookings.length} {upcomingBookings.length === 1 ? "session" : "sessions"}
+            Upcoming Sessions - {upcomingBookings.length} {upcomingBookings.length === 1 ? "session" : "sessions"}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {upcomingBookings.map((b) => {
@@ -303,7 +303,7 @@ function AvailabilityPanel() {
         <div>
           <h3 style={{ color: "#f5f5f5", fontSize: 15, fontWeight: 700, margin: 0 }}>Available Time Slots</h3>
           <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, margin: "3px 0 0" }}>
-            Set your availability window — slots are auto-generated and session conflicts are skipped
+            Set your availability window - slots are auto-generated and session conflicts are skipped
           </p>
         </div>
         <button

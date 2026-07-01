@@ -35,7 +35,7 @@ export async function DELETE(request: Request) {
   let subsCancelled = 0;
 
   // 1. Delete the Clerk account in THIS instance (if present); revoke Discord first.
-  //    A missing account is fine — the member may be Stripe-only or live in another env.
+  //    A missing account is fine - the member may be Stripe-only or live in another env.
   try {
     const users = await clerk.users.getUserList({ emailAddress: [email] });
     const user = users.data[0];

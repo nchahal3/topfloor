@@ -45,7 +45,7 @@ export default function PageHeader({
     >
       {image && (
         <>
-          {/* parallax background — taller than the header so the drift never gaps */}
+          {/* parallax background - taller than the header so the drift never gaps */}
           <motion.div
             style={{
               position: "absolute",

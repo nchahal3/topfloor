@@ -37,7 +37,7 @@ export default async function DashboardPage() {
   const effectiveTier = graceExpired ? null : tier;
 
   // Recovery: payment failed and access is now locked (grace expired pre-lock, or the
-  // job already suspended their tier). Distinct from a never-subscribed free account —
+  // job already suspended their tier). Distinct from a never-subscribed free account -
   // these members must UPDATE THEIR CARD on the billing page, not buy a new plan.
   const isLocked = !effectiveTier;
   const isRecovery = !!suspendedTier || (graceExpired && !!tier);
@@ -115,7 +115,7 @@ export default async function DashboardPage() {
         )}
       </div>
 
-      {/* Grace period warning — payment failed, still within the 24h window */}
+      {/* Grace period warning - payment failed, still within the 24h window */}
       {graceDate && !graceExpired && (
         <div style={{
           padding: "14px 20px",
@@ -132,7 +132,7 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* Locked after a failed payment — access removed, recoverable by updating the card */}
+      {/* Locked after a failed payment - access removed, recoverable by updating the card */}
       {isRecovery && isLocked && (
         <div style={{
           padding: "14px 20px",
@@ -164,13 +164,13 @@ export default async function DashboardPage() {
           <strong style={{ color: "#ffa500" }}>
             {cancelDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
           </strong>
-          {daysLeft > 0 ? ` — ${daysLeft} day${daysLeft === 1 ? "" : "s"} remaining.` : "."}
+          {daysLeft > 0 ? ` - ${daysLeft} day${daysLeft === 1 ? "" : "s"} remaining.` : "."}
           {" "}
           <a href="/dashboard/billing" style={{ color: "#ffa500", textDecoration: "underline" }}>Manage billing →</a>
         </div>
       )}
 
-      {/* Discord — paid members only */}
+      {/* Discord - paid members only */}
       {effectiveTier ? (
         <DiscordStatus discordUserId={discordUserId} discordUsername={discordUsername} />
       ) : (
@@ -186,7 +186,7 @@ export default async function DashboardPage() {
                 <svg width="16" height="12" viewBox="0 0 71 55" fill="none" aria-hidden="true"><path d="M60.1 4.9A58.6 58.6 0 0 0 45.6.7a40.7 40.7 0 0 0-1.8 3.7 54.2 54.2 0 0 0-16.3 0A40.6 40.6 0 0 0 25.7.7 58.5 58.5 0 0 0 11.1 5C1.6 19.4-1 33.4.3 47.2a59 59 0 0 0 18 9.1 43.5 43.5 0 0 0 3.8-6.1 38.4 38.4 0 0 1-6-2.9l1.5-1.1a42 42 0 0 0 35.9 0l1.5 1.1a38.5 38.5 0 0 1-6 2.9 43.3 43.3 0 0 0 3.8 6.1 58.8 58.8 0 0 0 18-9.1c1.5-15.6-2.6-29.5-10.7-42.3ZM23.7 38.7c-3.5 0-6.4-3.2-6.4-7.2s2.8-7.2 6.4-7.2c3.5 0 6.4 3.2 6.3 7.2 0 4-2.8 7.2-6.3 7.2Zm23.6 0c-3.5 0-6.4-3.2-6.4-7.2s2.8-7.2 6.4-7.2c3.5 0 6.4 3.2 6.3 7.2 0 4-2.8 7.2-6.3 7.2Z" fill="currentColor"/></svg>
               </div>
               <div>
-                <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, fontWeight: 600, margin: "0 0 2px" }}>Discord — Floor Pro Channels</p>
+                <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, fontWeight: 600, margin: "0 0 2px" }}>Discord - Floor Pro Channels</p>
                 <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 12, margin: 0 }}>Active subscription required to connect</p>
               </div>
             </div>
@@ -197,7 +197,7 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* Lifetime upsell — monthly members only */}
+      {/* Lifetime upsell - monthly members only */}
       {effectiveTier && effectiveTier !== "lifetime" && !gracePeriodEnd && !cancelAt && (
         <Link
           href="/dashboard/billing"
@@ -221,7 +221,7 @@ export default async function DashboardPage() {
                 One payment. Never pay again.
               </p>
               <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, margin: 0 }}>
-                Lock in permanent access to everything — $2,000 one-time, no renewals.
+                Lock in permanent access to everything - $2,000 one-time, no renewals.
               </p>
             </div>
             <span style={{
@@ -237,7 +237,7 @@ export default async function DashboardPage() {
         </Link>
       )}
 
-      {/* Feature grid — 2-col, last card spans full width if count is odd */}
+      {/* Feature grid - 2-col, last card spans full width if count is odd */}
       <div
         className="grid grid-cols-1 sm:grid-cols-2"
         style={{ gap: 16 }}

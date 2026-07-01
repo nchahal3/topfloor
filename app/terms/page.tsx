@@ -65,7 +65,7 @@ export default function TermsPage() {
           </Section>
 
           <Section title="8. Intellectual Property">
-            All content on TopFloor — including videos, PDFs, trade strategies, branding, and course materials — is the exclusive property of TopFloor. You are granted a limited, non-transferable license to access this content for personal use only during an active membership.
+            All content on TopFloor - including videos, PDFs, trade strategies, branding, and course materials - is the exclusive property of TopFloor. You are granted a limited, non-transferable license to access this content for personal use only during an active membership.
           </Section>
 
           <Section title="9. Termination">

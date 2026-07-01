@@ -41,7 +41,7 @@ function parseMRR(plan: string): number {
 }
 
 function paymentDateStyle(dateStr: string): React.CSSProperties {
-  if (dateStr === "—") return { color: "rgba(255,255,255,0.35)" };
+  if (dateStr === "-") return { color: "rgba(255,255,255,0.35)" };
   const date = new Date(dateStr);
   if (isNaN(date.getTime())) return { color: "rgba(255,255,255,0.35)" };
   const daysUntil = (date.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
@@ -53,10 +53,10 @@ function paymentDateStyle(dateStr: string): React.CSSProperties {
 function daysLeftLabel(member: Member): { text: string; color: string } {
   if (member.status === "lifetime") return { text: "Lifetime", color: "#f0c040" };
   if (member.status === "free") return { text: "Free", color: "rgba(255,255,255,0.3)" };
-  if (member.nextPayment === "—" || !member.nextPayment) return { text: "—", color: "rgba(255,255,255,0.25)" };
+  if (member.nextPayment === "-" || !member.nextPayment) return { text: "-", color: "rgba(255,255,255,0.25)" };
   if (member.status === "canceled") return { text: "Cancelled", color: "#ff4444" };
   const date = new Date(member.nextPayment);
-  if (isNaN(date.getTime())) return { text: "—", color: "rgba(255,255,255,0.25)" };
+  if (isNaN(date.getTime())) return { text: "-", color: "rgba(255,255,255,0.25)" };
   const days = Math.ceil((date.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
   if (days < 0) return { text: "Overdue", color: "#ff4444" };
   if (days === 0) return { text: "Today", color: "#ff4444" };
@@ -440,7 +440,7 @@ export default function MembersTab({ members, onDelete }: { members: Member[]; o
                 )}
                 {cancelConfirm === 2 && (
                   <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(255,68,68,0.1)", border: "1px solid rgba(255,68,68,0.35)" }}>
-                    <p style={{ color: "#ff4444", fontSize: 12, fontWeight: 700, margin: "0 0 8px" }}>Final confirmation — this cannot be undone.</p>
+                    <p style={{ color: "#ff4444", fontSize: 12, fontWeight: 700, margin: "0 0 8px" }}>Final confirmation - this cannot be undone.</p>
                     <div style={{ display: "flex", gap: 8 }}>
                       <button type="button" onClick={() => handleCancel(selectedMember)} disabled={cancelling} style={{ padding: "6px 14px", borderRadius: 8, background: "#ff4444", border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", opacity: cancelling ? 0.6 : 1 }}>
                         {cancelling ? "Cancelling..." : "Confirm Cancel"}
@@ -472,7 +472,7 @@ export default function MembersTab({ members, onDelete }: { members: Member[]; o
                     </div>
                   ) : (
                     <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(255,68,68,0.1)", border: "1px solid rgba(255,68,68,0.35)" }}>
-                      <p style={{ color: "#ff4444", fontSize: 12, fontWeight: 700, margin: "0 0 8px" }}>Final confirmation — this is permanent and cannot be undone.</p>
+                      <p style={{ color: "#ff4444", fontSize: 12, fontWeight: 700, margin: "0 0 8px" }}>Final confirmation - this is permanent and cannot be undone.</p>
                       <div style={{ display: "flex", gap: 8 }}>
                         <button type="button" onClick={() => handleDelete(selectedMember)} disabled={deleting} style={{ padding: "6px 14px", borderRadius: 8, background: "#ff4444", border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", opacity: deleting ? 0.6 : 1 }}>
                           {deleting ? "Deleting..." : "Confirm Delete"}
