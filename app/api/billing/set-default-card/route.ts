@@ -83,7 +83,7 @@ export async function PATCH(request: Request) {
               }
             } catch { /* fall through */ }
             // DEBUG: include actual error code in response so we can see it
-            return NextResponse.json({ success: true, charged: false, chargeError: `[${(err as Stripe.errors.StripeError).code}] ${err.message}` });
+            return NextResponse.json({ success: true, charged: false, chargeError: `[${(err as { code?: string }).code}] ${err.message}` });
           }
           return NextResponse.json({ success: true, charged: false, chargeError: "Payment declined. Please try a different card." });
         }
