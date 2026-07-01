@@ -9,7 +9,7 @@ import { grantProRole, revokeProRole } from "@/lib/discord-roles";
 import { supabaseAdmin } from "@/lib/supabase";
 import { scheduleGraceRevoke } from "@/lib/qstash";
 
-const FROM_EMAIL = "noreply@topfloortradesofficial.com";
+const FROM_EMAIL = "TopFloor <noreply@topfloortradesofficial.com>";
 const DISCORD_INVITE = "https://discord.gg/yebuyWPswJ";
 
 const PLAN_NAMES: Record<string, string> = {
@@ -441,7 +441,8 @@ export async function POST(request: Request) {
         resend.emails.send({
           from: FROM_EMAIL,
           to: memberEmail,
-          subject: "⚠️ Payment failed — update your card within 24 hours",
+          subject: "Payment failed — update your card within 24 hours",
+          text: `Hey ${memberName},\n\nWe couldn't process your TopFloor subscription payment.\n\nYou still have full access for the next 24 hours. Update your payment method before then and nothing changes.\n\nUpdate payment: ${process.env.NEXT_PUBLIC_URL}/dashboard/billing\n\nIf you don't update within 24 hours, your dashboard access and Discord Pro role will be removed automatically.\n\n---\nTrading involves significant risk. Past performance is not indicative of future results.`,
           html: `
             <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;border:1px solid rgba(255,165,0,0.3);">
               <h2 style="color:#ffa500;margin-top:0;">Payment Failed — Action Required</h2>
