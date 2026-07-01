@@ -1,6 +1,8 @@
 import { clerkClient } from "@clerk/nextjs/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { revokeProRole } from "@/lib/discord-roles";
+import { sendDiscordLog } from "@/lib/discord";
+import { Resend } from "resend";
 import type { Tier } from "@/lib/tier";
 
 /**
@@ -36,6 +38,48 @@ export async function lockUser(clerkUserId: string): Promise<"locked" | "skipped
   }
 
   await supabaseAdmin.from("grace_periods").delete().eq("clerk_user_id", clerkUserId);
+
+  // Notify member and log to Discord
+  const memberEmail = user.emailAddresses?.[0]?.emailAddress;
+  const memberName = user.firstName ?? "Member";
+  const baseUrl = process.env.NEXT_PUBLIC_URL ?? "https://www.topfloortradesofficial.com";
+  const planLabel = currentTier ? currentTier.charAt(0).toUpperCase() + currentTier.slice(1) : "your";
+
+  sendDiscordLog({
+    title: "🔒 Member Access Locked",
+    color: 0xff4444,
+    fields: [
+      { name: "Name", value: memberName, inline: true },
+      { name: "Plan", value: planLabel, inline: true },
+      { name: "Email", value: memberEmail ?? "unknown", inline: false },
+    ],
+    description: "Grace period expired without payment. Access and Discord Pro role removed.",
+  });
+
+  if (memberEmail) {
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    await resend.emails.send({
+      from: "TopFloor <noreply@topfloortradesofficial.com>",
+      to: memberEmail,
+      subject: "Your TopFloor access has been paused",
+      text: `Hey ${memberName},\n\nYour TopFloor ${planLabel} membership access has been paused because your payment couldn't be processed.\n\nYou can restore access immediately by updating your payment method:\n${baseUrl}/dashboard/billing\n\nYour membership history is saved — once you update your card, everything is restored instantly.\n\n---\nTrading involves significant risk. Past performance is not indicative of future results.`,
+      html: `
+        <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;border:1px solid rgba(255,68,68,0.3);">
+          <h2 style="color:#ff4444;margin-top:0;">Your access has been paused</h2>
+          <p style="color:#aaa;line-height:1.6;">Hey ${memberName}, your TopFloor <strong style="color:#f5f5f5;">${planLabel}</strong> membership has been paused because your payment couldn't be processed within the grace period.</p>
+          <p style="color:#aaa;line-height:1.6;">Your membership history is saved — update your payment method and everything is restored instantly.</p>
+          <div style="text-align:center;margin:32px 0;">
+            <a href="${baseUrl}/dashboard/billing" style="display:inline-block;background:#00ff88;color:#000;font-weight:bold;padding:14px 32px;border-radius:999px;text-decoration:none;font-size:16px;">
+              Restore Access Now
+            </a>
+          </div>
+          <hr style="border:none;border-top:1px solid #222;margin:24px 0;" />
+          <p style="color:#444;font-size:11px;">Trading involves significant risk. Past performance is not indicative of future results.</p>
+        </div>
+      `,
+    }).catch(() => {});
+  }
+
   return "locked";
 }
 
