@@ -1,16 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { motion, useReducedMotion, type Variants } from "framer-motion";
 import RealismButton from "@/components/ui/shiny-borders-button";
-
-const AVATARS = [
-  "/avatars/avatar-1-v2.jpg",
-  "/avatars/avatar-2-v2.jpg",
-  "/avatars/avatar-3-v2.jpg",
-  "/avatars/avatar-4-v2.jpg",
-  "/avatars/avatar-5-v2.jpg",
-];
 
 export default function HeroCopy() {
   const reduce = useReducedMotion();
@@ -95,33 +86,6 @@ export default function HeroCopy() {
           href="https://discord.gg/yebuyWPswJ"
           variant="gold"
         />
-      </motion.div>
-
-      {/* social proof */}
-      <motion.div variants={item} className="mt-10 flex items-center justify-center gap-3 md:justify-start">
-        <div className="flex -space-x-2">
-          {AVATARS.map((src, i) => (
-            <div
-              key={i}
-              className="relative h-8 w-8 overflow-hidden rounded-full border-2"
-              style={{ borderColor: "#0a0a0a" }}
-            >
-              <Image
-                src={src}
-                alt=""
-                fill
-                sizes="32px"
-                className="object-cover"
-              />
-            </div>
-          ))}
-        </div>
-        <span className="text-sm text-zinc-400">
-          <span className="font-semibold" style={{ color: "#00ff88" }}>
-            1,200+
-          </span>{" "}
-          members trading live
-        </span>
       </motion.div>
     </motion.div>
   );
