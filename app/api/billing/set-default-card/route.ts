@@ -61,7 +61,7 @@ export async function PATCH(request: Request) {
               const fullInvoice = await stripe.invoices.retrieve(latestInvoiceId, {
                 expand: ["payment_intent"],
               });
-              const invoicePi = fullInvoice.payment_intent as Stripe.PaymentIntent | null;
+              const invoicePi = (fullInvoice as unknown as { payment_intent?: Stripe.PaymentIntent | null }).payment_intent ?? null;
               if (invoicePi?.client_secret) {
                 return NextResponse.json({ success: true, charged: false, requiresAction: true, clientSecret: invoicePi.client_secret });
               }
