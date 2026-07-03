@@ -15,6 +15,13 @@ const mockStripeInstance = {
     retrieve: vi.fn(),
     pay: vi.fn(),
   },
+  // Stripe dahlia API (v22+): PaymentIntent is reached via invoicePayments, not invoice.payment_intent
+  invoicePayments: {
+    list: vi.fn(),
+  },
+  paymentIntents: {
+    retrieve: vi.fn(),
+  },
 };
 
 vi.mock("stripe", () => {
@@ -54,6 +61,8 @@ describe("PATCH /api/billing/set-default-card", () => {
     vi.resetModules();
     mockStripeInstance.customers.update.mockResolvedValue({});
     mockStripeInstance.subscriptions.list.mockResolvedValue({ data: [] });
+    // Default: no open invoice payment -> getOpenPaymentIntent returns null, code proceeds to invoices.pay
+    mockStripeInstance.invoicePayments.list.mockResolvedValue({ data: [] });
   });
 
   it("returns 400 when paymentMethodId is missing", async () => {
@@ -90,6 +99,7 @@ describe("PATCH /api/billing/set-default-card", () => {
     expect(body.charged).toBe(true);
     expect(mockStripeInstance.invoices.pay).toHaveBeenCalledWith("inv_open", {
       payment_method: "pm_good",
+      off_session: false,
     });
   });
 
