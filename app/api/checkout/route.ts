@@ -72,6 +72,7 @@ export async function POST(request: Request) {
       ...(isRecurring && userId ? { subscription_data: { metadata: { clerkUserId: userId } } } : {}),
       success_url: `${baseUrl}/success?plan=${plan}`,
       cancel_url: `${baseUrl}/pricing`,
+      allow_promotion_codes: true,
       phone_number_collection: { enabled: true },
       custom_fields: [
         {

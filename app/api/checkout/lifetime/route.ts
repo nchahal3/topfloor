@@ -35,6 +35,7 @@ export async function GET() {
     ...(customerId ? { customer: customerId } : { customer_email: email }),
     success_url: `${base}/success?plan=lifetime`,
     cancel_url: `${base}/dashboard`,
+    allow_promotion_codes: true,
     metadata: { clerkUserId: userId },
   });
 
