@@ -29,7 +29,21 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # Build-time placeholders so next build doesn't fail on missing public env vars.
-          # Real values come from Vercel at deploy time; these are never used at runtime.
+          # Build-time placeholders only. `next build` evaluates modules (e.g. lib/supabase.ts
+          # calls createClient at import time) so these must be PRESENT or the build throws.
+          # They are never used at runtime - real values are injected by Vercel at deploy.
           NEXT_PUBLIC_URL: https://example.com
           NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_placeholder
+          SUPABASE_URL: https://placeholder.supabase.co
+          SUPABASE_SERVICE_ROLE_KEY: placeholder
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
+          STRIPE_SECRET_KEY: sk_test_placeholder
+          STRIPE_WEBHOOK_SECRET: whsec_placeholder
+          CLERK_SECRET_KEY: sk_test_placeholder
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_placeholder
+          RESEND_API_KEY: re_placeholder
+          COACH_EMAIL: placeholder@example.com
+          CLERK_WEBHOOK_SECRET: whsec_placeholder
+          QSTASH_TOKEN: placeholder
+          DISCORD_BOT_TOKEN: placeholder
