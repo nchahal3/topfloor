@@ -1,14 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import FlipCards from "@/components/FlipCards";
-
-const CREDENTIALS = [
-  { img: "/about-cards/c1.jpg", label: "7+ Years in the Markets" },
-  { img: "/about-cards/c2.jpg", label: "Live Sessions Every Day" },
-  { img: "/about-cards/c3.jpg", label: "87% Member Win Rate" },
-  { img: "/about-cards/c4.jpg", label: "$4.2M+ Community Profits" },
-];
+import IntroVideo from "@/components/IntroVideo";
 
 export default function About() {
   return (
@@ -19,8 +12,8 @@ export default function About() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col-reverse items-stretch gap-10 lg:grid lg:grid-cols-2 lg:items-start lg:gap-16">
-          {/* One card that flips to the next as you scroll */}
-          <FlipCards items={CREDENTIALS} />
+          {/* Intro video — 4:5 framed card with play-with-sound button */}
+          <IntroVideo />
 
           {/* Bio content - pinned while the card flips */}
           <motion.div
@@ -28,7 +21,7 @@ export default function About() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="lg:sticky lg:top-32 lg:self-start"
+            className="text-center lg:text-left lg:sticky lg:top-32 lg:self-start"
           >
             <p
               className="text-xs font-bold tracking-widest uppercase mb-4"

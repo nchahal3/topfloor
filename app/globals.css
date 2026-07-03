@@ -65,6 +65,27 @@ body {
   animation-play-state: paused;
 }
 
+/* Testimonials — scroll to the right on a loop */
+@keyframes marquee-right {
+  0%   { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.marquee-right {
+  animation: marquee-right 60s linear infinite;
+  will-change: transform;
+}
+
+.marquee-mask:hover .marquee-right {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-right {
+    animation: none;
+  }
+}
+
 /* Grid overlay */
 .grid-bg {
   background-image:

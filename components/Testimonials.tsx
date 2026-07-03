@@ -86,69 +86,75 @@ export default function Testimonials() {
           </p>
         </motion.div>
 
-        {/* Testimonial grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {TESTIMONIALS.map((t, i) => (
-            <motion.div
-              key={t.name}
-              initial={{ opacity: 0, y: 32 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.55, delay: i * 0.1 }}
-              className="rounded-2xl p-7 border card-hover flex flex-col gap-4"
-              style={{
-                background: "#111",
-                borderColor: "rgba(255,255,255,0.06)",
-              }}
-            >
-              <StarRating />
-
-              {/* Quote mark */}
-              <p
-                className="display-font text-6xl leading-none -mt-2 -mb-2"
-                style={{ color: "rgba(0,255,136,0.25)" }}
+        {/* Testimonial marquee — scrolls to the right on a loop */}
+        <div
+          className="marquee-mask overflow-hidden"
+          style={{
+            maskImage:
+              "linear-gradient(to right, transparent, #000 8%, #000 92%, transparent)",
+            WebkitMaskImage:
+              "linear-gradient(to right, transparent, #000 8%, #000 92%, transparent)",
+          }}
+        >
+          <div className="marquee-right flex w-max gap-6">
+            {[...TESTIMONIALS, ...TESTIMONIALS].map((t, i) => (
+              <div
+                key={i}
+                className="w-[340px] shrink-0 rounded-2xl p-7 border flex flex-col gap-4 sm:w-[420px]"
+                style={{
+                  background: "#111",
+                  borderColor: "rgba(255,255,255,0.06)",
+                }}
               >
-                &ldquo;
-              </p>
+                <StarRating />
 
-              <p
-                className="text-base leading-relaxed"
-                style={{ color: "rgba(255,255,255,0.72)" }}
-              >
-                {t.quote}
-              </p>
-
-              <div className="flex items-center justify-between mt-2">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                    style={{ background: t.color }}
-                  >
-                    {t.initials}
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-white">{t.name}</p>
-                    <p
-                      className="text-xs"
-                      style={{ color: "rgba(255,255,255,0.4)" }}
-                    >
-                      {t.role}
-                    </p>
-                  </div>
-                </div>
-                <div
-                  className="text-sm font-bold px-3 py-1 rounded-full"
-                  style={{
-                    background: "rgba(0,255,136,0.1)",
-                    color: "#00ff88",
-                    border: "1px solid rgba(0,255,136,0.2)",
-                  }}
+                {/* Quote mark */}
+                <p
+                  className="display-font text-6xl leading-none -mt-2 -mb-2"
+                  style={{ color: "rgba(0,255,136,0.25)" }}
                 >
-                  {t.profit}
+                  &ldquo;
+                </p>
+
+                <p
+                  className="text-base leading-relaxed"
+                  style={{ color: "rgba(255,255,255,0.72)" }}
+                >
+                  {t.quote}
+                </p>
+
+                <div className="flex items-center justify-between mt-2">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                      style={{ background: t.color }}
+                    >
+                      {t.initials}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-white">{t.name}</p>
+                      <p
+                        className="text-xs"
+                        style={{ color: "rgba(255,255,255,0.4)" }}
+                      >
+                        {t.role}
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    className="text-sm font-bold px-3 py-1 rounded-full whitespace-nowrap"
+                    style={{
+                      background: "rgba(0,255,136,0.1)",
+                      color: "#00ff88",
+                      border: "1px solid rgba(0,255,136,0.2)",
+                    }}
+                  >
+                    {t.profit}
+                  </div>
                 </div>
               </div>
-            </motion.div>
-          ))}
+            ))}
+          </div>
         </div>
 
         {/* Disclaimer */}
