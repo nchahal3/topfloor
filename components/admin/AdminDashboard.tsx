@@ -18,6 +18,7 @@ const TABS = [
 
 export default function AdminDashboard({ members }: { members: Member[] }) {
   const [activeTab, setActiveTab] = useState("members");
+  const [deletedCount, setDeletedCount] = useState(0);
 
   return (
     <main style={{ background: "#0a0a0a", minHeight: "100vh", padding: "40px 24px" }}>
@@ -29,7 +30,7 @@ export default function AdminDashboard({ members }: { members: Member[] }) {
               🔝Floor Admin
             </h1>
             <p style={{ color: "rgba(255,255,255,0.4)", marginTop: 6, fontSize: 14 }}>
-              {members.length} paying member{members.length !== 1 ? "s" : ""}
+              {members.length - deletedCount} paying member{members.length - deletedCount !== 1 ? "s" : ""}
             </p>
           </div>
           <a href="/api/admin/logout" style={{ color: "rgba(255,255,255,0.35)", fontSize: 13, textDecoration: "none", marginTop: 8 }}>
@@ -68,7 +69,7 @@ export default function AdminDashboard({ members }: { members: Member[] }) {
 
         {/* Tab content */}
         <div style={{ background: "#0a0a0a" }}>
-          {activeTab === "members" && <MembersTab members={members} />}
+          {activeTab === "members" && <MembersTab members={members} onDelete={() => setDeletedCount((c) => c + 1)} />}
           {activeTab === "schedule" && <ScheduleTab />}
           {activeTab === "bookings" && <BookingsTab />}
           {activeTab === "curriculum" && <CurriculumTab />}

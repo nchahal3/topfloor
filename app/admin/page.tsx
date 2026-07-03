@@ -5,6 +5,15 @@ import LoginForm from "./LoginForm";
 import AdminDashboard from "@/components/admin/AdminDashboard";
 import type { Member } from "@/components/admin/MembersTab";
 import { getAdminToken } from "@/lib/admin-auth";
+import { supabaseAdmin } from "@/lib/supabase";
+
+// Maps Clerk tier → display name (used when admin manually changes a member's tier)
+const TIER_PLAN_NAMES: Record<string, string> = {
+  bronze: "Bronze ($200/mo)",
+  silver: "Silver ($500/mo)",
+  gold: "Gold ($750/mo)",
+  lifetime: "Lifetime ($2,000)",
+};
 
 const PLAN_NAMES: Record<string, string> = {
   price_1TiphA8U0Yle7MZgUELrqhSV: "Bronze ($200/mo)",
@@ -20,6 +29,22 @@ const PLAN_NAMES: Record<string, string> = {
 async function getMembers(): Promise<Member[]> {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
+  // Members deleted by an admin, keyed by email → deletion time. The list is built from
+  // immutable Stripe checkout sessions, so this is what keeps a deleted member from
+  // reappearing on reload. It's time-aware: we only hide records that existed BEFORE the
+  // deletion, so if the same person signs up again (free OR paid) that newer account shows
+  // up normally as a brand-new member.
+  const { data: deletedRows } = await supabaseAdmin.from("deleted_members").select("email, deleted_at");
+  const deletedAtByEmail = new Map(
+    (deletedRows ?? []).map((r) => [(r.email as string).toLowerCase(), new Date(r.deleted_at as string).getTime()]),
+  );
+  // True if this email was deleted AND the given record predates that deletion (so it's the
+  // stale record we should hide, not a fresh re-signup).
+  const isStaleDeleted = (email: string, recordMs: number) => {
+    const delAt = deletedAtByEmail.get(email.toLowerCase());
+    return delAt !== undefined && recordMs <= delAt;
+  };
+
   // Fetch all Clerk users first so we can cross-reference current tier for every member
   const clerk = await clerkClient();
   const clerkUsers = await clerk.users.getUserList({ limit: 500 });
@@ -29,10 +54,11 @@ async function getMembers(): Promise<Member[]> {
       {
         clerkTier: (u.publicMetadata?.tier as string | null) ?? null,
         clerkUserId: u.id,
-        phone: u.phoneNumbers[0]?.phoneNumber ?? "—",
-        discord: (u.publicMetadata?.discordUsername as string) ?? (u.publicMetadata?.discord as string) ?? "—",
+        phone: u.phoneNumbers[0]?.phoneNumber ?? "-",
+        discord: (u.publicMetadata?.discordUsername as string) ?? null,
+        createdAtMs: u.createdAt,
         joinedAt: new Date(u.createdAt).toLocaleDateString("en-CA", { month: "short", day: "numeric", year: "numeric" }),
-        fullName: [u.firstName, u.lastName].filter(Boolean).join(" ") || "—",
+        fullName: [u.firstName, u.lastName].filter(Boolean).join(" ") || "-",
       },
     ])
   );
@@ -86,7 +112,7 @@ async function getMembers(): Promise<Member[]> {
       const planName = PLAN_NAMES[priceId] ?? "Unknown";
 
       const status = sub?.status ?? "paid";
-      let nextPayment = "—";
+      let nextPayment = "-";
       const periodEnd = sub?.current_period_end ?? sub?.items?.data?.[0]?.current_period_end;
       if (periodEnd) {
         const d = new Date(Number(periodEnd) * 1000);
@@ -102,12 +128,15 @@ async function getMembers(): Promise<Member[]> {
   const members: Member[] = [];
   for (const { session, planName, status, nextPayment, activeSubId } of enriched) {
     const email = session.customer_details?.email ?? "";
+    // Hide a checkout session that predates an admin deletion (stale record). A newer
+    // session for the same email (re-subscribe) survives and shows up.
+    if (isStaleDeleted(email, session.created * 1000)) continue;
     const clerkData = clerkByEmail.get(email.toLowerCase());
-    const discord =
-      session.custom_fields?.find((f) => f.key === "discord_username")?.text?.value
-      ?? clerkData?.discord
-      ?? "—";
+    // Always prefer OAuth-verified Clerk username; falls to "-" when disconnected
+    const discord = clerkData?.discord ?? "-";
     const clerkTier = clerkData?.clerkTier ?? null;
+    // Use clerkTier as source of truth for plan name (reflects admin tier changes)
+    const displayPlan = clerkTier ? (TIER_PLAN_NAMES[clerkTier] ?? planName) : planName;
 
     // Derive effective status from Clerk (source of truth for access)
     // Keep Stripe failure states (canceled/past_due) regardless of Clerk
@@ -121,13 +150,13 @@ async function getMembers(): Promise<Member[]> {
 
     members.push({
       id: session.id,
-      clerkUserId: session.metadata?.clerkUserId ?? clerkData?.clerkUserId ?? null,
+      clerkUserId: clerkData?.clerkUserId ?? session.metadata?.clerkUserId ?? null,
       clerkTier,
-      name: session.customer_details?.name ?? "—",
+      name: session.customer_details?.name ?? "-",
       email,
-      phone: session.customer_details?.phone ?? "—",
+      phone: session.customer_details?.phone ?? "-",
       discord,
-      plan: planName,
+      plan: displayPlan,
       status: effectiveStatus,
       nextPayment,
       joinedAt: new Date(session.created * 1000).toLocaleDateString("en-CA", {
@@ -140,7 +169,10 @@ async function getMembers(): Promise<Member[]> {
   // Add free Clerk users (signed up but never paid)
   const paidEmails = new Set(members.map((m) => m.email.toLowerCase()));
   for (const [email, data] of clerkByEmail) {
-    if (!email || paidEmails.has(email)) continue;
+    // Skip if already listed via Stripe, or if this is the stale Clerk account that existed
+    // before an admin deletion. A re-signup creates a newer account → createdAtMs is after
+    // the deletion → shown as a brand-new free member.
+    if (!email || paidEmails.has(email) || isStaleDeleted(email, data.createdAtMs)) continue;
     members.push({
       id: data.clerkUserId,
       clerkUserId: data.clerkUserId,
@@ -151,7 +183,7 @@ async function getMembers(): Promise<Member[]> {
       discord: data.discord,
       plan: data.clerkTier ? (data.clerkTier.charAt(0).toUpperCase() + data.clerkTier.slice(1)) : "Free",
       status: data.clerkTier === "lifetime" ? "lifetime" : data.clerkTier ? "active" : "free",
-      nextPayment: "—",
+      nextPayment: "-",
       joinedAt: data.joinedAt,
       subscriptionId: null,
     });

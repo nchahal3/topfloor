@@ -15,7 +15,7 @@ export default function About() {
           {/* Intro video — 4:5 framed card with play-with-sound button */}
           <IntroVideo />
 
-          {/* Bio content — pinned while the card flips */}
+          {/* Bio content - pinned while the card flips */}
           <motion.div
             initial={{ opacity: 0, x: 40 }}
             whileInView={{ opacity: 1, x: 0 }}

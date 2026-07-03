@@ -7,6 +7,10 @@ import type { Tier } from "@/lib/tier";
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await currentUser();
   const tier = (user?.publicMetadata?.tier as Tier) ?? null;
+  const gracePeriodEnd = (user?.publicMetadata?.gracePeriodEnd as string) ?? null;
+  const graceDate = gracePeriodEnd ? new Date(gracePeriodEnd) : null;
+  const graceExpired = graceDate ? graceDate < new Date() : false;
+  const effectiveTier: Tier = graceExpired ? null : tier;
   const pendingLifetime = user?.publicMetadata?.pendingLifetime === true;
   const suspended = !tier && !!(user?.publicMetadata?.suspendedTier);
 
@@ -37,7 +41,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </div>
       )}
       <div style={{ display: "flex", minHeight: "100vh", background: "#0a0a0a", paddingTop: (pendingLifetime || suspended) ? 48 : 0 }}>
-        <DashboardSidebar tier={tier} />
+        <DashboardSidebar tier={effectiveTier} />
         <main
           style={{ flex: 1, overflowY: "auto" }}
           className="pt-[76px] lg:pt-0"

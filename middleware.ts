@@ -37,8 +37,12 @@ function checkRateLimit(ip: string, pathname: string): boolean {
 export default function middleware(req: NextRequest, event: NextFetchEvent) {
   const { pathname } = req.nextUrl;
 
-  // Bypass Clerk for webhook routes
-  if (pathname.startsWith("/api/webhook") || pathname.startsWith("/api/clerk-webhook")) {
+  // Bypass Clerk for webhook and cron routes
+  if (
+    pathname.startsWith("/api/webhook") ||
+    pathname.startsWith("/api/clerk-webhook") ||
+    pathname.startsWith("/api/cron")
+  ) {
     return NextResponse.next();
   }
 

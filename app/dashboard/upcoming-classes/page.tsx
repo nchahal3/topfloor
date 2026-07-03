@@ -19,6 +19,9 @@ const TYPE_COLORS: Record<string, string> = {
 export default async function UpcomingClassesPage() {
   const user = await currentUser();
   const tier = (user?.publicMetadata?.tier as Tier) ?? null;
+  const gracePeriodEnd = (user?.publicMetadata?.gracePeriodEnd as string) ?? null;
+  const graceExpired = gracePeriodEnd ? new Date(gracePeriodEnd) < new Date() : false;
+  const effectiveTier: Tier = graceExpired ? null : tier;
 
   const { data: sessions } = await supabaseAdmin
     .from("sessions")
@@ -39,11 +42,11 @@ export default async function UpcomingClassesPage() {
           Upcoming Classes
         </h1>
         <p style={{ color: "rgba(255,255,255,0.4)", marginTop: 10, fontSize: 15, maxWidth: 560 }}>
-          All sessions run inside the private Discord. Free members can see the schedule — subscribe to join.
+          All sessions run inside the private Discord. Free members can see the schedule - subscribe to join.
         </p>
       </div>
 
-      {!tier && classes.length > 0 && (
+      {!effectiveTier && classes.length > 0 && (
         <div style={{ marginBottom: 24, padding: "16px 20px", borderRadius: 14, background: "rgba(0,255,136,0.05)", border: "1px solid rgba(0,255,136,0.2)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
           <div>
             <p style={{ color: "#f5f5f5", fontWeight: 700, fontSize: 15, margin: "0 0 4px" }}>You&apos;re viewing the schedule as a free member</p>
@@ -57,7 +60,7 @@ export default async function UpcomingClassesPage() {
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {classes.map((cls) => {
-          const unlocked = hasAccess(tier, (cls.requires_tier as Tier) ?? null);
+          const unlocked = hasAccess(effectiveTier, (cls.requires_tier as Tier) ?? null);
           const typeColor = TYPE_COLORS[cls.type] ?? "#00ff88";
           const dayShort = cls.is_recurring
             ? cls.day.slice(0, 3).toUpperCase()
@@ -135,7 +138,7 @@ export default async function UpcomingClassesPage() {
         )}
       </div>
 
-      {!tier && (
+      {!effectiveTier && (
         <div style={{ marginTop: 32, padding: "24px", borderRadius: 16, background: "linear-gradient(135deg, rgba(0,255,136,0.06), rgba(0,255,136,0.02))", border: "1px solid rgba(0,255,136,0.15)", textAlign: "center" }}>
           <p style={{ color: "#f5f5f5", fontWeight: 700, fontSize: 17, margin: "0 0 8px" }}>Join live every week</p>
           <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 14, margin: "0 0 20px" }}>Bronze membership gets you into most sessions. Starting at $200/mo.</p>

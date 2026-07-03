@@ -70,7 +70,7 @@ export async function PATCH(request: Request) {
           resend.emails.send({
             from: FROM,
             to: memberEmail,
-            subject: "You've been moved to Lifetime — complete your payment",
+            subject: "You've been moved to Lifetime - complete your payment",
             html: `
               <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
                 <h2 style="color:#00ff88;margin-top:0;">Lifetime Access Incoming 🔐</h2>
@@ -90,7 +90,7 @@ export async function PATCH(request: Request) {
           resend.emails.send({
             from: FROM,
             to: process.env.COACH_EMAIL!,
-            subject: `♾️ Member Moved to Lifetime — ${memberName}`,
+            subject: `♾️ Member Moved to Lifetime - ${memberName}`,
             html: `
               <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
                 <h2 style="color:#f0c040;margin-top:0;">Monthly → Lifetime Upgrade</h2>
@@ -119,7 +119,7 @@ export async function PATCH(request: Request) {
     }
 
     // --- Regular tier change (Bronze/Silver/Gold, remove access, or lifetime with no existing sub) ---
-    // Update Clerk tier — only for non-lifetime-from-subscription cases
+    // Update Clerk tier - only for non-lifetime-from-subscription cases
     await client.users.updateUserMetadata(clerkUserId, {
       publicMetadata: { tier: tier ?? null, pendingLifetime: false },
     });
@@ -189,7 +189,7 @@ export async function PATCH(request: Request) {
         resend.emails.send({
           from: FROM,
           to: memberEmail,
-          subject: `You've been upgraded to ${tierLabel} — TopFloor`,
+          subject: `You've been upgraded to ${tierLabel} - TopFloor`,
           html: `
             <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
               <h2 style="color:#00ff88;margin-top:0;">You've Been Upgraded 🎉</h2>
@@ -208,7 +208,7 @@ export async function PATCH(request: Request) {
         resend.emails.send({
           from: FROM,
           to: process.env.COACH_EMAIL!,
-          subject: `⬆️ Member Upgraded — ${memberName} → ${tierLabel}`,
+          subject: `⬆️ Member Upgraded - ${memberName} → ${tierLabel}`,
           html: `
             <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
               <h2 style="color:#00ff88;margin-top:0;">Member Tier Updated</h2>

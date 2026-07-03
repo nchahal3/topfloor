@@ -4,7 +4,7 @@ import HeroCopy from "@/components/HeroCopy";
 export default function Hero() {
   return (
     <section className="relative isolate min-h-screen w-full overflow-hidden bg-black text-white">
-      {/* MOBILE: portrait green-glass trading scene — motion top & bottom,
+      {/* MOBILE: portrait green-glass trading scene - motion top & bottom,
           dark clear middle for the copy. Seamless looping background. */}
       <div className="md:hidden">
         <HeroVideo src="/hero-loop-mobile.mp4" poster="/hero-mobile-v2.png" />

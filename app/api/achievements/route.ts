@@ -55,7 +55,7 @@ export async function POST(request: Request) {
       await resend.emails.send({
         from: "noreply@topfloortradesofficial.com",
         to: process.env.COACH_EMAIL!,
-        subject: `💸 New Payout Request — ${memberName}`,
+        subject: `💸 New Payout Request - ${memberName}`,
         html: `
           <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#f5f5f5;padding:32px;border-radius:12px;">
             <h2 style="color:#00ff88;margin-top:0;">New Payout Request Submitted</h2>

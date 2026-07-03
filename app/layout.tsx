@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "TopFloor | Elite Day Trading Coaching",
     description:
-      "Live trade alerts, private Discord, full curriculum, and 1-on-1 mentorship. Trade from the top — every single day.",
+      "Live trade alerts, private Discord, full curriculum, and 1-on-1 mentorship. Trade from the top - every single day.",
     url: "https://www.topfloortradesofficial.com",
     siteName: "TopFloor",
     type: "website",
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "TopFloor | Elite Day Trading Coaching",
     description:
-      "Live trade alerts, private Discord, full curriculum, and 1-on-1 mentorship. Trade from the top — every single day.",
+      "Live trade alerts, private Discord, full curriculum, and 1-on-1 mentorship. Trade from the top - every single day.",
   },
 };
 

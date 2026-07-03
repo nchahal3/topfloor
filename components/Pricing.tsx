@@ -71,7 +71,7 @@ const LIFETIME = {
   period: "one-time",
   badge: "BEST VALUE",
   features: [
-    "Everything in Gold — forever",
+    "Everything in Gold - forever",
     "Never pay monthly again",
     "Lifetime access to all future content",
     "Priority support, always",

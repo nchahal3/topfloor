@@ -41,7 +41,7 @@ function parseMRR(plan: string): number {
 }
 
 function paymentDateStyle(dateStr: string): React.CSSProperties {
-  if (dateStr === "—") return { color: "rgba(255,255,255,0.35)" };
+  if (dateStr === "-") return { color: "rgba(255,255,255,0.35)" };
   const date = new Date(dateStr);
   if (isNaN(date.getTime())) return { color: "rgba(255,255,255,0.35)" };
   const daysUntil = (date.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
@@ -53,10 +53,10 @@ function paymentDateStyle(dateStr: string): React.CSSProperties {
 function daysLeftLabel(member: Member): { text: string; color: string } {
   if (member.status === "lifetime") return { text: "Lifetime", color: "#f0c040" };
   if (member.status === "free") return { text: "Free", color: "rgba(255,255,255,0.3)" };
-  if (member.nextPayment === "—" || !member.nextPayment) return { text: "—", color: "rgba(255,255,255,0.25)" };
+  if (member.nextPayment === "-" || !member.nextPayment) return { text: "-", color: "rgba(255,255,255,0.25)" };
   if (member.status === "canceled") return { text: "Cancelled", color: "#ff4444" };
   const date = new Date(member.nextPayment);
-  if (isNaN(date.getTime())) return { text: "—", color: "rgba(255,255,255,0.25)" };
+  if (isNaN(date.getTime())) return { text: "-", color: "rgba(255,255,255,0.25)" };
   const days = Math.ceil((date.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
   if (days < 0) return { text: "Overdue", color: "#ff4444" };
   if (days === 0) return { text: "Today", color: "#ff4444" };
@@ -65,7 +65,7 @@ function daysLeftLabel(member: Member): { text: string; color: string } {
   return { text: `${days} days`, color: "#00ff88" };
 }
 
-export default function MembersTab({ members }: { members: Member[] }) {
+export default function MembersTab({ members, onDelete }: { members: Member[]; onDelete?: () => void }) {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [filter, setFilter] = useState("all");
   const [planFilter, setPlanFilter] = useState("all");
@@ -82,10 +82,11 @@ export default function MembersTab({ members }: { members: Member[] }) {
   const [overrideTiers, setOverrideTiers] = useState<Record<string, string>>({});
   const { toast } = useToast();
 
-  const planOptions = ["all", ...Array.from(new Set(members.map((m) => m.plan))).sort()];
+  const nonDeleted = members.filter((m) => !deletedEmails.has(m.email));
 
-  const filtered = members.filter((m) => {
-    if (deletedEmails.has(m.email)) return false;
+  const planOptions = ["all", ...Array.from(new Set(nonDeleted.map((m) => m.plan))).sort()];
+
+  const filtered = nonDeleted.filter((m) => {
     const statusMatch = filter === "all" || m.status === filter;
     const planMatch = planFilter === "all" || m.plan === planFilter;
     return statusMatch && planMatch;
@@ -97,10 +98,10 @@ export default function MembersTab({ members }: { members: Member[] }) {
   const changeFilter = (next: string) => { setFilter(next); setPage(0); };
   const changePlanFilter = (next: string) => { setPlanFilter(next); setPage(0); };
 
-  const activeSubs = members.filter((m) => m.status === "active" || m.status === "paid");
-  const freeCount = members.filter((m) => m.status === "free").length;
+  const activeSubs = nonDeleted.filter((m) => m.status === "active" || m.status === "paid");
+  const freeCount = nonDeleted.filter((m) => m.status === "free").length;
   const mrr = activeSubs.reduce((sum, m) => sum + parseMRR(m.plan), 0);
-  const pastDue = members.filter((m) => m.status === "past_due").length;
+  const pastDue = nonDeleted.filter((m) => m.status === "past_due").length;
 
   const handleDelete = async (member: Member) => {
     setDeleting(true);
@@ -108,7 +109,7 @@ export default function MembersTab({ members }: { members: Member[] }) {
       const res = await fetch("/api/admin/users", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: member.email }),
+        body: JSON.stringify({ clerkUserId: member.clerkUserId ?? undefined, email: member.email }),
       });
       if (!res.ok) {
         const d = await res.json();
@@ -116,6 +117,7 @@ export default function MembersTab({ members }: { members: Member[] }) {
       } else {
         setDeletedEmails((prev) => new Set([...prev, member.email]));
         setSelectedMember(null);
+        onDelete?.();
         toast(`${member.name} has been deleted.`);
       }
     } catch {
@@ -192,7 +194,7 @@ export default function MembersTab({ members }: { members: Member[] }) {
     <>
       {/* Stats */}
       <div style={{ display: "flex", gap: 10, marginBottom: 24, flexWrap: "wrap" }}>
-        {statCard(<Users size={16} />, "Total Members", members.length, "#00ff88")}
+        {statCard(<Users size={16} />, "Total Members", nonDeleted.length, "#00ff88")}
         {statCard(<TrendingUp size={16} />, "Active Subs", activeSubs.length, "#00ff88")}
         {statCard(<Users size={16} />, "Free Members", freeCount, "rgba(255,255,255,0.4)")}
         {statCard(<DollarSign size={16} />, "Est. MRR", `$${mrr.toLocaleString()}`, "#f0c040")}
@@ -219,7 +221,7 @@ export default function MembersTab({ members }: { members: Member[] }) {
       {/* Filter tabs */}
       <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap" }}>
         {FILTER_TABS.map((tab) => {
-          const count = tab === "all" ? members.length : members.filter((m) => m.status === tab).length;
+          const count = tab === "all" ? nonDeleted.length : nonDeleted.filter((m) => m.status === tab).length;
           return (
             <button
               key={tab}
@@ -438,7 +440,7 @@ export default function MembersTab({ members }: { members: Member[] }) {
                 )}
                 {cancelConfirm === 2 && (
                   <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(255,68,68,0.1)", border: "1px solid rgba(255,68,68,0.35)" }}>
-                    <p style={{ color: "#ff4444", fontSize: 12, fontWeight: 700, margin: "0 0 8px" }}>Final confirmation — this cannot be undone.</p>
+                    <p style={{ color: "#ff4444", fontSize: 12, fontWeight: 700, margin: "0 0 8px" }}>Final confirmation - this cannot be undone.</p>
                     <div style={{ display: "flex", gap: 8 }}>
                       <button type="button" onClick={() => handleCancel(selectedMember)} disabled={cancelling} style={{ padding: "6px 14px", borderRadius: 8, background: "#ff4444", border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", opacity: cancelling ? 0.6 : 1 }}>
                         {cancelling ? "Cancelling..." : "Confirm Cancel"}
@@ -452,27 +454,11 @@ export default function MembersTab({ members }: { members: Member[] }) {
 
             {/* Delete user */}
             {!deletedEmails.has(selectedMember.email) && (() => {
-              const hasActiveSub = (
-                !cancelledIds.has(selectedMember.id) &&
-                selectedMember.status !== "canceled" &&
-                selectedMember.status !== "free" &&
-                selectedMember.status !== "lifetime" &&
-                !!selectedMember.subscriptionId
-              );
               return (
-                <div style={{ marginBottom: 20, padding: "14px 16px", borderRadius: 12, background: "rgba(255,68,68,0.03)", border: `1px solid ${hasActiveSub ? "rgba(255,165,0,0.2)" : "rgba(255,68,68,0.1)"}` }}>
+                <div style={{ marginBottom: 20, padding: "14px 16px", borderRadius: 12, background: "rgba(255,68,68,0.03)", border: "1px solid rgba(255,68,68,0.1)" }}>
                   <p style={{ color: "#ff4444", fontWeight: 700, fontSize: 13, margin: "0 0 4px" }}>Delete Account</p>
-                  <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, margin: "0 0 12px" }}>Permanently removes this user from Clerk. This cannot be undone.</p>
-                  {hasActiveSub ? (
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <button type="button" disabled style={{ padding: "7px 16px", borderRadius: 8, background: "transparent", border: "1px solid rgba(255,68,68,0.15)", color: "rgba(255,68,68,0.3)", fontSize: 12, fontWeight: 700, cursor: "not-allowed" }}>
-                        Delete User
-                      </button>
-                      <p style={{ color: "#ffa500", fontSize: 12, margin: 0 }}>
-                        ⚠ Cancel their subscription first
-                      </p>
-                    </div>
-                  ) : deleteConfirm === 0 ? (
+                  <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, margin: "0 0 12px" }}>Cancels their Stripe subscription, deletes their account, and removes them from this list. This cannot be undone.</p>
+                  {deleteConfirm === 0 ? (
                     <button type="button" onClick={() => setDeleteConfirm(1)} style={{ padding: "7px 16px", borderRadius: 8, background: "transparent", border: "1px solid rgba(255,68,68,0.35)", color: "#ff4444", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
                       Delete User
                     </button>
@@ -486,7 +472,7 @@ export default function MembersTab({ members }: { members: Member[] }) {
                     </div>
                   ) : (
                     <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(255,68,68,0.1)", border: "1px solid rgba(255,68,68,0.35)" }}>
-                      <p style={{ color: "#ff4444", fontSize: 12, fontWeight: 700, margin: "0 0 8px" }}>Final confirmation — this is permanent and cannot be undone.</p>
+                      <p style={{ color: "#ff4444", fontSize: 12, fontWeight: 700, margin: "0 0 8px" }}>Final confirmation - this is permanent and cannot be undone.</p>
                       <div style={{ display: "flex", gap: 8 }}>
                         <button type="button" onClick={() => handleDelete(selectedMember)} disabled={deleting} style={{ padding: "6px 14px", borderRadius: 8, background: "#ff4444", border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", opacity: deleting ? 0.6 : 1 }}>
                           {deleting ? "Deleting..." : "Confirm Delete"}

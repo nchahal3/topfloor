@@ -18,7 +18,7 @@ export default function FeaturesPage() {
       <WhatYouGet />
       <BottomCTA
         headline="Everything You Need Is Right Here."
-        sub="Live sessions, trade alerts, community, and more — all in one membership."
+        sub="Live sessions, trade alerts, community, and more - all in one membership."
       />
     </PageLayout>
   );

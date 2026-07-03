@@ -172,7 +172,7 @@ export default function DashboardSidebar({ tier }: { tier: Tier }) {
       <nav style={{ flex: 1, padding: "12px 12px", overflowY: "auto" }}>
         {NAV_ITEMS.map((item) => renderItem(item))}
 
-        {/* Tools & Events — collapsible group */}
+        {/* Tools & Events - collapsible group */}
         <button
           type="button"
           onClick={() => setToolsOpen((o) => !o)}
@@ -272,7 +272,7 @@ export default function DashboardSidebar({ tier }: { tier: Tier }) {
 
   return (
     <>
-      {/* Mobile top bar — NOTE: no inline display so lg:hidden can override it */}
+      {/* Mobile top bar - NOTE: no inline display so lg:hidden can override it */}
       <div
         className="lg:hidden flex items-center justify-between"
         style={{

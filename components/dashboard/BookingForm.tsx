@@ -125,10 +125,10 @@ export default function BookingForm() {
         ) : null}
         <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, margin: 0, lineHeight: 1.6 }}>
           {activeBooking.status === "pending"
-            ? "Your request is pending — the TopFloor team will confirm within 24 hours. You can book a new slot once this is completed or cancelled."
+            ? "Your request is pending - the TopFloor team will confirm within 24 hours. You can book a new slot once this is completed or cancelled."
             : activeBooking.zoom_link
               ? "Your call is confirmed. Use the link above to join."
-              : "Confirmed — your meeting link will arrive by email shortly."}
+              : "Confirmed - your meeting link will arrive by email shortly."}
         </p>
       </div>
     );
@@ -187,8 +187,8 @@ export default function BookingForm() {
           <label style={labelStyle}>Call Type</label>
           <div style={{ display: "flex", gap: 10 }}>
             {[
-              { value: "intro", label: "Intro Call", desc: "15 min — free for all members" },
-              { value: "trade_review", label: "Trade Review", desc: "30 min — for subscribers" },
+              { value: "intro", label: "Intro Call", desc: "15 min - free for all members" },
+              { value: "trade_review", label: "Trade Review", desc: "30 min - for subscribers" },
             ].map((opt) => (
               <button
                 key={opt.value}
@@ -209,7 +209,7 @@ export default function BookingForm() {
 
         {/* Date picker */}
         <div>
-          <label style={labelStyle}>Pick a Date <span style={{ color: "rgba(255,255,255,0.25)", fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>— all times EST</span></label>
+          <label style={labelStyle}>Pick a Date <span style={{ color: "rgba(255,255,255,0.25)", fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>- all times EST</span></label>
           {slotsLoading ? (
             <div style={{ padding: "20px", textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: 13 }}>
               Loading available dates...
@@ -218,7 +218,7 @@ export default function BookingForm() {
             <div style={{ padding: "20px 16px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", textAlign: "center" }}>
               <Clock size={18} style={{ color: "rgba(255,255,255,0.2)", marginBottom: 8 }} />
               <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, margin: 0 }}>No available slots right now.</p>
-              <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 12, margin: "4px 0 0" }}>Check back soon — the TopFloor team adds new slots regularly.</p>
+              <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 12, margin: "4px 0 0" }}>Check back soon - the TopFloor team adds new slots regularly.</p>
             </div>
           ) : (
             <div>
@@ -281,7 +281,7 @@ export default function BookingForm() {
         {/* Time slots */}
         {selectedDate && (
           <div>
-            <label style={labelStyle}>Pick a Time — {formatDate(selectedDate)}</label>
+            <label style={labelStyle}>Pick a Time - {formatDate(selectedDate)}</label>
             {filteredSlots.length === 0 ? (
               <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, padding: "12px 0" }}>
                 No slots available for {callType === "intro" ? "Intro Calls" : "Trade Reviews"} on this date.

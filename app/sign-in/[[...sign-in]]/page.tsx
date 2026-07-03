@@ -16,7 +16,7 @@ export default function SignInPage() {
         overflow: "hidden",
       }}
     >
-      {/* branded background — neon charts top & bottom, dark clear center */}
+      {/* branded background - neon charts top & bottom, dark clear center */}
       <Image
         src="/signin-bg.png"
         alt=""

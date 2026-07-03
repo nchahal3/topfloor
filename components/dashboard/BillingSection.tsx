@@ -23,7 +23,7 @@ interface BillingInfo {
   card: { brand: string; last4: string; expMonth: number; expYear: number } | null;
 }
 
-function UpdateCardForm({ onSuccess, onCancel }: { onSuccess: () => void; onCancel: () => void }) {
+function UpdateCardForm({ onSuccess, onCancel, retry }: { onSuccess: (charged: boolean) => void; onCancel: () => void; retry?: boolean }) {
   const stripe = useStripe();
   const elements = useElements();
   const [saving, setSaving] = useState(false);
@@ -53,11 +53,40 @@ function UpdateCardForm({ onSuccess, onCancel }: { onSuccess: () => void; onCanc
       const updateRes = await fetch("/api/billing/set-default-card", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ paymentMethodId: setupIntent.payment_method }),
+        body: JSON.stringify({ paymentMethodId: setupIntent.payment_method, retry: retry ?? false }),
       });
       if (!updateRes.ok) throw new Error("Failed to set card as default");
 
-      onSuccess();
+      const result = await updateRes.json() as {
+        success: boolean;
+        charged?: boolean;
+        chargeError?: string;
+        requiresAction?: boolean;
+        clientSecret?: string;
+      };
+
+      // Only surface a charge error when one is explicitly returned - charged:false with no
+      // chargeError means the invoice was already paid or there was nothing open to retry.
+      if (result.chargeError) {
+        throw new Error(result.chargeError);
+      }
+
+      // 3DS authentication required. After an off-session renewal failure the PI is in
+      // requires_payment_method state, so we must pass the payment_method explicitly.
+      // confirmCardPayment handles 3DS + charge in one call and returns status: 'succeeded'.
+      if (result.requiresAction && result.clientSecret) {
+        const pmId = typeof setupIntent.payment_method === "string"
+          ? setupIntent.payment_method
+          : setupIntent.payment_method?.id;
+        const { error: actionError, paymentIntent } = await stripe.confirmCardPayment(
+          result.clientSecret,
+          pmId ? { payment_method: pmId } : undefined,
+        );
+        if (actionError) throw new Error(actionError.message);
+        if (paymentIntent?.status !== "succeeded") throw new Error("Payment authentication failed. Please try again.");
+      }
+
+      onSuccess(result.requiresAction ? true : (result.charged ?? false));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -132,11 +161,12 @@ function UpdateCardForm({ onSuccess, onCancel }: { onSuccess: () => void; onCanc
   );
 }
 
-export default function BillingSection({ tier }: { tier: Tier }) {
+export default function BillingSection({ tier, retryOnSave }: { tier: Tier; retryOnSave?: boolean }) {
   const [info, setInfo] = useState<BillingInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [chargeSuccess, setChargeSuccess] = useState(false);
 
   async function load() {
     try {
@@ -149,17 +179,17 @@ export default function BillingSection({ tier }: { tier: Tier }) {
 
   useEffect(() => { load(); }, []);
 
-  function handleSuccess() {
+  function handleSuccess(charged: boolean) {
     setUpdating(false);
     setSaved(true);
+    setChargeSuccess(charged);
     load();
-    setTimeout(() => setSaved(false), 3000);
+    setTimeout(() => { setSaved(false); setChargeSuccess(false); }, 4000);
   }
 
   if (loading) return null;
-  if (!info?.subscription && !info?.card) return null;
 
-  const brandLabel = info.card ? (CARD_BRANDS[info.card.brand] ?? info.card.brand) : null;
+  const brandLabel = info?.card ? (CARD_BRANDS[info.card.brand] ?? info.card.brand) : null;
   const tierLabel = tier ? TIER_LABELS[tier] : null;
 
   return (
@@ -183,19 +213,19 @@ export default function BillingSection({ tier }: { tier: Tier }) {
             <p style={{ color: "#f5f5f5", fontSize: 15, fontWeight: 600, margin: 0 }}>{tierLabel}</p>
           </div>
         )}
-        {info.subscription?.nextBillingDate && (
+        {info?.subscription?.nextBillingDate && (
           <div>
             <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", margin: "0 0 4px" }}>NEXT BILLING</p>
-            <p style={{ color: "#f5f5f5", fontSize: 15, fontWeight: 600, margin: 0 }}>{info.subscription.nextBillingDate}</p>
+            <p style={{ color: "#f5f5f5", fontSize: 15, fontWeight: 600, margin: 0 }}>{info?.subscription?.nextBillingDate}</p>
           </div>
         )}
-        {info.card && (
+        {info?.card && (
           <div>
             <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", margin: "0 0 4px" }}>CARD ON FILE</p>
             <p style={{ color: "#f5f5f5", fontSize: 15, fontWeight: 600, margin: 0 }}>
-              {brandLabel} •••• {info.card.last4}
+              {brandLabel} •••• {info?.card?.last4}
               <span style={{ color: "rgba(255,255,255,0.35)", fontWeight: 400, fontSize: 13 }}>
-                {" "}exp {String(info.card.expMonth).padStart(2, "0")}/{String(info.card.expYear).slice(-2)}
+                {" "}exp {String(info?.card?.expMonth).padStart(2, "0")}/{String(info?.card?.expYear).slice(-2)}
               </span>
             </p>
           </div>
@@ -203,7 +233,9 @@ export default function BillingSection({ tier }: { tier: Tier }) {
       </div>
 
       {saved && (
-        <p style={{ color: "#00ff88", fontSize: 13, margin: "12px 0 0" }}>Card updated successfully.</p>
+        <p style={{ color: "#00ff88", fontSize: 13, margin: "12px 0 0" }}>
+          {chargeSuccess ? "Payment successful - your access is restoring. Refresh in a moment." : "Card updated successfully."}
+        </p>
       )}
 
       {!updating && !saved && (
@@ -228,7 +260,7 @@ export default function BillingSection({ tier }: { tier: Tier }) {
 
       {updating && (
         <Elements stripe={stripePromise}>
-          <UpdateCardForm onSuccess={handleSuccess} onCancel={() => setUpdating(false)} />
+          <UpdateCardForm onSuccess={handleSuccess} onCancel={() => setUpdating(false)} retry={retryOnSave} />
         </Elements>
       )}
     </div>

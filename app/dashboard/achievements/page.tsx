@@ -78,7 +78,7 @@ export default function AchievementsPage() {
       body: pendingFile,
     });
     if (!uploadRes.ok) {
-      setErr("File upload failed — try again");
+      setErr("File upload failed - try again");
       setUploading(false);
       return;
     }
@@ -232,7 +232,7 @@ export default function AchievementsPage() {
               {/* Notes */}
               <div>
                 <label style={labelStyle}>Notes (optional)</label>
-                <textarea rows={2} value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} placeholder="e.g. TopStep evaluation pass — $150k account" style={{ ...inputStyle, resize: "vertical" }} />
+                <textarea rows={2} value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} placeholder="e.g. TopStep evaluation pass - $150k account" style={{ ...inputStyle, resize: "vertical" }} />
               </div>
 
               {/* Divider */}
@@ -243,7 +243,7 @@ export default function AchievementsPage() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <div>
                     <label style={labelStyle}>Your experience (optional)</label>
-                    <textarea rows={3} value={form.review_quote} onChange={(e) => setForm((f) => ({ ...f, review_quote: e.target.value }))} placeholder="What has 🔝Floor helped you achieve? Be honest — other traders will see this." style={{ ...inputStyle, resize: "vertical" }} />
+                    <textarea rows={3} value={form.review_quote} onChange={(e) => setForm((f) => ({ ...f, review_quote: e.target.value }))} placeholder="What has 🔝Floor helped you achieve? Be honest - other traders will see this." style={{ ...inputStyle, resize: "vertical" }} />
                   </div>
                   <div>
                     <label style={labelStyle}>Your trading style / role (optional)</label>

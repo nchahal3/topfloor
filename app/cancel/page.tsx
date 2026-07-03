@@ -18,7 +18,7 @@ export default function CancelPage() {
         </h1>
 
         <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 16, lineHeight: 1.7, marginBottom: 36 }}>
-          You didn&apos;t complete your checkout — that&apos;s totally fine.
+          You didn&apos;t complete your checkout - that&apos;s totally fine.
           Whenever you&apos;re ready to trade from the top, we&apos;ll be here.
         </p>
 

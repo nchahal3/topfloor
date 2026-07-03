@@ -11,7 +11,7 @@ export default function HeroIntro({
 }) {
   const [done, setDone] = useState(false);
   // If autoplay is blocked (iOS Low Power / Low Data Mode, etc.) we drop the
-  // <video> entirely so no play button is ever shown — the static hero behind
+  // <video> entirely so no play button is ever shown - the static hero behind
   // it (hero-end.png) becomes the background instantly.
   const [autoplayBlocked, setAutoplayBlocked] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -25,7 +25,7 @@ export default function HeroIntro({
       const attempt = v.play();
       if (attempt && typeof attempt.catch === "function") {
         attempt.catch(() => {
-          // autoplay refused by the device — reveal the static hero now and
+          // autoplay refused by the device - reveal the static hero now and
           // remove the video so there's no lingering play button
           setAutoplayBlocked(true);
           setDone(true);

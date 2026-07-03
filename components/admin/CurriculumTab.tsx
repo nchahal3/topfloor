@@ -220,7 +220,7 @@ export default function CurriculumTab() {
                     )}
                   </div>
 
-                  {/* Actions — stop click propagation so they don't toggle expand */}
+                  {/* Actions - stop click propagation so they don't toggle expand */}
                   <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
                     <IconBtn onClick={() => reorder("module", mod.id, "up")} disabled={modIdx === 0} title="Move up"><ChevronUp size={15} /></IconBtn>
                     <IconBtn onClick={() => reorder("module", mod.id, "down")} disabled={modIdx === modules.length - 1} title="Move down"><ChevronDown size={15} /></IconBtn>
@@ -479,7 +479,7 @@ function LessonForm({ moduleId, existing, onClose, onSaved }: { moduleId: string
 
   const uploadPdf = async (lessonId: string, file: File) => {
     setUploading(true);
-    // Step 1: get a signed URL — bypasses Vercel's 4.5MB body limit
+    // Step 1: get a signed URL - bypasses Vercel's 4.5MB body limit
     const presignRes = await fetch("/api/admin/curriculum/presign", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -501,7 +501,7 @@ function LessonForm({ moduleId, existing, onClose, onSaved }: { moduleId: string
     if (uploadRes.ok) {
       setPdfPath(path);
     } else {
-      setErr("PDF upload failed — try again");
+      setErr("PDF upload failed - try again");
     }
     setUploading(false);
   };
@@ -545,10 +545,10 @@ function LessonForm({ moduleId, existing, onClose, onSaved }: { moduleId: string
     const file = e.target.files?.[0];
     if (!file) return;
     if (existing) {
-      // Already has ID — upload immediately
+      // Already has ID - upload immediately
       await uploadPdf(existing.id, file);
     } else {
-      // No ID yet — stage for upload after save
+      // No ID yet - stage for upload after save
       setPendingFile(file);
     }
     if (fileInputRef.current) fileInputRef.current.value = "";

@@ -5,7 +5,7 @@ import Image from "next/image";
 
 // Seamless looping hero background. The static poster image always renders
 // behind it, so if the device blocks autoplay or the user prefers reduced
-// motion we simply show the still frame the loop was generated from — no gap,
+// motion we simply show the still frame the loop was generated from - no gap,
 // no play button, no visible start/end.
 export default function HeroVideo({
   src,
@@ -33,7 +33,7 @@ export default function HeroVideo({
 
   return (
     <>
-      {/* Static fallback — also serves as the video poster so the first frame
+      {/* Static fallback - also serves as the video poster so the first frame
           matches exactly while the loop buffers. */}
       <Image
         src={poster}

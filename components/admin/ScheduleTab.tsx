@@ -9,7 +9,7 @@ const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 const DAY_ORDER: Record<string, number> = { Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6, Sunday: 7 };
 const TYPES = ["Live", "Live Trading", "Coaching", "Planning", "Workshop"];
 const TIERS = [
-  { value: "", label: "Free — All Members" },
+  { value: "", label: "Free - All Members" },
   { value: "bronze", label: "Bronze+" },
   { value: "silver", label: "Silver+" },
   { value: "gold", label: "Gold+" },
