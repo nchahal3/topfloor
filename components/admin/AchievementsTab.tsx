@@ -13,6 +13,7 @@ type Achievement = {
   status: "pending" | "approved" | "rejected";
   admin_notes: string | null;
   featured: boolean;
+  display_label: string | null;
   created_at: string;
 };
 
@@ -35,6 +36,8 @@ export default function AchievementsTab() {
   const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected">("pending");
   const [actionId, setActionId] = useState<string | null>(null);
   const [adminNote, setAdminNote] = useState("");
+  const [labelEdits, setLabelEdits] = useState<Record<string, string>>({});
+  const [labelSaved, setLabelSaved] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/achievements")
@@ -65,6 +68,20 @@ export default function AchievementsTab() {
     });
     if (res.ok) {
       setAchievements((prev) => prev.map((a) => a.id === id ? { ...a, featured } : a));
+    }
+  };
+
+  const saveDisplayLabel = async (id: string, display_label: string) => {
+    const value = display_label.trim() || null;
+    const res = await fetch(`/api/admin/achievements/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ display_label: value ?? "" }),
+    });
+    if (res.ok) {
+      setAchievements((prev) => prev.map((a) => a.id === id ? { ...a, display_label: value } : a));
+      setLabelSaved(id);
+      setTimeout(() => setLabelSaved((s) => (s === id ? null : s)), 2000);
     }
   };
 
@@ -180,6 +197,27 @@ export default function AchievementsTab() {
                     )}
                   </div>
                 </div>
+
+                {/* Display label for the public Results carousel (featured rows only).
+                    Falls back to member notes / auto label when left blank. */}
+                {a.featured && (
+                  <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                    <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, fontWeight: 600 }}>Carousel label:</span>
+                    <input
+                      value={labelEdits[a.id] ?? a.display_label ?? ""}
+                      onChange={(e) => setLabelEdits((m) => ({ ...m, [a.id]: e.target.value }))}
+                      placeholder="e.g. Lucid Funded Account - Teeghan"
+                      style={{ flex: 1, minWidth: 220, padding: "8px 12px", borderRadius: 8, background: "#181818", border: "1px solid rgba(255,255,255,0.1)", color: "#f5f5f5", fontSize: 13, outline: "none", boxSizing: "border-box" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => saveDisplayLabel(a.id, labelEdits[a.id] ?? a.display_label ?? "")}
+                      style={{ padding: "8px 16px", borderRadius: 8, background: "#00ff88", color: "#000", fontWeight: 700, fontSize: 13, border: "none", cursor: "pointer" }}
+                    >
+                      {labelSaved === a.id ? "Saved" : "Save label"}
+                    </button>
+                  </div>
+                )}
 
                 {/* Inline action confirm */}
                 {(isApproving || isRejecting) && (

@@ -21,6 +21,7 @@ const RESULTS = [
   "/results/Result12.JPEG",
   "/results/Result1.jpeg",
   "/results/Result15.PNG",
+  "/results/Results17.png",
 ];
 
 export default function FeatureTeasers() {
