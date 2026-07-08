@@ -50,3 +50,20 @@ export type AvailabilitySlot = {
   booking_id: string | null;
   created_at: string;
 };
+
+export type AchievementRow = {
+  id: string;
+  clerk_user_id: string;
+  member_email: string;
+  member_name: string | null;
+  category: string;
+  notes: string | null;
+  file_path: string;
+  review_quote: string | null;
+  review_role: string | null;
+  status: "pending" | "approved" | "rejected";
+  admin_notes: string | null;
+  featured: boolean;
+  featured_order: number | null;
+  created_at: string;
+};
