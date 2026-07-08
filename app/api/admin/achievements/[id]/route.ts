@@ -30,6 +30,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     update.featured = body.featured;
   }
 
+  if (typeof body.display_label === "string") {
+    const trimmed = body.display_label.trim();
+    update.display_label = trimmed.length > 0 ? trimmed : null;
+  }
+
   if (Object.keys(update).length === 0) {
     return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
   }

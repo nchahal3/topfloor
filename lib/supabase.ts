@@ -65,5 +65,6 @@ export type AchievementRow = {
   admin_notes: string | null;
   featured: boolean;
   featured_order: number | null;
+  display_label: string | null;
   created_at: string;
 };

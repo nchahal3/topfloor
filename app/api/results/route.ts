@@ -20,7 +20,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 export async function GET() {
   const { data, error } = await supabaseAdmin
     .from("achievements")
-    .select("id, member_name, category, notes, review_quote, review_role, file_path, featured_order, created_at")
+    .select("id, member_name, category, notes, review_quote, review_role, file_path, featured_order, display_label, created_at")
     .eq("featured", true)
     .eq("status", "approved")
     .order("featured_order", { ascending: true, nullsFirst: false })
@@ -30,7 +30,7 @@ export async function GET() {
 
   const rows = (data ?? []) as Pick<
     AchievementRow,
-    "id" | "member_name" | "category" | "notes" | "review_quote" | "review_role" | "file_path" | "featured_order" | "created_at"
+    "id" | "member_name" | "category" | "notes" | "review_quote" | "review_role" | "file_path" | "featured_order" | "display_label" | "created_at"
   >[];
 
   const results = await Promise.all(
@@ -41,7 +41,9 @@ export async function GET() {
       if (!signed?.signedUrl) return null;
 
       const firstName = r.member_name?.split(" ")[0] ?? "Member";
-      const label = r.notes?.trim()
+      // Admin-set display_label wins; then member notes; then an auto label.
+      const label = r.display_label?.trim()
+        || r.notes?.trim()
         || (r.member_name
           ? `${CATEGORY_LABELS[r.category] ?? "Verified"} - ${firstName}`
           : CATEGORY_LABELS[r.category] ?? "Verified Win");
