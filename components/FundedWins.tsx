@@ -5,7 +5,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const PROOF = [
+type ProofItem = { src: string; label: string };
+
+// Member wins come from Supabase as remote signed URLs; skip next/image
+// optimization for those so we don't need to allowlist the domain.
+const isRemote = (src: string) => src.startsWith("http");
+
+// Curated proof shown first. Member-submitted featured wins are appended after
+// these at runtime via /api/results.
+const PROOF: ProofItem[] = [
   { src: "/results/Result4.PNG", label: "$56,500 Lifetime Payouts" },
   { src: "/results/Result8.JPG", label: "Topstep Funded Trader - Clyde Macapagal" },
   { src: "/results/Result11.JPEG", label: "Topstep Funded Trader - Jesus Villanueva" },
@@ -27,14 +35,30 @@ const PROOF = [
 export default function FundedWins() {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
+  const [memberWins, setMemberWins] = useState<ProofItem[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/results")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data: { src: string; label: string }[]) => {
+        if (active && Array.isArray(data)) {
+          setMemberWins(data.map((d) => ({ src: d.src, label: d.label })));
+        }
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  const PROOF_ALL = [...PROOF, ...memberWins];
 
   const go = useCallback((index: number) => {
     setDirection(index > current ? 1 : -1);
     setCurrent(index);
   }, [current]);
 
-  const next = useCallback(() => go((current + 1) % PROOF.length), [current, go]);
-  const prev = () => go((current - 1 + PROOF.length) % PROOF.length);
+  const next = useCallback(() => go((current + 1) % PROOF_ALL.length), [current, go, PROOF_ALL.length]);
+  const prev = () => go((current - 1 + PROOF_ALL.length) % PROOF_ALL.length);
 
   useEffect(() => {
     const t = setInterval(next, 5000);
@@ -79,17 +103,19 @@ export default function FundedWins() {
               >
                 {/* Blurred bg fill */}
                 <Image
-                  src={PROOF[current].src}
+                  src={PROOF_ALL[current].src}
                   alt=""
                   fill
+                  unoptimized={isRemote(PROOF_ALL[current].src)}
                   style={{ objectFit: "cover", filter: "blur(28px) brightness(0.35)", transform: "scale(1.1)", zIndex: 1 }}
                   aria-hidden
                 />
                 {/* Sharp foreground image */}
                 <Image
-                  src={PROOF[current].src}
-                  alt={PROOF[current].label}
+                  src={PROOF_ALL[current].src}
+                  alt={PROOF_ALL[current].label}
                   fill
+                  unoptimized={isRemote(PROOF_ALL[current].src)}
                   style={{ objectFit: "contain", zIndex: 2 }}
                   priority
                 />
@@ -108,7 +134,7 @@ export default function FundedWins() {
                 zIndex: 10,
               }}
             >
-              {PROOF[current].label}
+              {PROOF_ALL[current].label}
             </div>
 
             {/* Arrows */}
@@ -146,12 +172,12 @@ export default function FundedWins() {
 
           {/* Counter */}
           <p className="text-center mt-4 text-xs" style={{ color: "rgba(255,255,255,0.25)", letterSpacing: "0.08em" }}>
-            {current + 1} / {PROOF.length}
+            {current + 1} / {PROOF_ALL.length}
           </p>
 
           {/* Thumbnail strip */}
           <div className="flex gap-3 mt-4 justify-center flex-wrap">
-            {PROOF.map((item, i) => (
+            {PROOF_ALL.map((item, i) => (
               <button
                 key={i}
                 type="button"
@@ -167,7 +193,7 @@ export default function FundedWins() {
                   transition: "all 0.2s ease",
                 }}
               >
-                <Image src={item.src} alt={item.label} fill style={{ objectFit: "cover" }} />
+                <Image src={item.src} alt={item.label} fill unoptimized={isRemote(item.src)} style={{ objectFit: "cover" }} />
               </button>
             ))}
           </div>

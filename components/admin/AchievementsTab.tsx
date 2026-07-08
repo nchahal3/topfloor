@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CheckCircle, XCircle, ExternalLink } from "lucide-react";
+import { CheckCircle, XCircle, ExternalLink, Star } from "lucide-react";
 
 type Achievement = {
   id: string;
@@ -12,6 +12,7 @@ type Achievement = {
   file_path: string;
   status: "pending" | "approved" | "rejected";
   admin_notes: string | null;
+  featured: boolean;
   created_at: string;
 };
 
@@ -53,6 +54,17 @@ export default function AchievementsTab() {
       );
       setActionId(null);
       setAdminNote("");
+    }
+  };
+
+  const toggleFeatured = async (id: string, featured: boolean) => {
+    const res = await fetch(`/api/admin/achievements/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ featured }),
+    });
+    if (res.ok) {
+      setAchievements((prev) => prev.map((a) => a.id === id ? { ...a, featured } : a));
     }
   };
 
@@ -138,6 +150,16 @@ export default function AchievementsTab() {
                     >
                       <ExternalLink size={12} /> View File
                     </a>
+                    {a.status === "approved" && (
+                      <button
+                        type="button"
+                        onClick={() => toggleFeatured(a.id, !a.featured)}
+                        title={a.featured ? "Remove from public Results carousel" : "Show on public Results carousel"}
+                        style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 12px", borderRadius: 8, background: a.featured ? "rgba(240,192,64,0.14)" : "rgba(255,255,255,0.05)", border: a.featured ? "1px solid rgba(240,192,64,0.4)" : "1px solid rgba(255,255,255,0.1)", color: a.featured ? "#f0c040" : "rgba(255,255,255,0.6)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                      >
+                        <Star size={12} fill={a.featured ? "#f0c040" : "none"} /> {a.featured ? "Featured" : "Feature"}
+                      </button>
+                    )}
                     {a.status === "pending" && (
                       <>
                         <button
