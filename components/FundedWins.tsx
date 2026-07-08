@@ -30,6 +30,7 @@ const PROOF: ProofItem[] = [
   { src: "/results/Result12.JPEG", label: "Topstep Funded Trader - Jesus Villanueva" },
   { src: "/results/Result1.jpeg", label: "Daily PNL Calendar" },
   { src: "/results/Result15.PNG", label: "Funded Account Certificate" },
+  { src: "/results/Results17.png", label: "Lucid Funded Account - Teeghan (LucidPro 50K)" },
 ];
 
 export default function FundedWins() {
