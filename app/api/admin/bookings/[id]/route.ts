@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { supabaseAdmin } from "@/lib/supabase";
 import { sendDiscordLog } from "@/lib/discord";
+import { createCalendarEvent } from "@/lib/google-calendar";
 
 async function checkAdminAuth() {
   const c = await cookies();
@@ -18,7 +19,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   // Fetch current booking to detect status change and get slot reference
   const { data: existing } = await supabaseAdmin
     .from("bookings")
-    .select("status, member_email, member_name, preferred_time, call_type, zoom_link, slot_id")
+    .select("status, member_email, member_name, preferred_time, call_type, zoom_link, slot_id, scheduled_at")
     .eq("id", id)
     .single();
 
@@ -61,7 +62,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
           { name: "Notified", value: memberEmail, inline: false },
         ],
         description: "Confirmation email sent to member - source: Admin Panel",
-      });
+      }, "bookings");
       await resend.emails.send({
         from: fromEmail,
         to: memberEmail,
@@ -88,6 +89,29 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
           </div>
         `,
       }).catch(console.error);
+
+      // Auto-create the event on the coach's Google Calendar. Needs a real
+      // datetime, which only exists for slot-based bookings (scheduled_at).
+      // Fail-soft: createCalendarEvent returns null / never throws.
+      const startISO = body.scheduled_at ?? existing.scheduled_at;
+      if (startISO) {
+        const durationMinutes = existing.call_type === "trade_review" ? 30 : 15;
+        const vcLink = process.env.DISCORD_VC_INVITE_URL ?? "";
+        const memberFirst = memberName.split(" ")[0];
+        // Extra guard: never let a calendar error break the confirmation.
+        await createCalendarEvent({
+          summary: `🔝Floor ${callLabel} - ${memberFirst}`,
+          description: [
+            `${callLabel} with ${memberName} (${memberEmail}).`,
+            time ? `Requested time: ${time}.` : "",
+            vcLink ? `Join the call in Discord: ${vcLink}` : "",
+          ].filter(Boolean).join("\n\n"),
+          startISO,
+          durationMinutes,
+          attendeeEmail: memberEmail,
+          location: vcLink || undefined,
+        }).catch(() => null);
+      }
     }
 
     if (body.status === "cancelled") {
@@ -101,7 +125,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
           { name: "Notified", value: memberEmail, inline: false },
         ],
         description: "Cancellation email sent to member - source: Admin Panel",
-      });
+      }, "bookings");
       await resend.emails.send({
         from: fromEmail,
         to: memberEmail,
