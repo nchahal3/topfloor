@@ -92,5 +92,8 @@ describe("POST /api/bookings", () => {
     const [embed, channel] = mockSendDiscordLog.mock.calls[0];
     expect(embed.title).toMatch(/New Booking Request/i);
     expect(channel).toBe("bookings");
+    // includes a clickable link to the admin panel
+    const reviewField = embed.fields.find((f: { name: string }) => f.name === "Review");
+    expect(reviewField?.value).toContain("/admin");
   });
 });

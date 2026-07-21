@@ -9,11 +9,6 @@ vi.mock("@/lib/admin-auth", () => ({ getAdminToken: () => "admin_token_stub" }))
 const mockSendDiscordLog = vi.fn();
 vi.mock("@/lib/discord", () => ({ sendDiscordLog: (...a: unknown[]) => mockSendDiscordLog(...a) }));
 
-const mockCreateCalendarEvent = vi.fn();
-vi.mock("@/lib/google-calendar", () => ({
-  createCalendarEvent: (...a: unknown[]) => mockCreateCalendarEvent(...a),
-}));
-
 const mockSend = vi.fn();
 vi.mock("resend", () => ({ Resend: class { emails = { send: (...a: unknown[]) => mockSend(...a) }; } }));
 
@@ -42,15 +37,28 @@ async function callPut(body: object) {
   return PUT(makeReq(body), { params: Promise.resolve({ id: "book_1" }) });
 }
 
+function seedSingle() {
+  chain.single
+    .mockReset()
+    .mockResolvedValueOnce({ data: existingBooking })
+    .mockResolvedValueOnce({ data: { id: "book_1", status: "confirmed" }, error: null });
+}
+
+function confirmEmbed() {
+  const call = mockSendDiscordLog.mock.calls.find(
+    (c) => (c[0] as { title?: string }).title?.includes("Confirmed"),
+  );
+  return call?.[0] as { fields: { name: string; value: string }[]; description?: string } | undefined;
+}
+
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
-describe("PUT /api/admin/bookings/[id] — confirm -> calendar", () => {
+describe("PUT /api/admin/bookings/[id] — confirm -> add-to-calendar link", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.resetModules();
     mockCookieGet.mockReturnValue({ value: "admin_token_stub" });
     mockSend.mockResolvedValue({});
-    mockCreateCalendarEvent.mockResolvedValue({ id: "evt_1", htmlLink: "https://cal/1" });
     existingBooking = {
       status: "pending",
       member_email: "member@test.com",
@@ -61,10 +69,7 @@ describe("PUT /api/admin/bookings/[id] — confirm -> calendar", () => {
       slot_id: "slot_1",
       scheduled_at: "2026-07-20T09:00",
     };
-    // .single() is called twice: first for `existing`, then for the updated row
-    chain.single
-      .mockResolvedValueOnce({ data: existingBooking })
-      .mockResolvedValueOnce({ data: { id: "book_1", status: "confirmed" }, error: null });
+    seedSingle();
   });
 
   it("returns 401 without the admin cookie", async () => {
@@ -73,49 +78,33 @@ describe("PUT /api/admin/bookings/[id] — confirm -> calendar", () => {
     expect(res.status).toBe(401);
   });
 
-  it("creates a calendar event with correct duration + attendee when confirmed with a scheduled_at", async () => {
+  it("adds an Add-to-Google-Calendar link to the confirmed embed when scheduled_at exists", async () => {
     const res = await callPut({ status: "confirmed" });
     expect(res.status).toBe(200);
 
-    expect(mockCreateCalendarEvent).toHaveBeenCalledTimes(1);
-    const arg = mockCreateCalendarEvent.mock.calls[0][0];
-    expect(arg.durationMinutes).toBe(30); // trade_review
-    expect(arg.startISO).toBe("2026-07-20T09:00");
-    expect(arg.attendeeEmail).toBe("member@test.com");
-    expect(arg.location).toContain("discord");
-    // confirm log routed to bookings channel
-    expect(mockSendDiscordLog).toHaveBeenCalledWith(
-      expect.objectContaining({ title: expect.stringMatching(/Confirmed/i) }),
-      "bookings",
-    );
+    const embed = confirmEmbed();
+    expect(embed).toBeDefined();
+    const calField = embed!.fields.find((f) => f.name === "Calendar");
+    expect(calField).toBeDefined();
+    expect(calField!.value).toContain("calendar.google.com/calendar/render");
+    // routed to the bookings channel
+    expect(mockSendDiscordLog).toHaveBeenCalledWith(expect.anything(), "bookings");
   });
 
-  it("does NOT create a calendar event when there is no scheduled_at", async () => {
+  it("omits the calendar link when there is no scheduled_at", async () => {
     existingBooking.scheduled_at = null;
-    chain.single
-      .mockReset()
-      .mockResolvedValueOnce({ data: existingBooking })
-      .mockResolvedValueOnce({ data: { id: "book_1", status: "confirmed" }, error: null });
+    seedSingle();
 
     const res = await callPut({ status: "confirmed" });
     expect(res.status).toBe(200);
-    expect(mockCreateCalendarEvent).not.toHaveBeenCalled();
+
+    const embed = confirmEmbed();
+    expect(embed).toBeDefined();
+    expect(embed!.fields.find((f) => f.name === "Calendar")).toBeUndefined();
   });
 
-  it("still succeeds if the calendar helper throws (fail-soft)", async () => {
-    mockCreateCalendarEvent.mockRejectedValue(new Error("boom"));
-    const res = await callPut({ status: "confirmed" });
-    expect(res.status).toBe(200);
-  });
-
-  it("uses 15-minute duration for an intro call", async () => {
-    existingBooking.call_type = "intro";
-    chain.single
-      .mockReset()
-      .mockResolvedValueOnce({ data: existingBooking })
-      .mockResolvedValueOnce({ data: { id: "book_1", status: "confirmed" }, error: null });
-
+  it("still confirms + emails the member regardless of the calendar link", async () => {
     await callPut({ status: "confirmed" });
-    expect(mockCreateCalendarEvent.mock.calls[0][0].durationMinutes).toBe(15);
+    expect(mockSend).toHaveBeenCalledTimes(1);
   });
 });

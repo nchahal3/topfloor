@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { supabaseAdmin } from "@/lib/supabase";
 import { sendDiscordLog } from "@/lib/discord";
-import { createCalendarEvent } from "@/lib/google-calendar";
+import { googleCalendarUrl } from "@/lib/calendar-link";
 
 async function checkAdminAuth() {
   const c = await cookies();
@@ -52,6 +52,25 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const fromEmail = "noreply@topfloortradesofficial.com";
 
     if (body.status === "confirmed") {
+      // Build an "Add to Google Calendar" link for the coach, dropped into the
+      // #bookings embed. Needs a real datetime (only slot-based bookings have
+      // scheduled_at); omitted otherwise.
+      const startISO = body.scheduled_at ?? existing.scheduled_at;
+      const vcLink = process.env.DISCORD_VC_INVITE_URL ?? "";
+      const memberFirst = memberName.split(" ")[0];
+      const calendarUrl = startISO
+        ? googleCalendarUrl({
+            title: `🔝Floor ${callLabel} - ${memberFirst}`,
+            details: [
+              `${callLabel} with ${memberName} (${memberEmail}).`,
+              vcLink ? `Join the call in Discord: ${vcLink}` : "",
+            ].filter(Boolean).join("\n\n"),
+            location: vcLink || undefined,
+            startISO,
+            durationMinutes: existing.call_type === "trade_review" ? 30 : 15,
+          })
+        : null;
+
       sendDiscordLog({
         title: "✅ Booking Confirmed",
         color: 0x00ff88,
@@ -60,6 +79,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
           { name: "Call Type", value: callLabel, inline: true },
           { name: "Time", value: time ?? "TBD", inline: true },
           { name: "Notified", value: memberEmail, inline: false },
+          ...(calendarUrl ? [{ name: "Calendar", value: `[🗓️ Add to Google Calendar](${calendarUrl})`, inline: false }] : []),
         ],
         description: "Confirmation email sent to member - source: Admin Panel",
       }, "bookings");
@@ -89,29 +109,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
           </div>
         `,
       }).catch(console.error);
-
-      // Auto-create the event on the coach's Google Calendar. Needs a real
-      // datetime, which only exists for slot-based bookings (scheduled_at).
-      // Fail-soft: createCalendarEvent returns null / never throws.
-      const startISO = body.scheduled_at ?? existing.scheduled_at;
-      if (startISO) {
-        const durationMinutes = existing.call_type === "trade_review" ? 30 : 15;
-        const vcLink = process.env.DISCORD_VC_INVITE_URL ?? "";
-        const memberFirst = memberName.split(" ")[0];
-        // Extra guard: never let a calendar error break the confirmation.
-        await createCalendarEvent({
-          summary: `🔝Floor ${callLabel} - ${memberFirst}`,
-          description: [
-            `${callLabel} with ${memberName} (${memberEmail}).`,
-            time ? `Requested time: ${time}.` : "",
-            vcLink ? `Join the call in Discord: ${vcLink}` : "",
-          ].filter(Boolean).join("\n\n"),
-          startISO,
-          durationMinutes,
-          attendeeEmail: memberEmail,
-          location: vcLink || undefined,
-        }).catch(() => null);
-      }
     }
 
     if (body.status === "cancelled") {

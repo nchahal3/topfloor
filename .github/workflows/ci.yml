@@ -50,6 +50,3 @@ jobs:
           DISCORD_LOG_WEBHOOK_URL: https://discord.test/webhook/log
           DISCORD_BOOKINGS_WEBHOOK_URL: https://discord.test/webhook/bookings
           DISCORD_VC_INVITE_URL: https://discord.gg/placeholder
-          GOOGLE_SERVICE_ACCOUNT_EMAIL: svc@placeholder.iam.gserviceaccount.com
-          GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: placeholder
-          GOOGLE_CALENDAR_ID: placeholder@example.com
