@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { supabaseAdmin } from "@/lib/supabase";
 import { sendDiscordLog } from "@/lib/discord";
+import { googleCalendarUrl } from "@/lib/calendar-link";
 
 async function checkAdminAuth() {
   const c = await cookies();
@@ -18,7 +19,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   // Fetch current booking to detect status change and get slot reference
   const { data: existing } = await supabaseAdmin
     .from("bookings")
-    .select("status, member_email, member_name, preferred_time, call_type, zoom_link, slot_id")
+    .select("status, member_email, member_name, preferred_time, call_type, zoom_link, slot_id, scheduled_at")
     .eq("id", id)
     .single();
 
@@ -51,6 +52,25 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const fromEmail = "noreply@topfloortradesofficial.com";
 
     if (body.status === "confirmed") {
+      // Build an "Add to Google Calendar" link for the coach, dropped into the
+      // #bookings embed. Needs a real datetime (only slot-based bookings have
+      // scheduled_at); omitted otherwise.
+      const startISO = body.scheduled_at ?? existing.scheduled_at;
+      const vcLink = process.env.DISCORD_VC_INVITE_URL ?? "";
+      const memberFirst = memberName.split(" ")[0];
+      const calendarUrl = startISO
+        ? googleCalendarUrl({
+            title: `🔝Floor ${callLabel} - ${memberFirst}`,
+            details: [
+              `${callLabel} with ${memberName} (${memberEmail}).`,
+              vcLink ? `Join the call in Discord: ${vcLink}` : "",
+            ].filter(Boolean).join("\n\n"),
+            location: vcLink || undefined,
+            startISO,
+            durationMinutes: existing.call_type === "trade_review" ? 30 : 15,
+          })
+        : null;
+
       sendDiscordLog({
         title: "✅ Booking Confirmed",
         color: 0x00ff88,
@@ -59,9 +79,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
           { name: "Call Type", value: callLabel, inline: true },
           { name: "Time", value: time ?? "TBD", inline: true },
           { name: "Notified", value: memberEmail, inline: false },
+          ...(calendarUrl ? [{ name: "Calendar", value: `[🗓️ Add to Google Calendar](${calendarUrl})`, inline: false }] : []),
         ],
         description: "Confirmation email sent to member - source: Admin Panel",
-      });
+      }, "bookings");
       await resend.emails.send({
         from: fromEmail,
         to: memberEmail,
@@ -101,7 +122,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
           { name: "Notified", value: memberEmail, inline: false },
         ],
         description: "Cancellation email sent to member - source: Admin Panel",
-      });
+      }, "bookings");
       await resend.emails.send({
         from: fromEmail,
         to: memberEmail,

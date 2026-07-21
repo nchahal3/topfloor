@@ -1,6 +1,7 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { sendDiscordLog } from "@/lib/discord";
 
 export async function GET() {
   const { userId } = await auth();
@@ -111,6 +112,23 @@ export async function POST(request: Request) {
       .update({ booking_id: data.id })
       .eq("id", slot_id);
   }
+
+  // Notify the coach in the bookings channel that a request came in.
+  // Fail-soft: sendDiscordLog swallows its own errors and never throws.
+  const adminUrl = `${process.env.NEXT_PUBLIC_URL ?? "https://www.topfloortradesofficial.com"}/admin`;
+  await sendDiscordLog({
+    title: "📅 New Booking Request",
+    color: 0xf0c040,
+    fields: [
+      { name: "Member", value: name, inline: true },
+      { name: "Call Type", value: call_type === "intro" ? "Intro Call" : "Trade Review", inline: true },
+      { name: "Requested Time", value: preferred_time, inline: false },
+      ...(topic ? [{ name: "Topic", value: topic.slice(0, 500), inline: false }] : []),
+      { name: "Email", value: email, inline: false },
+      { name: "Review", value: `[Open the admin panel](${adminUrl})`, inline: false },
+    ],
+    description: "Approve it in the admin panel to add it to your calendar.",
+  }, "bookings");
 
   return NextResponse.json(data);
 }

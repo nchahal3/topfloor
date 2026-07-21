@@ -47,3 +47,6 @@ jobs:
           CLERK_WEBHOOK_SECRET: whsec_placeholder
           QSTASH_TOKEN: placeholder
           DISCORD_BOT_TOKEN: placeholder
+          DISCORD_LOG_WEBHOOK_URL: https://discord.test/webhook/log
+          DISCORD_BOOKINGS_WEBHOOK_URL: https://discord.test/webhook/bookings
+          DISCORD_VC_INVITE_URL: https://discord.gg/placeholder

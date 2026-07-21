@@ -11,6 +11,9 @@ process.env.DISCORD_BOT_TOKEN = "bot_token_stub";
 process.env.RESEND_API_KEY = "re_stub";
 process.env.COACH_EMAIL = "coach@test.com";
 process.env.NEXT_PUBLIC_URL = "https://topfloortradesofficial.com";
+process.env.DISCORD_LOG_WEBHOOK_URL = "https://discord.test/webhook/log";
+process.env.DISCORD_BOOKINGS_WEBHOOK_URL = "https://discord.test/webhook/bookings";
+process.env.DISCORD_VC_INVITE_URL = "https://discord.gg/teststub";
 
 // Silence console.error in tests unless explicitly tested
 vi.spyOn(console, "error").mockImplementation(() => {});
